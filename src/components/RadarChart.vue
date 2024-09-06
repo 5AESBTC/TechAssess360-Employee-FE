@@ -72,7 +72,7 @@ export default {
 
 <style scoped>
 .chart-container {
-  width: 650px; 
+  width: 680px; 
   height: 600px; 
 }
 </style>

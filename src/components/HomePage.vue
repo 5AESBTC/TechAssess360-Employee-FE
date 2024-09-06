@@ -5,9 +5,18 @@
         <div class="info">
           <img src="https://picsum.photos/120/120" alt="profile" />
           <div class="details">
-            <div class="detail-item">Tên: Trịnh Thái Quân</div>
-            <div class="detail-item">Bộ phận: Thiết kế</div>
-            <div class="detail-item">Chức vụ: Intern</div>
+           <div class="detail-item">
+              <div class="label">Tên:</div>
+              <div class="value">Trịnh Thái Quân</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">Bộ phận:</div>
+              <div class="value">Thiết kế</div>
+            </div>
+            <div class="detail-item">
+              <div class="label">Chức vụ:</div>
+              <div class="value">Intern</div>
+            </div>
           </div>
         </div>
         <div class="table-wrapper">
@@ -124,7 +133,7 @@ export default {
 .left {
   width: 50%;
   margin-right: 20px;
-  margin-left: 50px;
+  margin-left: 80px;
 }
 
 .right {
@@ -148,39 +157,45 @@ table th,
 table td {
   padding: 12px;
   border: 1px solid #ddd;
-  text-align: left;
+  text-align: center; /* Căn giữa các cột */
 }
 
 .info {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   margin-bottom: 20px;
 }
 
 .info img {
-  border-radius: 50%;
+  border-radius: 50%; 
   margin-right: 15px;
+  margin-top: -10px;
 }
 
 .details {
+  padding-top:13px;
   display: flex;
   flex-direction: column;
 }
 
 .detail-item {
-  margin-bottom: 10px;
-  font-size: 16px;
+  display: flex;
+  margin-bottom: 5px;
 }
 
-.detail-item::before {
-  font-weight: bold;
-  min-width: 150px;
+.label {
+  font-weight: bold; /* In đậm phần label */
+  margin-right: 5px;
+}
+
+.value {
+  font-weight: normal; /* Phần giá trị không in đậm */
 }
 
 .radar {
   width: 100%;
   margin-top: -75px;
-  margin-left: 80px;
+  margin-left: 85px;
 }
 
 /* Responsive Design */
@@ -205,10 +220,6 @@ table td {
 
   .info img {
     margin-bottom: 10px;
-  }
-
-  .detail-item::before {
-    min-width: 100px; /* Giảm kích thước min-width trên màn hình nhỏ hơn */
   }
 
   .radar {

@@ -1,93 +1,18 @@
 <template>
-  <div class="container">
-    <div class="content">
-      <div class="left">
-        <div class="info">
-          <img src="https://picsum.photos/120/120" alt="profile" />
-          <div class="details">
-           <div class="detail-item">
-              <div class="label">Tên:</div>
-              <div class="value">Trịnh Thái Quân</div>
-            </div>
-            <div class="detail-item">
-              <div class="label">Bộ phận:</div>
-              <div class="value">Thiết kế</div>
-            </div>
-            <div class="detail-item">
-              <div class="label">Chức vụ:</div>
-              <div class="value">Intern</div>
-            </div>
-          </div>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Hệ số</th>
-                <th>Tiêu Chí</th>
-                <th>Tự đánh giá</th>
-                <th>Quản Lý</th>
-                <th>Team</th>
-                <th>Tổng Điểm</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>30</td>
-                <td>Hiệu suất Công việc</td>
-                <td>4</td>
-                <td>2</td>
-                <td>3</td>
-                <td>22.00</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>Kỹ năng và Kiến thức</td>
-                <td>2</td>
-                <td>3</td>
-                <td>2</td>
-                <td>10.00</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Tinh thần làm việc và Thái độ</td>
-                <td>4</td>
-                <td>2</td>
-                <td>1</td>
-                <td>6.00</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Đóng góp và Sáng kiến</td>
-                <td>3</td>
-                <td>2</td>
-                <td>3</td>
-                <td>6.67</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Quy định và Chính sách</td>
-                <td>5</td>
-                <td>2</td>
-                <td>2</td>
-                <td>7.33</td>
-              </tr>
-              <tr>
-                <td>25</td>
-                <td>Đóng góp Cá nhân và Kết quả</td>
-                <td>3</td>
-                <td>3</td>
-                <td>3</td>
-                <td>20.00</td>
-              </tr>
-            </tbody>
-          </table>
+  <div class="background-container">
+    <div class="container">
+      <div class="step-container">
+        <div v-for="(step, index) in steps" :key="index" class="step" :style="{ backgroundColor: step.color }" :class="{ active: isActiveStep(index) }">
+          <div class="step-title">{{ step.title }}</div>
+          <div class="step-text">{{ step.text }}</div>
         </div>
       </div>
 
-      <div class="right">
-        <div class="radar">
-          <RadarChart :data="radarData" />
+      <div class="title-container">
+        <div class="title-box">
+          <div v-for="(title, index) in titles" :key="index" class="title" :class="[title.class, { active: isActiveTitle(index) }]">
+            {{ title.text }}
+          </div>
         </div>
       </div>
     </div>
@@ -95,155 +20,211 @@
 </template>
 
 <script>
-import RadarChart from './RadarChart.vue';
-
 export default {
-  name: 'HomePage',
-  components: {
-    RadarChart
-  },
   data() {
     return {
-      radarData: {
-        labels: ['Hiệu suất Công việc', 'Kỹ năng và Kiến thức', 'Tinh thần làm việc và Thái độ', 'Đóng góp và Sáng kiến', 'Quy định và Chính sách', 'Đóng góp Cá nhân và Kết quả'],
-        selfAssessment: [4, 2, 4, 3, 5, 3],
-        manager: [2, 3, 2, 2, 2, 3],
-        team: [3, 2, 1, 3, 2, 3]
-      }
+      steps: [
+        {  title: 'Nhân viên đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá cho  các thành viên chung dự án.', color: '#90EE90' },
+        {  title: 'Quản lý đánh giá', text: 'Quản lý sẽ tự đánh giá và đánh giá các thành viên mà mình quản lý', color: '#87CEEB' },
+        {  title: 'Kết quả', text: 'Công bố kết quả', color: '#FFD700' }
+      ],
+      titles: [
+        { text: '09/09 - 20/09', class: 'before' },
+        { text: '21/09 - 30/09', class: 'now' },
+        { text: '31/09', class: 'after' }
+      ],
+      currentDate: new Date() // Cập nhật giá trị này tùy thuộc vào nhu cầu
+    };
+  },
+  methods: {
+    isActiveTitle(index) {
+      // Logic để xác định tiêu đề nào là hiện tại
+      const titleDates = [
+        { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
+        { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
+        { start: new Date('2024-09-31'), end: new Date('2024-09-31') }
+      ];
+
+      const { start, end } = titleDates[index];
+      return this.currentDate >= start && this.currentDate <= end;
+    },
+    isActiveStep(index) {
+      return this.isActiveTitle(index); // Bước và tiêu đề đồng bộ
     }
   }
 }
 </script>
-
 <style scoped>
+.background-container {
+  margin-top:-55px;
+  background-color: #4e7fcf;
+  height: 100%; 
+  padding: 70px; 
+
+}
 .container {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-}
-
-.content {
-  display: flex;
-  flex-direction: row;
-  padding: 20px;
-  gap: 20px;
-  margin-top: 40px;
-}
-
-.left {
-  width: 50%;
-  margin-right: 20px;
-  margin-left: 80px;
-}
-
-.right {
-  width: 50%;
-  display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  height: 700px;
+  weight:500px;
+  background-color: #f7f7f7;
+  padding: 20px; /* Padding để tạo khoảng cách bên trong container */
+  border-radius: 12px; /* Viền góc cho container */
+  box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2); /* Box-shadow nhẹ quanh toàn bộ container */
+  background-color: #fff; /* Nền trắng cho container */
 }
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
-
-table th,
-table td {
-  padding: 12px;
-  border: 1px solid #ddd;
-  text-align: center; /* Căn giữa các cột */
-}
-
-.info {
+.step-container {
   display: flex;
-  align-items: flex-start;
-  margin-bottom: 20px;
+  justify-content: space-around;
+  width: 70%;
+  margin-bottom: 20px; /* Giảm khoảng cách giữa step-container và title-container */
 }
 
-.info img {
-  border-radius: 50%; 
+.step {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  width: 120px;
+  height: 150px; /* Đặt chiều cao để tạo không gian cho nội dung */
   margin-right: 15px;
-  margin-top: -10px;
-}
-
-.details {
-  padding-top:13px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
   display: flex;
   flex-direction: column;
+  justify-content: center; /* Canh giữa theo chiều dọc */
+  align-items: center; /* Canh giữa theo chiều ngang */
 }
 
-.detail-item {
+
+.step.active {
+  transform: translateY(-25px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background-color: #3498db;
+  color: #fff; 
+
+}
+
+.step:last-child {
+  margin-right: 0;
+}
+
+.step-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-bottom: 8px;
+  color: #333;
+}
+
+.step-number {
+  font-size: 48px;
+  font-weight: bold;
+  color: #3498db;
+  margin-bottom: 12px;
+}
+
+.step-text {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Title container with border */
+.title-container {
   display: flex;
-  margin-bottom: 5px;
+  justify-content: center;
+  width: 70%;
 }
 
-.label {
-  font-weight: bold; /* In đậm phần label */
-  margin-right: 5px;
+.title-box {
+  display: flex;
+  align-items: center;
+  width: 100%; /* Đảm bảo title-box có chiều rộng đầy đủ */
+  position: relative; /* Để cho phép divider hiển thị */
+  
 }
 
-.value {
-  font-weight: normal; /* Phần giá trị không in đậm */
+.title {
+  background-color: #b3b5b5; /* Màu nền của tiêu đề để nổi bật hơn */
+  color: #fff;
+  border-radius: 10px; /* Đảm bảo viền trùng khớp với .title-box */
+  padding: 20px 30px; /* Điều chỉnh padding để phù hợp với kích thước */
+  text-align: center;
+  font-size: 18px;
+  font-weight: bold;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s;
+  box-sizing: border-box; /* Đảm bảo padding không ảnh hưởng đến kích thước tổng thể */
+  width: 33.33%; /* Đặt kích thước của các tiêu đề để khớp với các bước */
+ 
 }
 
-.radar {
+.title.before {
+  border-radius: 10px 0 0 10px; /* Viền góc trên bên trái và dưới bên trái */
+}
+
+.title.now {
+  border-radius: 0; /* Không có viền góc */
+}
+
+.title.after {
+  border-radius: 0 10px 10px 0; /* Viền góc trên bên phải và dưới bên phải */
+}
+
+.title.active {
+  background-color: #646666; /* Màu nền nổi bật cho tiêu đề hiện tại */
+  color: #fff; /* Màu chữ nổi bật cho tiêu đề hiện tại */
+}
+
+.title-box::before {
+  content: "";
+  display: block;
+  height: 2px;
   width: 100%;
-  margin-top: -75px;
-  margin-left: 85px;
+  background-color: #ccc;
+  position: absolute;
+  top: 50%;
+  left: 0;
+  z-index: -1;
 }
 
-/* Responsive Design */
+.title-box::after {
+  content: "";
+  display: block;
+  height: 2px;
+  width: 100%;
+  background-color: #ccc;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  z-index: -1;
+}
+
+/* Adjust styles for smaller screens */
 @media (max-width: 768px) {
-  .content {
+  .step-container, .title-container {
     flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
+    align-items: center;
   }
 
-  .left,
-  .right {
+  .step, .title-box {
     width: 100%;
-    margin-left: 0;
-    margin-right: 0;
+    margin-bottom: 20px;
   }
 
-  .info {
-    flex-direction: column;
-    align-items: flex-start;
+  .step:last-child, .title-box:last-child {
+    margin-bottom: 0;
   }
 
-  .info img {
+  .title {
+    width: 100%;
     margin-bottom: 10px;
   }
 
-  .radar {
-    margin-left: 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .detail-item {
-    font-size: 14px;
-  }
-
-  table th,
-  table td {
-    padding: 8px; /* Giảm padding cho màn hình nhỏ hơn */
-  }
-
-  .info img {
-    width: 80px;
-    height: 80px;
-  }
-
-  .container {
-    background-size: contain; /* Điều chỉnh kích thước ảnh nền trên màn hình nhỏ hơn */
+  .title-box::before,
+  .title-box::after {
+    display: none;
   }
 }
 </style>

@@ -1,7 +1,7 @@
 <template>
   <header>
     <nav class="navbar">
-      <div class="brand" style="font-size:x-large">TechAssess</div>
+      <div><h3>Tech Assess</h3></div>
       <ul class="nav-links">
         <li><a :class="{ active: activeLink === 'home' }" @click="setActive('home')">Trang chủ</a></li>
         <li><a :class="{ active: activeLink === 'assessment' }" @click="setActive('assessment')">Trang đánh giá</a></li>

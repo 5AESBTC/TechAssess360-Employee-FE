@@ -31,7 +31,7 @@
       <tbody>
         <tr v-for="(project, index) in paginatedProjects" :key="project.id">
           <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
-          <td @click="viewProjectDetails(project)">{{ project.name }}</td>
+          <td @click="viewProjectDetails(project)" class="project-name">{{ project.name }}</td>
           <td>{{ project.members }}</td>
           <td>{{ project.department }}</td>
           <td>
@@ -383,6 +383,17 @@ export default {
     .project-table tr:nth-child(even) {
     background-color: #f2f2f2;
     }
+    .project-table td.project-name {
+  font-weight: bold;
+  transition: color 0.3s ease, background-color 0.3s ease; /* Smooth transition */
+}
+
+.project-table td.project-name:hover {
+  color: #007bff; /* Change text color on hover */
+  background-color: #f0f8ff; /* Add background color on hover */
+  cursor: pointer; /* Change cursor to pointer to indicate clickability */
+}
+
 
     .pagination-btn {
     margin: 10px 10px;

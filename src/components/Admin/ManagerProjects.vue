@@ -1,12 +1,6 @@
 <template>
   <div class="container">
-    <!-- Top Bar with Add Button and Search Bar -->
     <div class="top-bar">
-      <!-- Add Project Button -->
-      <button class="add-btn">
-        <i class="fas fa-plus"></i>
-      </button> 
-
       <!-- Search Bar -->
       <input 
         type="text" 
@@ -20,9 +14,11 @@
     <table class="project-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th><button class="add-btn">
+        <i class="fas fa-plus"></i>
+      </button></th>
           <th @click="sort('name')">Dự án</th>
-          <th @click="sort('members')">Số lượng thành viên</th>
+          <th>Số lượng thành viên</th>
           <th @click="sort('department')">Bộ phận</th>
           <th>Chỉnh sửa</th>
           <th>Xóa</th>
@@ -32,7 +28,7 @@
         <tr v-for="(project, index) in paginatedProjects" :key="project.id">
           <td>{{ (currentPage - 1) * pageSize + index + 1 }}</td>
           <td @click="viewProjectDetails(project)" class="project-name">{{ project.name }}</td>
-          <td>{{ project.members }}</td>
+          <td>{{ project.details.length }}</td>
           <td>{{ project.department }}</td>
           <td>
             <button class="icon-btn">
@@ -66,85 +62,67 @@
         Sau <i class="fas fa-arrow-right"></i>
       </button>
     </div>
-<div v-if="selectedProject" class="project-details">
-  <h2>Chi tiết dự án {{ selectedProject.name }}</h2> <!-- Dynamic title here -->
 
-  <!-- Container for Search Bar and Detail Table -->
-  <div class="details-container">
-    <div class="detail-header">
-      <!-- Add Button -->
-      <button class="add-btn2">
-        <i class="fas fa-plus"></i>
-      </button>
+    <!-- Project Details -->
+    <div v-if="selectedProject" class="project-details">
+     
 
-      <!-- Search Bar for Details -->
-      <input 
-        type="text" 
-        v-model="detailSearchQuery" 
-        placeholder="Tìm kiếm chi tiết..." 
-        class="search-bar detail-search-bar"
-      />
+      <!-- Container for Search Bar and Detail Table -->
+      <div class="details-container">
+        <div class="detail-header">
+         <h2 class="project-details-title">Chi tiết dự án {{ selectedProject.name }}</h2>
+          <input
+            type="text"
+            v-model="detailSearchQuery"
+            placeholder="Tìm kiếm chi tiết..."
+            class="search-bar detail-search-bar"
+          />
+        </div>
+
+        <!-- Detail Table -->
+        
+        <div class="detail-table-container">
+          <table class="detail-table">
+            <thead>
+              <tr>
+                <th> <button class="add-btn2">
+            <i class="fas fa-plus"></i>
+          </button></th>
+                <th>Avatar</th>
+                <th @click="sortDetail('nameNV')">Tên NV</th>
+                <th @click="sortDetail('department')">Bộ phận</th>
+                <th @click="sortDetail('position')">Chức vụ</th>
+                <th>Chi tiết</th>
+                <th>Xóa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(detail, index) in filteredDetails" :key="index">
+                <td>{{ index + 1 }}</td>
+                <td><img :src="detail.avatar" alt="Avatar" class="avatar-img" /></td>
+                <td>{{ detail.nameNV }}</td>
+                <td>{{ detail.department }}</td>
+                <td>{{ detail.position }}</td>
+                <td>
+                  <button class="icon-btn">
+                    <i class="fas fa-info-circle"></i>
+                  </button>
+                </td>
+                <td>
+                  <button class="icon-btn">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <button @click="closeProjectDetails" class="close-btn">Đóng</button>
+      </div>
     </div>
-
-    <!-- Detail Table -->
-    <table class="detail-table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Avatar</th>
-          <th @click="sortDetail('nameNV')">Tên NV</th>
-          <th @click="sortDetail('department')">Bộ phận</th>
-          <th @click="sortDetail('position')">Chức vụ</th>
-          <th>Chi tiết</th>
-          <th>Xóa</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(detail, index) in paginatedDetails" :key="index">
-          <td>{{ index + 1 }}</td>
-          <td><img :src="detail.avatar" alt="Avatar" class="avatar-img"/></td>
-          <td>{{ detail.nameNV }}</td>
-          <td>{{ detail.department }}</td>
-          <td>{{ detail.position }}</td>
-          <td>
-            <button class="icon-btn">
-              <i class="fas fa-info-circle"></i>
-            </button>
-          </td>
-          <td>
-            <button class="icon-btn">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-
-    <!-- Pagination for Details -->
-    <div class="pagination">
-      <button 
-        @click="prevDetailPage" 
-        :disabled="detailCurrentPage === 1" 
-        class="pagination-btn"
-      >
-        <i class="fas fa-arrow-left"></i> Trước
-      </button>
-      <span>Trang {{ detailCurrentPage }} / {{ detailTotalPages }}</span>
-      <button 
-        @click="nextDetailPage" 
-        :disabled="detailCurrentPage === detailTotalPages" 
-        class="pagination-btn"
-      >
-        Sau <i class="fas fa-arrow-right"></i>
-      </button>
-    </div>
-
-    <button @click="closeProjectDetails" class="close-btn">Đóng</button>
-  </div>
-</div>
-
   </div>
 </template>
+
 <script>
 export default {
   data() {
@@ -152,9 +130,7 @@ export default {
       searchQuery: "",
       detailSearchQuery: "",
       currentPage: 1,
-      detailCurrentPage: 1,
-      pageSize: 4,
-      detailPageSize: 4,
+      pageSize: 3,
       sortField: "name",
       sortDirection: 1,
       sortDetailField: "nameNV",
@@ -163,9 +139,10 @@ export default {
         {
           id: 1, 
           name: "ABC", 
-          members: 5, 
           department: "Kinh Doanh",
           details: [
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
             { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
             { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" }
           ]
@@ -173,14 +150,31 @@ export default {
         {
           id: 2, 
           name: "TechSign", 
-          members: 10, 
           department: "Phát Triển",
           details: [
             { nameNV: "Lê Thị B", department: "Phát Triển", position: "Developer", avatar: "path/to/avatar3.jpg" },
-            { nameNV: "Trần Văn C", department: "Phát Triển", position: "Tester", avatar: "path/to/avatar4.jpg" }
+            { nameNV: "Trần Văn C", department: "Phát Triển", position: "Tester", avatar: "path/to/avatar4.jpg" },
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
           ]
         },
-        // Add more projects with their specific details
+       {
+          id: 3, 
+          name: "TechAssess", 
+          department: "Kinh Doanh",
+          details: [
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" },
+            { nameNV: "Trịnh Thái Quân", department: "Kinh Doanh", position: "Manager", avatar: "path/to/avatar1.jpg" },
+            { nameNV: "Nguyễn Văn A", department: "Kinh Doanh", position: "Sales", avatar: "path/to/avatar2.jpg" }
+          ]
+        },
       ],
       selectedProject: null,
       selectedProjectDetails: []
@@ -192,7 +186,6 @@ export default {
         const lowerCaseQuery = this.searchQuery.toLowerCase();
         return (
           project.name.toLowerCase().includes(lowerCaseQuery) ||
-          project.members.toString().includes(lowerCaseQuery) ||
           project.department.toLowerCase().includes(lowerCaseQuery)
         );
       });
@@ -229,19 +222,11 @@ export default {
 
       return filtered;
     },
-    paginatedDetails() {
-      const start = (this.detailCurrentPage - 1) * this.detailPageSize;
-      const end = start + this.detailPageSize;
-      return this.filteredDetails.slice(start, end);
-    },
-    detailTotalPages() {
-      return Math.ceil(this.filteredDetails.length / this.detailPageSize);
-    }
   },
   methods: {
     sort(field) {
       if (this.sortField === field) {
-        this.sortDirection *= -1;
+        this.sortDirection = -this.sortDirection;
       } else {
         this.sortField = field;
         this.sortDirection = 1;
@@ -249,11 +234,18 @@ export default {
     },
     sortDetail(field) {
       if (this.sortDetailField === field) {
-        this.sortDetailDirection *= -1;
+        this.sortDetailDirection = -this.sortDetailDirection;
       } else {
         this.sortDetailField = field;
         this.sortDetailDirection = 1;
       }
+    },
+    viewProjectDetails(project) {
+      this.selectedProject = project;
+      this.selectedProjectDetails = project.details;
+    },
+    closeProjectDetails() {
+      this.selectedProject = null;
     },
     prevPage() {
       if (this.currentPage > 1) {
@@ -265,28 +257,9 @@ export default {
         this.currentPage++;
       }
     },
-    prevDetailPage() {
-      if (this.detailCurrentPage > 1) {
-        this.detailCurrentPage--;
-      }
-    },
-    nextDetailPage() {
-      if (this.detailCurrentPage < this.detailTotalPages) {
-        this.detailCurrentPage++;
-      }
-    },
-    viewProjectDetails(project) {
-      this.selectedProject = project;
-      this.selectedProjectDetails = project.details; // Use project-specific details
-    },
-    closeProjectDetails() {
-      this.selectedProject = null;
-      this.selectedProjectDetails = [];
-    }
-  }
+  },
 };
 </script>
-
 
     <style scoped>
     .container {
@@ -302,7 +275,7 @@ export default {
     margin-bottom: 20px;
     }
     .add-btn {
-    background-color: #007bff;
+    background-color: #17a2b8;
     color: white;
     border: none;
     border-radius: 50%;
@@ -315,6 +288,7 @@ export default {
     cursor: pointer;
     transition: background-color 0.3s ease;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    margin: 0 auto;
     }
 
     .add-btn:hover {
@@ -351,7 +325,7 @@ export default {
     }
 
 
-    .project-table,.detail-table {
+    .project-table {
     border-collapse: separate;
     border-spacing: 0;
     width: 80%;
@@ -363,16 +337,18 @@ export default {
     }
 
     .project-table th,
-    .project-table td,.detail-table th ,.detail-table td {
+    .project-table td {
     padding: 16px;
     border-bottom: 1px solid #f0f0f0;
     text-align: center;
     }
 
-    .project-table th ,.detail-table th {
+    .project-table th  {
     background-color: #007bff;
-    color: white;
-    font-weight: 500;
+   color: white;
+  font-weight: 600;
+  font-size: 18px; 
+  text-transform: uppercase; 
     cursor: pointer;
     }
 
@@ -385,13 +361,13 @@ export default {
     }
     .project-table td.project-name {
   font-weight: bold;
-  transition: color 0.3s ease, background-color 0.3s ease; /* Smooth transition */
+  transition: color 0.3s ease, background-color 0.3s ease; 
 }
 
 .project-table td.project-name:hover {
-  color: #007bff; /* Change text color on hover */
-  background-color: #f0f8ff; /* Add background color on hover */
-  cursor: pointer; /* Change cursor to pointer to indicate clickability */
+  color: #007bff; 
+  background-color: #f0f8ff; 
+  cursor: pointer; 
 }
 
 
@@ -405,6 +381,7 @@ export default {
     cursor: pointer;
     transition: background-color 0.3s ease;
     box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
     }
 
     .pagination-btn:hover {
@@ -429,47 +406,121 @@ export default {
     button, .search-bar {
     transition: box-shadow 0.2s ease, background-color 0.2s ease;
     }
-    .details-table {
-    width: 80%;
-    margin-top: 20px;
-    border-collapse: collapse;
-    background-color: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
-    }
 
-    .details-table th,
-    .details-table td {
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    text-align: left;
-    }
+  .detail-table {
+  border-collapse: collapse;
+  width: 100%;
+  max-width: 100%;
+  background-color: #f8f9fa; 
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1); 
+}
 
-    .details-table th {
-    background-color: #007bff;
-    color: white;
-    font-weight: 500;
-    }
+.detail-table thead {
+  position: sticky;
+  position: -webkit-sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #17a2b8; 
+}
 
-    .details-table tr:nth-child(even) {
-    background-color: #f2f2f2;
-    }
+.detail-table-container {
+  max-height: 250px;
+  overflow-y: auto;
+  width: 100%;
+  margin: 0 auto;
+   position: relative;
+    scroll-behavior: smooth;
+    scrollbar-width: thin; 
+  scrollbar-color: #888 #f1f1f1; 
+}
 
-   
-.project-details {
-  width: 80%;
+.details-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+   max-width: 1200px; 
+  margin: 0 auto;
   padding: 20px;
-  background-color: #fff;
-  border: 1px solid #ddd;
-  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  box-sizing: border-box;
+}
+
+.detail-header {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-bottom: 10px;
+}
+.detail-table-container::-webkit-scrollbar {
+  display: none; 
+}
+
+.detail-table th,
+.detail-table td {
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+}
+
+.detail-table td {
+  font-size: 16px;
+}
+.detail-table tr {
+  display: table;
+  width: 100%;
+  table-layout: fixed; 
+}
+.detail-table tr:hover {
+  background-color: #e9ecef;
+}
+
+.detail-table tr:nth-child(even) {
+  background-color: #f1f3f5;
+}
+.detail-table th,
+.detail-table td {
+  padding: 20px; 
+  border-bottom: 1px solid #f0f0f0;
+  text-align: center;
+}
+.detail-table th {
+  background-color: #17a2b8; 
+  color: white;
+  font-weight: 600;
+  font-size: 18px; 
+  text-transform: uppercase; 
+  cursor: pointer;
+}
+
+.detail-table td {
+  padding: 16px;
+  border-bottom: 1px solid #dee2e6;
+  text-align: center;
+  font-size: 16px; 
+}
+
+.detail-table tr:hover {
+  background-color: #e9ecef; 
+}
+
+.detail-table tr:nth-child(even) {
+  background-color: #f1f3f5; 
+}
+
+.avatar-img {
+  width: 50px; 
+  height: 50px;
+  border-radius: 50%;
 }
 
 .close-btn {
   background-color: #dc3545;
   color: white;
   border: none;
-  padding: 8px 16px;
+   margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
   transition: background-color 0.3s ease;
@@ -488,35 +539,6 @@ export default {
   margin-bottom: 10px;
   align-self: flex-end;
 }
-.details-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 80%;
-  margin: 0 auto; /* Center container horizontally */
-  padding: 20px; /* Ensure proper padding */
-  box-sizing: border-box; /* Include padding in width calculation */
-}
-
-.detail-header {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 10px;
-}
-
-.detail-table {
-  border-collapse: collapse;
-  width: 100%;
-  max-width: 100%;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
-  margin: 0 auto; /* Center the table horizontally */
-}
-
-
 .add-btn2 {
   background-color: #007bff;
   color: white;
@@ -531,6 +553,7 @@ export default {
   cursor: pointer;
   transition: background-color 0.3s ease;
   box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+  margin: 0 auto;
 }
 
 .add-btn2:hover {
@@ -539,7 +562,7 @@ export default {
 }
 
 .detail-search-bar {
-  width: 250px; /* Adjust width as needed */
+  width: 250px; 
   padding: 12px;
   border-radius: 25px;
   border: 1px solid #ddd;
@@ -550,5 +573,11 @@ export default {
 
 .detail-search-bar:focus {
   border-color: #007bff;
+}
+.project-details-title {
+
+}
+.project-details{
+margin-top:-10px;
 }
 </style>

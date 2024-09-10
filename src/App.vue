@@ -1,16 +1,18 @@
 <template>
   <div id="app">
-    <HomePage />
+    <ManagerProjects />
   </div>
 </template>
 
 <script>
-import HomePage from './components/HomePage.vue';
+import ManagerProjects from './components/Admin/ManagerProjects.vue';
+import '@fortawesome/fontawesome-free/css/all.css';
+import '@fortawesome/fontawesome-free/js/all.js';
 
 export default {
   name: 'App',
   components: {
-    HomePage
+    ManagerProjects
   }
 };
 </script>

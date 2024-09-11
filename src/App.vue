@@ -1,17 +1,14 @@
 <template>
   <div id="app">
-    <AssessPage />
+    <router-view />
   </div>
 </template>
 
 <script>
-import AssessPage from './components/AssessPage.vue';
-// import HomePage from './components/HomePage.vue';
 
 export default {
   name: 'App',
   components: {
-    AssessPage
   }
 };
 </script>

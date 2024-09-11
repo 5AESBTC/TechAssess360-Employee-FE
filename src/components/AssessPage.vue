@@ -104,6 +104,7 @@
 
 <script>
 export default {
+  name: 'AssessPage',
   data() {
     return {
       questions: [

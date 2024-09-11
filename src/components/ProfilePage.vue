@@ -61,6 +61,7 @@
 
 <script>
 export default {
+  name: 'ProfilePage',
   data() {
     return {
       profileImage: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",

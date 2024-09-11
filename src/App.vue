@@ -5,23 +5,28 @@
     <meta name="description" content="">
     <meta name="author" content="">
   </head>
+  <div>
+    <HeaderComponent/>
+  </div>
   <div id="app">
     <AssessPage />
+  </div>
+  <div>
+    <FooterComponent/>
   </div>
 </template>
 
 <script>
-<<<<<<< HEAD
 import AssessPage from './components/AssessPage.vue';
-// import HomePage from './components/HomePage.vue';
-=======
-import HomePage from './components/KetQuaDanhGia.vue';
->>>>>>> feature/23-132
+import FooterComponent from './components/FooterComponent.vue';
+import HeaderComponent from './components/HeaderComponent.vue';
 
 export default {
   name: 'App',
   components: {
-    AssessPage
+    AssessPage,
+    HeaderComponent,
+    FooterComponent
   }
 };
 </script>

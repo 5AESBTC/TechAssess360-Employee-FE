@@ -9,7 +9,7 @@
         <li><a :class="{ active: activeLink === 'result' }" @click="setActive('result')">Kết quả đánh giá</a></li>
         <li><a :class="{ active: activeLink === 'account' }" @click="setActive('account')">Tài khoản ▾</a>
           <ul class="dropdown">
-            <li><a @click="activateAccountTab">Thông tin chi tiết</a></li>
+            <li><a @click="activateAccountTab">Chi tiết</a></li>
             <li><a>Đăng xuất</a></li>
           </ul>
         </li>
@@ -47,6 +47,7 @@ export default {
   align-items: center;
   padding: 4px 10px;
   margin: 0 5em;
+  padding-top: 10px;
 }
 
 .nav-links {
@@ -58,13 +59,40 @@ export default {
   position: relative;
 }
 .nav-links li a {
-  color: rgb(157, 150, 150);
+  margin-right: 10px;
+  font-weight: bold;
+  color: rgb(128, 123, 123);
   text-decoration: none;
+  padding: 5px 15px;
+  display: inline-block;
+  position: relative;
 }
+
+.nav-links li a::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid transparent;
+  transition: border-color 0.3s;
+  border-radius: 20px;
+}
+
+.nav-links li a:hover::before,
+.nav-links li a:active::before,
+.nav-links li a.active::before {
+  border-color: rgb(218, 210, 210);
+  background-color: rgba(143, 156, 228, 0.5); /* Đỏ với độ trong suốt 50% */
+  border-radius: 20px;
+}
+
 .nav-links li a.active {
-  color: #3ca0e7;
+  color: #198ada;
   font-weight: bold;
 }
+
 .nav-links li:hover > ul,
 .nav-links li ul:hover {
   visibility: visible;
@@ -73,9 +101,10 @@ export default {
   min-width: 250px;
   text-align: left;
   padding-top: 20px;
-  box-shadow: 0px 3px 5px -1px #bbbbbb;
+  box-shadow: 0px 3px 5px -1px #373535;
   border-radius: 20px;
 }
+
 .nav-links li ul {
   visibility: hidden;
   opacity: 0;
@@ -84,12 +113,14 @@ export default {
   display: none;
   background: white;
 }
+
 .nav-links li ul li {
   width: 70%;
   list-style: none;
   text-decoration: none;
   padding-bottom: 10px;
 }
+
 .nav-links li ul li a:hover {
   padding-left: 10px;
   border-left: 2px solid #3ca0e7;

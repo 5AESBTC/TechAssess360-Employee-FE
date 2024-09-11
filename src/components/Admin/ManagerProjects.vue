@@ -14,14 +14,15 @@
     <table class="project-table">
       <thead>
         <tr>
-          <th><button class="add-btn">
-        <i class="fas fa-plus"></i>
-      </button></th>
+          <th>
+            <button class="add-btn">
+              Thêm dự án
+             </button>
+          </th>
           <th @click="sort('name')">Dự án</th>
           <th>Số lượng thành viên</th>
           <th @click="sort('department')">Bộ phận</th>
-          <th>Chỉnh sửa</th>
-          <th>Xóa</th>
+          <th>Tác vụ</th>
         </tr>
       </thead>
       <tbody>
@@ -30,16 +31,23 @@
           <td @click="viewProjectDetails(project)" class="project-name">{{ project.name }}</td>
           <td>{{ project.details.length }}</td>
           <td>{{ project.department }}</td>
-          <td>
-            <button class="icon-btn">
-              <i class="fas fa-edit"></i>
-            </button>
-          </td>
-          <td>
-            <button class="icon-btn">
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
+         
+ <td>
+  <div class="menu-container">
+    <button class="menu-btn" @click="toggleMenu('project', project)">
+      <i class="fa-solid fa-ellipsis-vertical"></i>
+    </button>
+    <div v-if="activeMenu === 'project' && activeProject === project" class="menu-dropdown show">
+      <button class="menu-item">
+        <i class="fas fa-edit"></i> 
+      </button>
+      <button class="menu-item">
+        <i class="fas fa-trash"></i> 
+      </button>
+    </div>
+  </div>
+</td>
+
         </tr>
       </tbody>
     </table>
@@ -63,14 +71,14 @@
       </button>
     </div>
 
-    <!-- Project Details -->
-    <div v-if="selectedProject" class="project-details">
-     
-
-      <!-- Container for Search Bar and Detail Table -->
-      <div class="details-container">
+    <!-- Project Details Modal -->
+    <div v-if="selectedProject" class="modal-overlay" @click.self="closeProjectDetails">
+      <div class="modal-container">
+        <button @click="closeProjectDetails" class="close-btn">
+          <i class="fas fa-times"></i>
+        </button>
+        <h2 class="project-details-title">Chi tiết dự án {{ selectedProject.name }}</h2>
         <div class="detail-header">
-         <h2 class="project-details-title">Chi tiết dự án {{ selectedProject.name }}</h2>
           <input
             type="text"
             v-model="detailSearchQuery"
@@ -80,20 +88,20 @@
         </div>
 
         <!-- Detail Table -->
-        
         <div class="detail-table-container">
           <table class="detail-table">
             <thead>
               <tr>
-                <th> <button class="add-btn2">
-            <i class="fas fa-plus"></i>
-          </button></th>
+                <th>
+                  <button class="add-btn2">
+                    Thêm thành viên
+                  </button>
+                </th>
                 <th>Avatar</th>
                 <th @click="sortDetail('nameNV')">Tên NV</th>
                 <th @click="sortDetail('department')">Bộ phận</th>
                 <th @click="sortDetail('position')">Chức vụ</th>
-                <th>Chi tiết</th>
-                <th>Xóa</th>
+                <th>Tác vụ</th>
               </tr>
             </thead>
             <tbody>
@@ -104,25 +112,29 @@
                 <td>{{ detail.department }}</td>
                 <td>{{ detail.position }}</td>
                 <td>
-                  <button class="icon-btn">
-                    <i class="fas fa-info-circle"></i>
+                <div class="menu-container">
+                  <button class="menu-btn" @click="toggleMenu('detail', detail)">
+                    <i class="fa-solid fa-ellipsis-vertical"></i>
                   </button>
+                  <div v-if="activeMenu === 'detail' && activeDetail === detail" class="menu-dropdown show">
+                    <button class="menu-item">
+                      <i class="fas fa-info-circle"></i> 
+                    </button>
+                    <button class="menu-item" >
+                      <i class="fas fa-trash"></i> 
+                    </button>
+                  </div>
+                  </div>
                 </td>
-                <td>
-                  <button class="icon-btn">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                </td>
+
               </tr>
             </tbody>
           </table>
         </div>
-        <button @click="closeProjectDetails" class="close-btn">Đóng</button>
       </div>
     </div>
   </div>
 </template>
-
 <script>
 export default {
   data() {
@@ -130,11 +142,14 @@ export default {
       searchQuery: "",
       detailSearchQuery: "",
       currentPage: 1,
-      pageSize: 3,
+      pageSize: 5,
       sortField: "name",
       sortDirection: 1,
       sortDetailField: "nameNV",
       sortDetailDirection: 1,
+      activeMenu: null,
+      activeProject: null,
+      activeDetail: null,
       projects: [
         {
           id: 1, 
@@ -191,42 +206,42 @@ export default {
       });
 
       filtered.sort((a, b) => {
-        return this.sortDirection * a[this.sortField].toString().localeCompare(b[this.sortField].toString());
+        return this.sortDirection * a[this.sortField].toLowerCase().localeCompare(b[this.sortField].toLowerCase());
       });
 
       return filtered;
     },
     paginatedProjects() {
       const start = (this.currentPage - 1) * this.pageSize;
-      const end = start + this.pageSize;
-      return this.filteredProjects.slice(start, end);
+      return this.filteredProjects.slice(start, start + this.pageSize);
     },
     totalPages() {
       return Math.ceil(this.filteredProjects.length / this.pageSize);
     },
     filteredDetails() {
-      if (!this.selectedProject) return [];
+      if (this.selectedProject) {
+        let details = this.selectedProject.details.filter((detail) => {
+          const lowerCaseQuery = this.detailSearchQuery.toLowerCase();
+          return (
+            detail.nameNV.toLowerCase().includes(lowerCaseQuery) ||
+            detail.department.toLowerCase().includes(lowerCaseQuery) ||
+            detail.position.toLowerCase().includes(lowerCaseQuery)
+          );
+        });
 
-      let filtered = this.selectedProjectDetails.filter((detail) => {
-        const lowerCaseQuery = this.detailSearchQuery.toLowerCase();
-        return (
-          detail.nameNV.toLowerCase().includes(lowerCaseQuery) ||
-          detail.department.toLowerCase().includes(lowerCaseQuery) ||
-          detail.position.toLowerCase().includes(lowerCaseQuery)
-        );
-      });
+        details.sort((a, b) => {
+          return this.sortDetailDirection * a[this.sortDetailField].toLowerCase().localeCompare(b[this.sortDetailField].toLowerCase());
+        });
 
-      filtered.sort((a, b) => {
-        return this.sortDetailDirection * a[this.sortDetailField].toString().localeCompare(b[this.sortDetailField].toString());
-      });
-
-      return filtered;
+        return details;
+      }
+      return [];
     },
   },
   methods: {
     sort(field) {
       if (this.sortField === field) {
-        this.sortDirection = -this.sortDirection;
+        this.sortDirection *= -1;
       } else {
         this.sortField = field;
         this.sortDirection = 1;
@@ -234,7 +249,7 @@ export default {
     },
     sortDetail(field) {
       if (this.sortDetailField === field) {
-        this.sortDetailDirection = -this.sortDetailDirection;
+        this.sortDetailDirection *= -1;
       } else {
         this.sortDetailField = field;
         this.sortDetailDirection = 1;
@@ -246,42 +261,133 @@ export default {
     },
     closeProjectDetails() {
       this.selectedProject = null;
+      this.selectedProjectDetails = [];
+    },
+    toggleMenu(type, item) {
+      if (type === 'project') {
+        if (this.activeProject === item) {
+          this.activeProject = null; // Close the menu if clicked again
+        } else {
+          this.activeProject = item;
+          this.activeMenu = 'project';
+          this.activeDetail = null; // Close detail menu if open
+        }
+      } else if (type === 'detail') {
+        if (this.activeDetail === item) {
+          this.activeDetail = null; // Close the menu if clicked again
+        } else {
+          this.activeDetail = item;
+          this.activeMenu = 'detail';
+          this.activeProject = null; // Close project menu if open
+        }
+      }
     },
     prevPage() {
       if (this.currentPage > 1) {
-        this.currentPage--;
+        this.currentPage -= 1;
       }
     },
     nextPage() {
       if (this.currentPage < this.totalPages) {
-        this.currentPage++;
+        this.currentPage += 1;
       }
     },
   },
 };
-</script>
 
+</script>
     <style scoped>
     .container {
     display: flex;
     flex-direction: column;
     align-items: center;
+    
     }
+.menu-container {
+  position: relative;
+}
+
+.menu-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: #007bff; /* Màu nút */
+  z-index: 1;
+  transition: color 0.3s ease;
+}
+
+.menu-btn:hover {
+  color: #0056b3; /* Màu nút khi hover */
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: -110%;
+  left: 60%; 
+  display: none;
+  z-index: 2;
+  padding: 5px;
+  min-width: 50px;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 0; 
+  transform: translateY(-10px); 
+}
+
+
+.menu-dropdown.show {
+  display: block;
+  opacity: 1; 
+  transform: translateY(0); 
+}
+
+.menu-item {
+  padding: 10px 20px;
+  border: none;
+  background: #f8f9fa; 
+  cursor: pointer;
+  font-size: 14px;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 5px; 
+}
+
+.menu-item:hover {
+  background-color: #007bff; 
+  color: white; 
+}
+
+.menu-item i {
+  margin-right: 8px;
+}
+
+.project-table td {
+  position: relative; /* Ensure it contains the dropdown menu */
+  padding: 16px; /* Adjust padding to ensure alignment */
+  height:40px;
+}
+
+.project-table td .menu-container {
+  margin: 0 auto; /* Center align if necessary */
+}
+
 
     .top-bar {
     display: flex;
-    justify-content: space-between;
-    width: 80%;
+    justify-content: flex-start;
+    width: 90%;
     margin-bottom: 20px;
     }
     .add-btn {
     background-color: #17a2b8;
     color: white;
     border: none;
-    border-radius: 50%;
-    width: 50px;
+    border-radius: 1rem;
+    width: 150px;
     height: 50px;
-    font-size: 24px;
+    font-size: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -311,7 +417,7 @@ export default {
     }
 
     .search-bar {
-    padding: 12px;
+    padding: 20px;
     width: 350px;
     border-radius: 25px;
     border: 1px solid #ddd;
@@ -328,12 +434,14 @@ export default {
     .project-table {
     border-collapse: separate;
     border-spacing: 0;
-    width: 80%;
+    width: 90%;
+    max-height:1000vh;
     text-align: left;
     background-color: white;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.05);
+    position: relative;
     }
 
     .project-table th,
@@ -351,7 +459,6 @@ export default {
   text-transform: uppercase; 
     cursor: pointer;
     }
-
     .project-table tr:hover {
     background-color: #f9f9f9;
     }
@@ -426,7 +533,7 @@ export default {
 }
 
 .detail-table-container {
-  max-height: 250px;
+  max-height: 400px;
   overflow-y: auto;
   width: 100%;
   margin: 0 auto;
@@ -434,6 +541,7 @@ export default {
     scroll-behavior: smooth;
     scrollbar-width: thin; 
   scrollbar-color: #888 #f1f1f1; 
+  
 }
 
 .details-container {
@@ -498,6 +606,7 @@ export default {
   border-bottom: 1px solid #dee2e6;
   text-align: center;
   font-size: 16px; 
+  height:40px;
 }
 
 .detail-table tr:hover {
@@ -514,39 +623,77 @@ export default {
   border-radius: 50%;
 }
 
+/* Modal Overlay */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Container */
+.modal-container {
+  background-color: #fff;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 1200px;
+  padding: 20px;
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: auto;
+}
+
 .close-btn {
   background-color: #dc3545;
   color: white;
   border: none;
-   margin-top: 20px;
-  padding: 12px 24px;
-  font-size: 16px;
-  border-radius: 5px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   cursor: pointer;
   transition: background-color 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 .close-btn:hover {
   background-color: #c82333;
 }
 
+.close-btn i {
+  font-size: 20px;
+}
 .avatar-img {
   width: 50px;
   height: 50px;
   border-radius: 50%;
 }
 .detail-search-bar {
-  margin-bottom: 10px;
-  align-self: flex-end;
+
+  margin-top: 50px;
+  width: calc(100% - 50px); /* Ensure it fits well */
+  padding: 8px;
+
 }
 .add-btn2 {
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 50%;
-  width: 50px;
+  border-radius:1rem;
+  width: 150px;
   height: 50px;
-  font-size: 24px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -575,9 +722,13 @@ export default {
   border-color: #007bff;
 }
 .project-details-title {
-
+margin-bottom:-30px;
 }
 .project-details{
-margin-top:-10px;
+  margin-top: -10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  width: 100%;
 }
 </style>

@@ -98,7 +98,7 @@
 import RadarChart from './RadarChart.vue';
 
 export default {
-  name: 'HomePage',
+  name: 'AssessResult',
   components: {
     RadarChart
   },

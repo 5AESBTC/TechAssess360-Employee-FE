@@ -122,7 +122,6 @@ export default {
 <style scoped>
 
 .background-container {
-    margin-top:-50px;
   background-color: #4e7fcf;
   min-height: 100vh; 
   display: flex;

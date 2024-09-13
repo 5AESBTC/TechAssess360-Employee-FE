@@ -216,6 +216,9 @@ img {
 .content {
   padding-left: 40px;
 }
+.content > p {
+  color: black;
+}
 
 form {
   padding: 20px;

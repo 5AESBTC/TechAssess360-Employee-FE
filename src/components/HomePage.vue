@@ -57,11 +57,9 @@ export default {
 </script>
 <style scoped>
 .background-container {
-  margin-top:-55px;
   background-color: #4e7fcf;
   height: 100%; 
   padding: 70px; 
-
 }
 .container {
   display: flex;
@@ -69,7 +67,7 @@ export default {
   align-items: center;
   justify-content: center;
   height: 700px;
-  weight:500px;
+  height:500px;
   background-color: #f7f7f7;
   padding: 20px; /* Padding để tạo khoảng cách bên trong container */
   border-radius: 12px; /* Viền góc cho container */

@@ -57,10 +57,10 @@ export default {
 </script>
 <style scoped>
 .background-container {
-  margin-top:-55px;
+
   background-color: #4e7fcf;
-  height: 100%; 
-  padding: 70px; 
+  min-height: 100vh; 
+  padding: 70px;
 
 }
 .container {
@@ -69,39 +69,42 @@ export default {
   align-items: center;
   justify-content: center;
   height: 700px;
-  weight:500px;
   background-color: #f7f7f7;
-  padding: 20px; /* Padding để tạo khoảng cách bên trong container */
-  border-radius: 12px; /* Viền góc cho container */
-  box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2); /* Box-shadow nhẹ quanh toàn bộ container */
-  background-color: #fff; /* Nền trắng cho container */
+  padding: 20px; 
+  border-radius: 12px; 
+  box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2);
+  background-color: #fff;
+  margin-top: 27px;
 }
 .step-container {
   display: flex;
   justify-content: space-around;
   width: 70%;
-  margin-bottom: 20px; /* Giảm khoảng cách giữa step-container và title-container */
+  margin-bottom: 20px; 
 }
 
 .step {
   background-color: #ffffff;
   border-radius: 12px;
-  padding: 20px;
+  padding: 10px; 
   text-align: center;
-  width: 120px;
-  height: 150px; /* Đặt chiều cao để tạo không gian cho nội dung */
+  width: 200px;
+  height: auto;
   margin-right: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s, box-shadow 0.3s, background-color 0.3s;
   display: flex;
   flex-direction: column;
-  justify-content: center; /* Canh giữa theo chiều dọc */
-  align-items: center; /* Canh giữa theo chiều ngang */
+  justify-content: center;
+  align-items: center;
+  word-wrap: break-word; 
+  white-space: normal; 
+  margin-bottom: 30px;
 }
 
 
 .step.active {
-  transform: translateY(-25px);
+  transform:scale(1.1) translateY(-25px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   background-color: #3498db;
   color: #fff; 
@@ -113,10 +116,11 @@ export default {
 }
 
 .step-title {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: bold;
   margin-bottom: 8px;
   color: #333;
+  padding: 10px 20px;
 }
 
 .step-number {
@@ -127,8 +131,12 @@ export default {
 }
 
 .step-text {
-  font-size: 14px;
+  font-size: 16px;
   color: #666;
+  word-wrap: break-word;
+  white-space: normal;
+  text-align: center;
+  padding: 10px 20px;
 }
 
 /* Title container with border */

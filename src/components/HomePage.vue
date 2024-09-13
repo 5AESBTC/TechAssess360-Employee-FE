@@ -57,7 +57,7 @@ export default {
 </script>
 <style scoped>
 .background-container {
-  margin-top: -60px;
+
   background-color: #4e7fcf;
   min-height: 100vh; 
   padding: 70px;

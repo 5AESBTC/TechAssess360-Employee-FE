@@ -5,7 +5,7 @@
         <div class="info">
           <img src="https://picsum.photos/120/120" alt="profile" />
           <div class="details">
-           <div class="detail-item">
+            <div class="detail-item">
               <div class="label">Tên:</div>
               <div class="value">Trịnh Thái Quân</div>
             </div>
@@ -154,11 +154,16 @@ table {
   margin-top: 10px;
 }
 
-table th,
 table td {
-  padding: 12px;
+  padding: 7px;
   border: 1px solid #ddd;
-  text-align: center; /* Căn giữa các cột */
+  text-align: center;
+}
+
+table th {
+  padding: 10px;
+  border: 1px solid #ddd;
+  text-align: center;
 }
 
 .info {
@@ -168,13 +173,13 @@ table td {
 }
 
 .info img {
-  border-radius: 50%; 
+  border-radius: 50%;
   margin-right: 15px;
   margin-top: -10px;
 }
 
 .details {
-  padding-top:13px;
+  padding-top: 13px;
   display: flex;
   flex-direction: column;
 }
@@ -185,12 +190,14 @@ table td {
 }
 
 .label {
-  font-weight: bold; /* In đậm phần label */
+  font-weight: bold;
+  /* In đậm phần label */
   margin-right: 5px;
 }
 
 .value {
-  font-weight: normal; /* Phần giá trị không in đậm */
+  font-weight: normal;
+  /* Phần giá trị không in đậm */
 }
 
 .radar {
@@ -235,7 +242,8 @@ table td {
 
   table th,
   table td {
-    padding: 8px; /* Giảm padding cho màn hình nhỏ hơn */
+    padding: 8px;
+    /* Giảm padding cho màn hình nhỏ hơn */
   }
 
   .info img {
@@ -244,7 +252,8 @@ table td {
   }
 
   .container {
-    background-size: contain; /* Điều chỉnh kích thước ảnh nền trên màn hình nhỏ hơn */
+    background-size: contain;
+    /* Điều chỉnh kích thước ảnh nền trên màn hình nhỏ hơn */
   }
 }
 </style>

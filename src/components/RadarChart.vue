@@ -1,6 +1,12 @@
 <template>
   <div class="chart-container">
     <Radar :data="chartData" :options="chartOptions" />
+    <div class="chart-legend">
+      <div v-for="(item, index) in chartData.datasets" :key="index" class="legend-item">
+        <span class="legend-color" :style="{ backgroundColor: item.backgroundColor }"></span>
+        <span class="legend-label">{{ item.label }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -14,7 +20,7 @@ ChartJS.register(RadarController, RadialLinearScale, PointElement, LineElement, 
 export default {
   name: 'RadarChart',
   components: {
-    Radar 
+    Radar
   },
   props: {
     data: {
@@ -72,7 +78,44 @@ export default {
 
 <style scoped>
 .chart-container {
-  width: 680px; 
-  height: 600px; 
+  position: relative;
+  width: 680px;
+  height: 600px;
+}
+
+.chart-legend {
+  display: flex;
+  justify-content: center;
+  /* Center horizontally */
+  gap: 20px;
+  /* Space between legend items */
+  position: absolute;
+  bottom: 10px;
+  /* Position from the bottom of the chart */
+  left: 0;
+  width: 100%;
+  background: #fff;
+  /* Optional: background to separate legend from chart */
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+  /* Optional: shadow for better visibility */
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-color {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 10px;
+}
+
+.legend-label {
+  display: inline;
 }
 </style>

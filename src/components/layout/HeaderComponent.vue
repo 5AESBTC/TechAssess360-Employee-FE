@@ -11,48 +11,35 @@
   <header class="site-navbar">
     <div class="container-fluid">
       <div class="row align-items-center">
-        <div
-          class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar"
-        >
+        <div class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar">
           <h1 class="mb-0 site-logo">
             <img src="../../assets/Techzenlogo.png" alt="logo" />
           </h1>
           <div class="d-flex align-items-center">
+            <!-- <span class="ml-3 text-black font-weight-bold">Còn</span>
             <div class="countdown-timer" id="countdown">{{ countdown }}</div>
-            <span class="ml-3 text-black font-weight-bold"
-              >Thời gian đếm ngược chờ đánh giá</span
-            >
+            <span class="text-black font-weight-bold">để mở đánh giá</span> -->
+            <span class="ml-3 text-black font-weight-bold">Còn</span>
+            <div class="countdown-timer" id="countdown">{{ countdown }}</div>
+            <span class="text-black font-weight-bold">để đánh giá</span>
           </div>
         </div>
         <div class="col-6 d-none d-xl-block right-navbar">
-          <nav
-            class="site-navigation position-relative text-right"
-            role="navigation"
-          >
-            <ul
-              class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto"
-            >
-              <li
-                v-for="(item, index) in menuItems"
-                :key="index"
-                :class="{ active: activeIndex === index }"
-                @click="setActive(index)"
-              >
-                <a :href="item.link"
-                  ><span>{{ item.text }}</span></a
-                >
+          <nav class="site-navigation position-relative text-right" role="navigation">
+            <ul class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto">
+              <li v-for="(item, index) in menuItems" :key="index" :class="{ active: activeIndex === index }"
+                @click="setActive(index)">
+                <a :href="item.link"><span>{{ item.text }}</span></a>
               </li>
             </ul>
           </nav>
         </div>
       </div>
       <div class="d-xl-none ml-md-0 mr-auto py-3">
-        <a href="#" class="site-menu-toggle js-menu-toggle text-white"
-          ><span class="icon-menu h3"></span
-        ></a>
+        <a href="#" class="site-menu-toggle js-menu-toggle text-white"><span class="icon-menu h3"></span></a>
       </div>
     </div>
-    <div v-if="loading" class="loading-screen">Loading...</div>
+    <!-- <div v-if="loading" class="loading-screen">Loading...</div> -->
   </header>
 </template>
 
@@ -70,9 +57,9 @@ export default {
       menuItems: [
         { text: "Trang chủ", link: "/" },
         { text: "Đánh giá", link: "/assess-page" },
-        { text: "Quản lí thành viên", link: "/team-mate" },
+        { text: "Quản lí thành viên", link: "/team-manage" },
         { text: "Kết quả đánh giá", link: "/assess-result" },
-        { text: "Profile", link: "/profile" },
+        { text: "Thông tin cá nhân", link: "/profile" },
       ],
     };
   },
@@ -170,40 +157,52 @@ export default {
   font-weight: bold;
   color: #007bff;
 }
+
 .countdown-timer {
   font-size: 20px;
   font-weight: bold;
   color: #fff;
-  background-color: #007bff; /* Màu nền xanh */
-  border: 2px solid #0056b3; /* Viền xanh đậm */
-  border-radius: 5px; /* Bo góc */
-  padding: 10px; /* Khoảng cách bên trong */
-  margin-right: 20px; /* Khoảng cách giữa đếm ngược và logo */
+  background-color: #007bff;
+  /* Màu nền xanh */
+  border: 2px solid #0056b3;
+  /* Viền xanh đậm */
+  border-radius: 5px;
+  /* Bo góc */
+  padding: 10px;
+  /* Khoảng cách bên trong */
+  margin-right: 10px;
+  margin-left: 10px;
+  /* Khoảng cách giữa đếm ngược và logo */
 }
 
 .site-navbar {
-  background: rgba(
-    108,
-    117,
-    125,
-    0.5
-  ); /* bg-secondary màu mặc định là #6c757d */
-  backdrop-filter: blur(10px); /* Làm mờ nền */
-  border: 1px solid rgba(255, 255, 255, 0.2); /* Đường viền mờ */
-  padding: 20px;
-  color: white; /* Chữ màu trắng để dễ đọc trên nền mờ */
+  background: rgba(108,
+      117,
+      125,
+      0.5);
+  /* bg-secondary màu mặc định là #6c757d */
+  backdrop-filter: blur(10px);
+  /* Làm mờ nền */
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Đường viền mờ */
+  padding: 10px 10px;
+  color: white;
+  /* Chữ màu trắng để dễ đọc trên nền mờ */
   margin: 0;
 }
+
 img {
-  width: 100px;
-  height: 100px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
 }
+
 header {
-  position: fixed; /* Hoặc position: absolute; nếu cần */
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  z-index: 1000; /* Đảm bảo rằng header luôn ở trên cùng */
+  z-index: 1000;
+  /* Đảm bảo rằng header luôn ở trên cùng */
 }
 </style>

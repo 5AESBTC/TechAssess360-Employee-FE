@@ -4,7 +4,7 @@
     style="background-color: #23242a"
   >
     <!-- Grid container -->
-    <div class="container-fluid p-5 mt-5">
+    <div class="container-fluid p-5">
       <!--Grid row-->
       <div class="row mt-4">
         <!--Grid column-->

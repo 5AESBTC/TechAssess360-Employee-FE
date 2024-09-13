@@ -59,7 +59,7 @@ export default {
 .background-container {
   background-color: #4e7fcf;
   min-height: 100vh; 
-  padding: 70px;
+  padding: 150px;
 }
 .container {
   display: flex;
@@ -72,7 +72,6 @@ export default {
   border-radius: 12px; 
   box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2);
   background-color: #fff;
-  margin-top: 27px;
 }
 .step-container {
   display: flex;

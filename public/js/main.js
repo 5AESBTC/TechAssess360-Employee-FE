@@ -46,7 +46,6 @@ $(function () {
 				$this.addClass('active');
 			}
 			e.preventDefault();
-
 		});
 
 		$(window).resize(function () {

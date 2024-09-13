@@ -127,7 +127,8 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px; 
+  padding-top: 100px; 
+  
 }
 .container {
   display: flex;

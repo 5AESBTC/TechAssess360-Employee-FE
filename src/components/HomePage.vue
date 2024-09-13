@@ -1,5 +1,5 @@
 <template>
-  <div class="background-container">
+  <div class="background-container d-flex align-items-center">
     <div class="container">
       <div class="step-container">
         <div v-for="(step, index) in steps" :key="index" class="step" :style="{ backgroundColor: step.color }" :class="{ active: isActiveStep(index) }">
@@ -58,8 +58,7 @@ export default {
 <style scoped>
 .background-container {
   background-color: #4e7fcf;
-  height: 100%; 
-  padding: 70px; 
+  min-height: 100vh; 
 }
 .container {
   display: flex;

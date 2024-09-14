@@ -4,9 +4,12 @@ import AssessPage from '@/components/AssessPage.vue';
 import ProfilePage from '@/components/ProfilePage.vue';
 import AssessResult from '@/components/AssessResult.vue';
 import TeamManage from '@/components/TeamManage.vue';
+import Login from '../components/Login.vue'
 
 const routes = [
-    { path: '/', component: HomePage },
+    {path: '/', redirect: '/login'},
+    {path: '/login', component: Login},
+    { path: '/home-page', component: HomePage },
     { path: '/assess-page', component: AssessPage },
     { path: '/profile', component: ProfilePage },
     { path: '/assess-result', component: AssessResult },

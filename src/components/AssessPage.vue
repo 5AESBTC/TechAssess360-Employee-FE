@@ -15,7 +15,6 @@
             <strong>Vị trí:</strong> {{ profile.position }}
           </div>
           <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
-
           <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
         </div>
       </div>
@@ -48,35 +47,32 @@
         </table>
       </div>
     </div>
+
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
       <div class="evaluation-header text-start mb-2">
-        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho: {{ profile.name }}
-        </label>
+        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho: {{ profile.name }}</label>
       </div>
 
       <!-- Evaluation Form -->
       <form class="evaluation-form">
         <!-- Performance Evaluation -->
         <div class="section mb-4">
-          <h5>Hiệu suất Công việc </h5>
-          <div v-for="(
-              question, index
-            ) in performanceEvaluation.performanceQuestions" :key="index" class="question mb-3">
+          <h5>Hiệu suất Công việc</h5>
+          <div v-for="(question, index) in performanceEvaluation.performanceQuestions" :key="index" class="question mb-3">
             <div class="d-flex justify-content-between title">
               <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
             </div>
             <div class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
                 <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
+                  class="form-check-input" v-model="selectedPerformanceValues[index]" :value="option.value" />
                 <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedValues[index]) >= 100" class="form-control" rows="3"
-                placeholder="Nhận xét thêm"></textarea>
+              <textarea v-if="parseFloat(selectedPerformanceValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
             </div>
           </div>
         </div>
@@ -88,48 +84,42 @@
             <div class="d-flex justify-content-between title">
               <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
             </div>
-
             <div v-if="index === 2" class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="checkbox" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+                <input type="checkbox" :id="'skillsOption' + index + optIndex" :name="'skills' + index"
+                  class="form-check-input" v-model="selectedSkillsValues[index]" :value="option.value" />
+                <label :for="'skillsOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
-
             <div v-else class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+                <input type="radio" :id="'skillsOption' + index + optIndex" :name="'skills' + index"
+                  class="form-check-input" v-model="selectedSkillsValues[index]" :value="option.value" />
+                <label :for="'skillsOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
-
             <div class="description">
-              <textarea v-if="index === 2 && selectedValues[index] && selectedValues[index].length > 0"
-                class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea v-if="parseFloat(selectedSkillsValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
             </div>
           </div>
         </div>
 
-
         <!-- Attitude and Spirit -->
         <div class="section mb-4">
-          <h5>Tinh thần làm việc và Thái độ </h5>
+          <h5>Tinh thần làm việc và Thái độ</h5>
           <div v-for="(question, index) in performanceEvaluation.attitudeQuestions" :key="index" class="question mb-3">
             <div class="d-flex justify-content-between title">
               <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
             </div>
             <div class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+                <input type="radio" :id="'attitudeOption' + index + optIndex" :name="'attitude' + index"
+                  class="form-check-input" v-model="selectedAttitudeValues[index]" :value="option.value" />
+                <label :for="'attitudeOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedValues[index]) >= 100" class="form-control" rows="3"
-                placeholder="Nhận xét thêm"></textarea>
+              <textarea v-if="parseFloat(selectedAttitudeValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
             </div>
           </div>
         </div>
@@ -137,18 +127,16 @@
         <!-- Contributions and Initiatives -->
         <div class="section mb-4">
           <h5>Đóng góp và Sáng kiến <span class="text-danger"> *</span></h5>
-          <div v-for="(question, index) in performanceEvaluation.contributionsQuestions" :key="index"
-            class="question mb-3">
+          <div v-for="(question, index) in performanceEvaluation.contributionsQuestions" :key="index" class="question mb-3">
             <div class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+                <input type="radio" :id="'contributionOption' + index + optIndex" :name="'contribution' + index"
+                  class="form-check-input" v-model="selectedContributionValues[index]" :value="option.value" />
+                <label :for="'contributionOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedValues[index]) >= 100" class="form-control" rows="3"
-                placeholder="Nhận xét thêm"></textarea>
+              <textarea v-if="parseFloat(selectedContributionValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
             </div>
           </div>
         </div>
@@ -156,56 +144,36 @@
         <!-- Regulations and Policies -->
         <div class="section mb-4">
           <h5>Quy định và Chính sách <span class="text-danger"> *</span></h5>
-          <div v-for="(question, index) in performanceEvaluation.regulationsQuestions" :key="index"
-            class="question mb-3">
+          <div v-for="(question, index) in performanceEvaluation.regulationsQuestions" :key="index" class="question mb-3">
             <div class="options d-flex justify-content-around my-3">
               <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+                <input type="radio" :id="'regulationOption' + index + optIndex" :name="'regulation' + index"
+                  class="form-check-input" v-model="selectedRegulationValues[index]" :value="option.value" />
+                <label :for="'regulationOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedValues[index]) >= 100" class="form-control" rows="3"
-                placeholder="Nhận xét thêm"></textarea>
+              <textarea v-if="parseFloat(selectedRegulationValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
             </div>
           </div>
         </div>
 
         <!-- Personal Contributions and Results -->
         <div class="section mb-4">
-          <h5>Đóng góp Cá nhân và Kết quả</h5>
-          <div class="question mb-3">
-            <label class="d-flex title">Thành tích cá nhân nổi bật nhất của bạn trong thời gian
-              qua
-              là <span class="text-danger"> *</span></label>
-            <textarea class="form-control" rows="3" placeholder="Các thành tích nổi bật..."></textarea>
-          </div>
-          <div class="question mb-3">
-            <label class="d-flex title">Bạn cảm thấy mình đã đóng góp đủ cho sự phát triển của
-              tổ chức
-              không? <span class="text-danger"> *</span></label>
-            <textarea class="form-control" rows="3" placeholder="Nêu nhận xét"></textarea>
+          <h5>Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span></h5>
+          <div class="form-group">
+            <textarea class="form-control" rows="5" placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
           </div>
         </div>
 
-        <!-- Quarter Goals -->
-        <div class="section mb-4">
-          <h5>Mục tiêu quý IV <span class="text-danger"> *</span></h5>
-          <textarea class="form-control" placeholder="Bạn đặt mục tiêu gì cho quý tiếp theo..." rows="3"></textarea>
-        </div>
-
-        <!-- Form Buttons -->
-        <div class="form-buttons d-flex justify-content-center gap-4 mt-4">
-          <button type="reset" class="btn btn-danger">Xóa</button>
-          <button type="button" class="btn btn-warning">Lưu nháp</button>
-          <button type="submit" class="btn btn-primary">Xác nhận</button>
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
         </div>
       </form>
     </div>
   </div>
 </template>
-
 <script>
 export default {
   name: "AssessPage",
@@ -378,7 +346,11 @@ export default {
           },
         ],
       },
-      selectedValues: [], // Make sure to initialize as needed
+    selectedPerformanceValues: [],
+    selectedSkillsValues: [],
+    selectedAttitudeValues: [],
+    selectedContributionValues: [],
+    selectedRegulationValues: [],
     };
   },
   computed: {

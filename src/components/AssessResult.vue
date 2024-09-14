@@ -2,23 +2,23 @@
   <div class="container">
     <div class="content">
       <div class="left">
-        <div class="info">
-          <img src="https://picsum.photos/120/120" alt="profile" />
-          <div class="details">
-            <div class="detail-item">
-              <div class="label">Tên:</div>
-              <div class="value">Trịnh Thái Quân</div>
-            </div>
-            <div class="detail-item">
-              <div class="label">Bộ phận:</div>
-              <div class="value">Thiết kế</div>
-            </div>
-            <div class="detail-item">
-              <div class="label">Chức vụ:</div>
-              <div class="value">Intern</div>
-            </div>
-          </div>
+        <div class="profile mb-5 d-flex align-items-center">
+        <div class="avatar">
+          <img :src="profile.avatarUrl" alt="avatar" />
         </div>
+        <div class="info ms-3 text-start">
+          <h3 class="mb-2">{{ profile.name }}</h3>
+          <div class="line">
+            <strong>Bộ Phận:</strong> {{ profile.department }}
+          </div>
+          <div class="line">
+            <strong>Vị trí:</strong> {{ profile.position }}
+          </div>
+          <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
+
+          <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
+        </div>
+      </div>
         <div class="table-wrapper">
           <table>
             <thead>
@@ -104,6 +104,14 @@ export default {
   },
   data() {
     return {
+      profile: {
+        name: "Trịnh Thái Quân",
+        position: "Fresher",
+        avatarUrl: require("@/assets/avata.png"),
+        department: "Phát triển",
+        project: "StudyArt",
+        level: "3",
+      },
       radarData: {
         labels: ['Hiệu suất Công việc', 'Kỹ năng và Kiến thức', 'Tinh thần làm việc và Thái độ', 'Đóng góp và Sáng kiến', 'Quy định và Chính sách', 'Đóng góp Cá nhân và Kết quả'],
         selfAssessment: [4, 2, 4, 3, 5, 3],
@@ -135,6 +143,7 @@ export default {
   width: 50%;
   margin-right: 20px;
   margin-left: 80px;
+  margin-top: -30px;
 }
 
 .right {
@@ -166,16 +175,48 @@ table th {
   text-align: center;
 }
 
-.info {
-  display: flex;
-  align-items: flex-start;
-  margin-bottom: 20px;
+.profile {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 350px;
+  margin: 0 auto;
 }
 
-.info img {
+.avatar {
+  width: 100px;
+  height: 100px;
   border-radius: 50%;
-  margin-right: 15px;
-  margin-top: -10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #007bff;
+  /* Add a border around the avatar */
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.info h4 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.line {
+  font-size: 16px;
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+
+.line strong {
+  color: #007bff;
+  /* Highlight the labels with a color */
 }
 
 .details {

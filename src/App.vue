@@ -1,5 +1,5 @@
 <template>
-  <HeaderComponent/>
+  <HeaderComponent />
   <div id="app">
     <router-view />
   </div>
@@ -19,10 +19,13 @@ export default {
 </script>
 
 <style>
-@import "../src/assets/fonts/icomoon/style.css"; /* Import icon fonts */
+@import "../src/assets/fonts/icomoon/style.css";
+/* Import icon fonts */
 /* @import '../src/assets/css/owl.carousel.min.css';  Import Owl Carousel */
-@import "../src/assets/css/bootstrap.min.css"; /* Import Bootstrap */
-@import "../src/assets/css/style.css"; /* Import Main CSS */
+@import "../src/assets/css/bootstrap.min.css";
+/* Import Bootstrap */
+@import "../src/assets/css/style.css";
+/* Import Main CSS */
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
@@ -32,5 +35,4 @@ export default {
   color: #2c3e50;
   height: 100vh;
 }
-
 </style>

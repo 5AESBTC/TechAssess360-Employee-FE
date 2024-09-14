@@ -1,10 +1,13 @@
 <template>
   <div id="app" class="d-flex flex-column min-vh-100">
-    <HeaderComponent v-if="$route.path !== '/login' "/>
-    <main class="flex-grow-1 p-4">
-      <router-view/>
-    </main>
-    <FooterComponent v-if="$route.path !== '/login' "/>
+    <div class="content-wrapper flex-grow-1 d-flex flex-column"
+         :style="{ marginLeft: $route.path !== '/login' && $route.path !== '/register' ? '200px' : '0' }">
+      <HeaderComponent v-if="$route.path !== '/login' "/>
+      <main class="flex-grow-1 p-4">
+        <router-view/>
+      </main>
+      <FooterComponent v-if="$route.path !== '/login' "/>
+    </div>
   </div>
 </template>
 

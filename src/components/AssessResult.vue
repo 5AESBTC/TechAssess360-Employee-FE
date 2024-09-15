@@ -1,98 +1,115 @@
 <template>
-  <div class="container">
-    <div class="content">
-      <div class="left">
-        <div class="profile mb-5 d-flex align-items-center">
-        <div class="avatar">
-          <img :src="profile.avatarUrl" alt="avatar" />
-        </div>
-        <div class="info ms-3 text-start">
-          <h3 class="mb-2">{{ profile.name }}</h3>
-          <div class="line">
-            <strong>Bộ Phận:</strong> {{ profile.department }}
+  <div class="background-container">
+    <div class="container">
+      <div class="container-fluid row justify-content-md-center align-items-center">
+        <div class="col-md-4 left-menu p-3">
+          <div class="profile mb-5 d-flex align-items-center">
+            <div class="avatar">
+              <img :src="profile.avatarUrl" alt="avatar" />
+            </div>
+            <div class="info ms-3 text-start">
+              <h3 class="mb-2">{{ profile.name }}</h3>
+              <div class="line">
+                <strong>Bộ Phận:</strong> {{ profile.department }}
+              </div>
+              <div class="line">
+                <strong>Vị trí:</strong> {{ profile.position }}
+              </div>
+              <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
+              <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
+            </div>
           </div>
-          <div class="line">
-            <strong>Vị trí:</strong> {{ profile.position }}
+          <div class="dropdowns mb-4">
+            <label for="year" class="form-label">Chọn năm:</label>
+            <select id="year" v-model="selectedYear" class="form-select">
+              <option v-for="year in years" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+            
+            <label for="quarter" class="form-label">Chọn quý:</label>
+            <select id="quarter" v-model="selectedQuarter" class="form-select">
+              <option v-for="quarter in quarters" :key="quarter" :value="quarter">
+                {{ quarter }}
+              </option>
+            </select>
           </div>
-          <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
-
-          <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hệ số</th>
+                  <th>Tiêu Chí</th>
+                  <th>Tự đánh giá</th>
+                  <th>Quản Lý</th>
+                  <th>Team</th>
+                  <th>Tổng Điểm</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>30</td>
+                  <td>Hiệu suất Công việc</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>22.00</td>
+                </tr>
+                <tr>
+                  <td>15</td>
+                  <td>Kỹ năng và Kiến thức</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>10.00</td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Tinh thần làm việc và Thái độ</td>
+                  <td>4</td>
+                  <td>2</td>
+                  <td>1</td>
+                  <td>6.00</td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Đóng góp và Sáng kiến</td>
+                  <td>3</td>
+                  <td>2</td>
+                  <td>3</td>
+                  <td>6.67</td>
+                </tr>
+                <tr>
+                  <td>10</td>
+                  <td>Quy định và Chính sách</td>
+                  <td>5</td>
+                  <td>2</td>
+                  <td>2</td>
+                  <td>7.33</td>
+                </tr>
+                <tr>
+                  <td>25</td>
+                  <td>Đóng góp Cá nhân và Kết quả</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>3</td>
+                  <td>20.00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
-        <div class="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>Hệ số</th>
-                <th>Tiêu Chí</th>
-                <th>Tự đánh giá</th>
-                <th>Quản Lý</th>
-                <th>Team</th>
-                <th>Tổng Điểm</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>30</td>
-                <td>Hiệu suất Công việc</td>
-                <td>4</td>
-                <td>2</td>
-                <td>3</td>
-                <td>22.00</td>
-              </tr>
-              <tr>
-                <td>15</td>
-                <td>Kỹ năng và Kiến thức</td>
-                <td>2</td>
-                <td>3</td>
-                <td>2</td>
-                <td>10.00</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Tinh thần làm việc và Thái độ</td>
-                <td>4</td>
-                <td>2</td>
-                <td>1</td>
-                <td>6.00</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Đóng góp và Sáng kiến</td>
-                <td>3</td>
-                <td>2</td>
-                <td>3</td>
-                <td>6.67</td>
-              </tr>
-              <tr>
-                <td>10</td>
-                <td>Quy định và Chính sách</td>
-                <td>5</td>
-                <td>2</td>
-                <td>2</td>
-                <td>7.33</td>
-              </tr>
-              <tr>
-                <td>25</td>
-                <td>Đóng góp Cá nhân và Kết quả</td>
-                <td>3</td>
-                <td>3</td>
-                <td>3</td>
-                <td>20.00</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
 
-      <div class="right">
-        <div class="radar">
-          <RadarChart :data="radarData" />
+        <div class="col-md-8 right-menu p-4">
+          <div class="radar">
+            <RadarChart :data="radarData" />
+          </div>
         </div>
       </div>
     </div>
   </div>
 </template>
+
 
 <script>
 import RadarChart from './RadarChart.vue';
@@ -117,40 +134,64 @@ export default {
         selfAssessment: [4, 2, 4, 3, 5, 3],
         manager: [2, 3, 2, 2, 2, 3],
         team: [3, 2, 1, 3, 2, 3]
-      }
+      },
+      selectedYear: '',
+      selectedQuarter: '',
+      years: ['2022', '2023', '2024', '2025'],
+      quarters: ['Qúy 1', 'Qúy 2', 'Qúy 3', 'Qúy 4']
     }
   }
 }
 </script>
 
 <style scoped>
-.container {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  padding-top: 150px;
+
+.background-container {
+  background-color: #4e7fcf;
+  margin: 0 auto;
+  padding-top: 100px;
+  padding-bottom: 100px;
+  box-sizing: border-box;
+  width: 100%;
+
 }
 
-.content {
+
+.container-fluid {
+  
   display: flex;
   flex-direction: row;
   padding: 20px;
   gap: 20px;
-  margin-top: 40px;
+  margin-top: 17px;
+  flex-wrap: nowrap; /* Avoid line breaks if space is insufficient */
 }
 
-.left {
+.left-menu {
   width: 50%;
-  margin-right: 20px;
-  margin-left: 80px;
-  margin-top: -30px;
+  background-color: #f7f7f7;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-left: 20px;
+  height: 700px;
 }
 
-.right {
-  width: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+
+.right-menu {
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  height: 700px;
+}
+.radar {
+  width: 30%;
+  max-width: 500px; /* Ensure radar fits in the container */
+  height: auto;
+  margin-top: -75px;
+  margin-left: 90px;
+  text-align: center;
 }
 
 .table-wrapper {
@@ -163,14 +204,9 @@ table {
   margin-top: 10px;
 }
 
-table td {
-  padding: 7px;
-  border: 1px solid #ddd;
-  text-align: center;
-}
-
+table td,
 table th {
-  padding: 10px;
+  padding: 7px;
   border: 1px solid #ddd;
   text-align: center;
 }
@@ -193,7 +229,6 @@ table th {
   align-items: center;
   justify-content: center;
   border: 3px solid #007bff;
-  /* Add a border around the avatar */
 }
 
 .avatar img {
@@ -216,7 +251,6 @@ table th {
 
 .line strong {
   color: #007bff;
-  /* Highlight the labels with a color */
 }
 
 .details {
@@ -232,19 +266,11 @@ table th {
 
 .label {
   font-weight: bold;
-  /* In đậm phần label */
   margin-right: 5px;
 }
 
 .value {
   font-weight: normal;
-  /* Phần giá trị không in đậm */
-}
-
-.radar {
-  width: 100%;
-  margin-top: -75px;
-  margin-left: 85px;
 }
 
 /* Responsive Design */
@@ -262,17 +288,8 @@ table th {
     margin-right: 0;
   }
 
-  .info {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .info img {
-    margin-bottom: 10px;
-  }
-
   .radar {
-    margin-left: 0;
+    max-width: 100%; /* Ensure radar adjusts on smaller screens */
   }
 }
 
@@ -284,17 +301,49 @@ table th {
   table th,
   table td {
     padding: 8px;
-    /* Giảm padding cho màn hình nhỏ hơn */
   }
 
-  .info img {
+  .avatar img {
     width: 80px;
     height: 80px;
   }
+}
+/* Container cho dropdowns */
+.dropdowns {
+  display: flex; /* Sử dụng Flexbox để sắp xếp các dropdown nằm cùng hàng */
+  flex-wrap: nowrap; /* Ngăn không cho các dropdown xuống hàng */
+  gap: 20px; /* Khoảng cách giữa các dropdown */
+  align-items: center; /* Căn giữa các dropdown theo chiều dọc */
+  margin-bottom: 20px; /* Khoảng cách dưới của container */
+}
 
-  .container {
-    background-size: contain;
-    /* Điều chỉnh kích thước ảnh nền trên màn hình nhỏ hơn */
-  }
+/* Style cho mỗi dropdown */
+.form-select {
+  width: 150px; /* Đặt chiều rộng cho dropdown */
+  height: 40px; /* Thay đổi chiều cao của dropdown */
+  padding: 0.375rem 0.75rem; /* Padding cho dropdown */
+  font-size: 1rem; /* Kích thước font chữ */
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff; /* Màu nền của dropdown */
+  background-clip: padding-box;
+  border: 1px solid #ced4da; /* Viền của dropdown */
+  border-radius: 0.25rem; /* Bo góc của dropdown */
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Hiệu ứng chuyển tiếp */
+}
+
+.form-select:focus {
+  border-color: #007bff; /* Màu viền khi focus */
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Hiệu ứng bóng đổ khi focus */
+}
+
+/* Style cho label của dropdown */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem; /* Khoảng cách dưới của label */
+  font-weight: 600; /* Định dạng font chữ của label */
+  color: #333; /* Màu chữ của label */
 }
 </style>

@@ -405,7 +405,7 @@ tbody>tr>td {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin-left: 20px;
   height: 80vh;
-  margin-top: 70px;
+  margin-top: 25px;
 }
 
 .profile {
@@ -472,7 +472,7 @@ tbody>tr>td {
   position: relative;
   height: 80vh;
   margin-right: 20px;
-  margin-top: 70px;
+  margin-top:25px;
   margin-left: 20px;
 }
 

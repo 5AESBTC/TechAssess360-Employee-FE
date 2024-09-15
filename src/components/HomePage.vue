@@ -21,20 +21,23 @@
   </div>
 </template>
 
+
 <script>
 export default {
   name: 'HomePage',
   data() {
     return {
       steps: [
-        { title: 'Nhân viên đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#90EE90' },
-        { title: 'Quản lý đánh giá', text: 'Quản lý sẽ đánh giá các thành viên trong team dự án', color: '#87CEEB' },
-        { title: 'Xem kết quả', text: 'Xem những đánh giá từ quản lý, team, cá nhân', color: '#FFD700' }
+        { title: 'Bộ phận phát triễn đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#90EE90' },
+        { title: 'Bộ phận tổng vụ đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#87CEEB' },
+        { title: 'Quản lý đánh giá', text: 'Quản lý sẽ đánh giá các thành viên trong team dự án', color: '#FFD700' },
+        { title: 'Xem kết quả', text: 'Xem những đánh giá từ quản lý, team, cá nhân', color: '#FF6347' }
       ],
       titles: [
-        { text: '15/09 - 20/09', class: 'before' },
+      { text: '15/09 - 20/09', class: 'before' },
         { text: '21/09 - 30/09', class: 'now' },
-        { text: '31/09', class: 'after' }
+        { text: '01/10 - 10/10', class: 'new' }, 
+        { text: '11/10 - 20/10', class: 'after' }
       ],
       currentDate: new Date() // Cập nhật giá trị này tùy thuộc vào nhu cầu
     };
@@ -43,9 +46,12 @@ export default {
     isActiveTitle(index) {
       // Logic để xác định tiêu đề nào là hiện tại
       const titleDates = [
-        { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
-        { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
-        { start: new Date('2024-09-31'), end: new Date('2024-09-31') }
+    
+  { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
+  { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
+  { start: new Date('2024-10-01'), end: new Date('2024-10-10') }, 
+  { start: new Date('2024-10-11'), end: new Date('2024-10-20') }
+
       ];
 
       const { start, end } = titleDates[index];
@@ -75,6 +81,7 @@ export default {
   border-radius: 12px;
   box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2);
   background-color: #fff;
+  margin-top: -17px;
 }
 
 .step-container {
@@ -140,7 +147,6 @@ export default {
   padding: 10px 20px;
 }
 
-/* Title container with border */
 .title-container {
   display: flex;
   justify-content: center;
@@ -151,52 +157,40 @@ export default {
   display: flex;
   align-items: center;
   width: 100%;
-  /* Đảm bảo title-box có chiều rộng đầy đủ */
   position: relative;
-  /* Để cho phép divider hiển thị */
-
 }
 
 .title {
-  background-color: #b3b5b5;
-  /* Màu nền của tiêu đề để nổi bật hơn */
+  background-color: #b3b5b5; /* Màu nền của tiêu đề để nổi bật hơn */
   color: #fff;
-  border-radius: 10px;
-  /* Đảm bảo viền trùng khớp với .title-box */
-  padding: 20px 30px;
-  /* Điều chỉnh padding để phù hợp với kích thước */
+  border-radius: 0; /* Đặt border-radius bằng 0 để loại bỏ bo tròn */
+  padding: 15px 20px;
   text-align: center;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: background-color 0.3s;
+  transition: background-color 0.3s, transform 0.3s;
   box-sizing: border-box;
-  /* Đảm bảo padding không ảnh hưởng đến kích thước tổng thể */
-  width: 33.33%;
-  /* Đặt kích thước của các tiêu đề để khớp với các bước */
-
+  flex: 1;
+  margin: 0 1px;
+  text-transform: uppercase;
 }
 
 .title.before {
   border-radius: 10px 0 0 10px;
-  /* Viền góc trên bên trái và dưới bên trái */
 }
 
 .title.now {
   border-radius: 0;
-  /* Không có viền góc */
 }
 
 .title.after {
   border-radius: 0 10px 10px 0;
-  /* Viền góc trên bên phải và dưới bên phải */
 }
 
 .title.active {
   background-color: #646666;
-  /* Màu nền nổi bật cho tiêu đề hiện tại */
   color: #fff;
-  /* Màu chữ nổi bật cho tiêu đề hiện tại */
 }
 
 .title-box::before {

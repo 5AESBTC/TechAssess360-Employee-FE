@@ -2,7 +2,7 @@
   <div class="container-fluid row justify-content-md-center align-items-center">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-5 d-flex align-items-center">
+      <div class="profile mb-3 d-flex align-items-center">
         <div class="avatar">
           <img :src="profile.avatarUrl" alt="avatar" />
         </div>
@@ -14,12 +14,35 @@
           <div class="line">
             <strong>Vị trí:</strong> {{ profile.position }}
           </div>
-          <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
-          <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
-          <div class="line"><strong>Thời gian làm việc:</strong> {{ profile.time }}</div>
+          <div class="line">
+            <strong>Bậc hiện tại:</strong> {{ profile.level }}
+          </div>
+          <div class="line">
+            <strong>Dự án hiện tại:</strong> {{ profile.project }}
+          </div>
+          <div class="line">
+            <strong>Thời gian làm việc:</strong> {{ profile.time }}
+          </div>
         </div>
       </div>
-
+      <div class="mb-3">
+        <button
+          v-if="profile.isProcessing"
+          class="btn btn-sm btn-primary me-2"
+          :disabled="true"
+          style="width: 150px"
+        >
+          Đang đánh giá
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-primary me-2"
+          @click="selectPerson(profile)"
+          style="width: 150px"
+        >
+          Đánh giá bản thân
+        </button>
+      </div>
       <div class="team-mate">
         <div class="text-start fw-bold">
           Danh sách thành viên có chung dự án hiện tại:
@@ -41,7 +64,20 @@
               <td>{{ mate.position }}</td>
               <td>{{ mate.project }}</td>
               <td>
-                <button class="btn btn-sm btn-primary">Đánh giá</button>
+                <button
+                  v-if="mate.isProcessing"
+                  class="btn btn-sm btn-primary me-2 btn-custom"
+                  :disabled="true"
+                >
+                  Đang đánh giá
+                </button>
+                <button
+                  v-else
+                  class="btn btn-sm btn-primary me-2 btn-custom"
+                  @click="selectPerson(mate)"
+                >
+                  Đánh giá
+                </button>
               </td>
             </tr>
           </tbody>
@@ -53,27 +89,59 @@
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
       <div class="evaluation-header text-start mb-2">
-        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho: {{ profile.name }}</label>
+        <label class="fw-bold fs-4"
+          >Đánh giá quý III năm 2024 cho:
+          {{ isSelected ? isSelected.name : profile.name }}</label
+        >
       </div>
 
       <!-- Evaluation Form -->
+      <!-- @submit.prevent="submit" -->
       <form class="evaluation-form">
         <!-- Performance Evaluation -->
         <div class="section mb-4">
           <h5>Hiệu suất Công việc</h5>
-          <div v-for="(question, index) in performanceEvaluation.performanceQuestions" :key="index" class="question mb-3">
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.performanceQuestions"
+            :key="index"
+            class="question mb-3"
+          >
             <div class="d-flex justify-content-between title">
-              <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
             </div>
             <div class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'performanceOption' + index + optIndex" :name="'performance' + index"
-                  class="form-check-input" v-model="selectedPerformanceValues[index]" :value="option.value" />
-                <label :for="'performanceOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'performanceOption' + index + optIndex"
+                  :name="'performance' + index"
+                  class="form-check-input"
+                  v-model="selectedPerformanceValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'performanceOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedPerformanceValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea
+                v-if="parseFloat(selectedPerformanceValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -81,26 +149,69 @@
         <!-- Skills and Knowledge -->
         <div class="section mb-4">
           <h5>Kĩ Năng Và Kiến Thức</h5>
-          <div v-for="(question, index) in performanceEvaluation.skillsQuestions" :key="index" class="question mb-3">
+          <div
+            v-for="(question, index) in performanceEvaluation.skillsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
             <div class="d-flex justify-content-between title">
-              <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
             </div>
-            <div v-if="index === 2" class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="checkbox" :id="'skillsOption' + index + optIndex" :name="'skills' + index"
-                  class="form-check-input" v-model="selectedSkillsValues[index]" :value="option.value" />
-                <label :for="'skillsOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+            <div
+              v-if="index === 2"
+              class="options d-flex justify-content-around my-3"
+            >
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="checkbox"
+                  :id="'skillsOption' + index + optIndex"
+                  :name="'skills' + index"
+                  class="form-check-input"
+                  v-model="selectedSkillsValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'skillsOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div v-else class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'skillsOption' + index + optIndex" :name="'skills' + index"
-                  class="form-check-input" v-model="selectedSkillsValues[index]" :value="option.value" />
-                <label :for="'skillsOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'skillsOption' + index + optIndex"
+                  :name="'skills' + index"
+                  class="form-check-input"
+                  v-model="selectedSkillsValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'skillsOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedSkillsValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea
+                v-if="parseFloat(selectedSkillsValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -108,19 +219,45 @@
         <!-- Attitude and Spirit -->
         <div class="section mb-4">
           <h5>Tinh thần làm việc và Thái độ</h5>
-          <div v-for="(question, index) in performanceEvaluation.attitudeQuestions" :key="index" class="question mb-3">
+          <div
+            v-for="(question, index) in performanceEvaluation.attitudeQuestions"
+            :key="index"
+            class="question mb-3"
+          >
             <div class="d-flex justify-content-between title">
-              <label>{{ index + 1 }}. {{ question.label }} <span class="text-danger"> *</span></label>
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
             </div>
             <div class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'attitudeOption' + index + optIndex" :name="'attitude' + index"
-                  class="form-check-input" v-model="selectedAttitudeValues[index]" :value="option.value" />
-                <label :for="'attitudeOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'attitudeOption' + index + optIndex"
+                  :name="'attitude' + index"
+                  class="form-check-input"
+                  v-model="selectedAttitudeValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'attitudeOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedAttitudeValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea
+                v-if="parseFloat(selectedAttitudeValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -128,16 +265,41 @@
         <!-- Contributions and Initiatives -->
         <div class="section mb-4">
           <h5>Đóng góp và Sáng kiến <span class="text-danger"> *</span></h5>
-          <div v-for="(question, index) in performanceEvaluation.contributionsQuestions" :key="index" class="question mb-3">
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.contributionsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
             <div class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'contributionOption' + index + optIndex" :name="'contribution' + index"
-                  class="form-check-input" v-model="selectedContributionValues[index]" :value="option.value" />
-                <label :for="'contributionOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'contributionOption' + index + optIndex"
+                  :name="'contribution' + index"
+                  class="form-check-input"
+                  v-model="selectedContributionValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'contributionOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedContributionValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea
+                v-if="parseFloat(selectedContributionValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+              ></textarea>
             </div>
           </div>
         </div>
@@ -145,37 +307,72 @@
         <!-- Regulations and Policies -->
         <div class="section mb-4">
           <h5>Quy định và Chính sách <span class="text-danger"> *</span></h5>
-          <div v-for="(question, index) in performanceEvaluation.regulationsQuestions" :key="index" class="question mb-3">
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.regulationsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
             <div class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check">
-                <input type="radio" :id="'regulationOption' + index + optIndex" :name="'regulation' + index"
-                  class="form-check-input" v-model="selectedRegulationValues[index]" :value="option.value" />
-                <label :for="'regulationOption' + index + optIndex" class="form-check-label">{{ option.label }}</label>
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'regulationOption' + index + optIndex"
+                  :name="'regulation' + index"
+                  class="form-check-input"
+                  v-model="selectedRegulationValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'regulationOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
               </div>
             </div>
             <div class="description">
-              <textarea v-if="parseFloat(selectedRegulationValues[index]) >= 3" class="form-control" rows="3" placeholder="Nhận xét thêm"></textarea>
+              <textarea
+                v-if="parseFloat(selectedRegulationValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+              ></textarea>
             </div>
           </div>
         </div>
 
         <!-- Personal Contributions and Results -->
         <div class="section mb-4">
-          <h5>Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span></h5>
+          <h5>
+            Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
+          </h5>
           <div class="form-group">
-            <textarea class="form-control" rows="5" placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
+            <textarea
+              class="form-control"
+              rows="5"
+              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
+            ></textarea>
           </div>
         </div>
 
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
+          <button class="btn btn-primary" type="submit">
+            Gửi Đánh Giá
+          </button>
         </div>
       </form>
     </div>
   </div>
 </template>
 <script>
+// import { Swal } from "sweetalert2";
+
 export default {
   name: "AssessPage",
   data() {
@@ -187,7 +384,8 @@ export default {
         department: "Phát triển",
         project: "StudyArt",
         level: "3",
-        time:"2 năm 3 tháng",
+        time: "2 năm 3 tháng",
+        isProcessing: false,
       },
       sortKey: "name",
       sortOrder: "asc",
@@ -197,8 +395,20 @@ export default {
           position: "Manager",
           project: "StudyArt",
         },
-        { name: "Nguyễn Văn C", position: "Junior", project: "StudyArt" },
-        { name: "Nguyễn Văn A", position: "Tester", project: "StudyArt" },
+        {
+          name: "Nguyễn Văn C",
+          position: "Junior",
+          project: "StudyArt",
+          level: "3",
+          isProcessing: false,
+        },
+        {
+          name: "Nguyễn Văn A",
+          position: "Tester",
+          project: "StudyArt",
+          level: "3",
+          isProcessing: false,
+        },
       ],
       performanceEvaluation: {
         performanceQuestions: [
@@ -303,14 +513,30 @@ export default {
             label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
             score: 10,
             options: [
-              { label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên", value: "1" },
-              { label: "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn", value: "2" },
-              { label: "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau", value: "3" },
-              { label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng", value: "4" },
-              { label: "Giải quyết tình huống một cách hiệu quả và tự tin", value: "5" },
+              {
+                label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                value: "1",
+              },
+              {
+                label:
+                  "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                value: "2",
+              },
+              {
+                label:
+                  "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                value: "3",
+              },
+              {
+                label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                value: "4",
+              },
+              {
+                label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                value: "5",
+              },
             ],
           },
-
         ],
         contributionsQuestions: [
           {
@@ -322,7 +548,7 @@ export default {
               { label: "Có nhiều đóng góp", value: "4" },
               { label: "Có rất nhiều đóng góp", value: "5" },
             ],
-          }
+          },
         ],
         regulationsQuestions: [
           {
@@ -333,9 +559,8 @@ export default {
               { label: "Tuân thủ mức trung bình", value: "3" },
               { label: "Tuân thủ tốt", value: "4" },
               { label: "Tuân thủ hoàn toàn", value: "5" },
-            ]
-
-          }
+            ],
+          },
         ],
         personalContributionsQuestions: [
           {
@@ -348,11 +573,12 @@ export default {
           },
         ],
       },
-    selectedPerformanceValues: [],
-    selectedSkillsValues: [],
-    selectedAttitudeValues: [],
-    selectedContributionValues: [],
-    selectedRegulationValues: [],
+      selectedPerformanceValues: [],
+      selectedSkillsValues: [],
+      selectedAttitudeValues: [],
+      selectedContributionValues: [],
+      selectedRegulationValues: [],
+      isSelected: null,
     };
   },
   computed: {
@@ -377,13 +603,42 @@ export default {
         this.sortOrder = "asc";
       }
     },
+    selectPerson(person) {
+      if (this.isSelected && this.isSelected !== person) {
+        this.isSelected.isProcessing = false;
+      }
+
+      // Nếu chọn lại người đang được chọn, bỏ chọn (tắt xem)
+      if (this.isSelected === person) {
+        this.isSelected = null;
+        person.isProcessing = false;
+      } else {
+        // Chọn người mới và bật trạng thái xem
+        this.isSelected = person;
+        person.isProcessing = true;
+      }
+
+      console.log(this.isSelected);
+    },
+    // submit() {
+    //   // toast -vue3
+    //   Swal.fire({
+    //     title: 'Thông báo!',
+    //     text: 'Đây là một thông báo đẹp mắt.',
+    //     icon: 'success',
+    //     confirmButtonText: 'OK'
+    //   });
+    // },
   },
 };
 </script>
 
 <style scoped>
 /* Left menu */
-tbody>tr>td {
+.btn-custom {
+  width: 110px;
+}
+tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -455,6 +710,7 @@ tbody>tr>td {
 }
 
 /* Team Mate Table */
+
 .team-mate .table {
   font-size: 14px;
   margin-top: 20px;
@@ -474,7 +730,7 @@ tbody>tr>td {
   position: relative;
   height: 80vh;
   margin-right: 20px;
-  margin-top:25px;
+  margin-top: 25px;
   margin-left: 20px;
 }
 
@@ -507,7 +763,7 @@ tbody>tr>td {
   padding-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 

@@ -81,6 +81,7 @@ export default {
   position: relative;
   width: 680px;
   height: 600px;
+  
 }
 
 .chart-legend {
@@ -93,7 +94,7 @@ export default {
   bottom: 10px;
   /* Position from the bottom of the chart */
   left: 0;
-  width: 100%;
+  width: 90%;
   background: #fff;
   /* Optional: background to separate legend from chart */
   padding: 10px;

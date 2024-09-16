@@ -16,6 +16,7 @@
           </div>
           <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
           <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
+          <div class="line"><strong>Thời gian làm việc:</strong> {{ profile.time }}</div>
         </div>
       </div>
 
@@ -186,6 +187,7 @@ export default {
         department: "Phát triển",
         project: "StudyArt",
         level: "3",
+        time:"2 năm 3 tháng",
       },
       sortKey: "name",
       sortOrder: "asc",
@@ -405,7 +407,7 @@ tbody>tr>td {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
   margin-left: 20px;
   height: 80vh;
-  margin-top: 70px;
+  margin-top: 25px;
 }
 
 .profile {
@@ -413,7 +415,7 @@ tbody>tr>td {
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 350px;
+  max-width: 400px;
   margin: 0 auto;
 }
 
@@ -472,7 +474,7 @@ tbody>tr>td {
   position: relative;
   height: 80vh;
   margin-right: 20px;
-  margin-top: 70px;
+  margin-top:25px;
   margin-left: 20px;
 }
 

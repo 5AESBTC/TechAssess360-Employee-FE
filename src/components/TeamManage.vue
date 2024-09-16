@@ -17,6 +17,8 @@
                     <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
 
                     <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
+                    <div class="line"><strong>Thời gian làm việc:</strong> {{ profile.time }}</div>
+
                 </div>
             </div>
 
@@ -59,6 +61,21 @@
             <div class="evaluation-header text-start mb-2">
                 <label class="fw-bold fs-4">Chi tiết đánh giá quý III năm 2024 của: {{ profile.name }}
                 </label>
+                <div class="dropdowns mb-4">
+            <label for="year" class="form-label">Chọn năm:</label>
+            <select id="year" v-model="selectedYear" class="form-select">
+              <option v-for="year in years" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+            
+            <label for="quarter" class="form-label">Chọn quý:</label>
+            <select id="quarter" v-model="selectedQuarter" class="form-select">
+              <option v-for="quarter in quarters" :key="quarter" :value="quarter">
+                {{ quarter }}
+              </option>
+            </select>
+          </div>
             </div>
 
             <!-- Evaluation Form -->
@@ -235,6 +252,7 @@ export default {
                 department: "Phát triển",
                 project: "StudyArt",
                 level: "1",
+                time: "2 năm 3 tháng",
             },
             sortKey: "name",
             sortOrder: "asc",
@@ -447,7 +465,7 @@ tbody>tr>td {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     margin-left: 20px;
     height: 80vh;
-    margin-top: 70px;
+    margin-top: 25px;
 }
 
 .profile {
@@ -455,7 +473,7 @@ tbody>tr>td {
     border-radius: 10px;
     padding: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 350px;
+    max-width: 400px;
     margin: 0 auto;
 }
 
@@ -514,7 +532,7 @@ tbody>tr>td {
     position: relative;
     height: 80vh;
     margin-right: 20px;
-    margin-top: 70px;
+    margin-top: 25px;
     margin-left: 20px;
 }
 
@@ -618,5 +636,43 @@ tbody>tr>td {
     /* Ngắt từ để text không bị tràn ra ngoài */
     display: inline-block;
     /* Cho phép label có kích thước chiều rộng cụ thể */
+}
+/* Container cho dropdowns */
+.dropdowns {
+  display: flex; /* Sử dụng Flexbox để sắp xếp các dropdown nằm cùng hàng */
+  flex-wrap: nowrap; /* Ngăn không cho các dropdown xuống hàng */
+  gap: 20px; /* Khoảng cách giữa các dropdown */
+  align-items: center; /* Căn giữa các dropdown theo chiều dọc */
+  margin-bottom: 20px; /* Khoảng cách dưới của container */
+}
+
+/* Style cho mỗi dropdown */
+.form-select {
+  width: 150px; /* Đặt chiều rộng cho dropdown */
+  height: 40px; /* Thay đổi chiều cao của dropdown */
+  padding: 0.375rem 0.75rem; /* Padding cho dropdown */
+  font-size: 1rem; /* Kích thước font chữ */
+  font-weight: 400;
+  line-height: 1.5;
+  color: #495057;
+  background-color: #fff; /* Màu nền của dropdown */
+  background-clip: padding-box;
+  border: 1px solid #ced4da; /* Viền của dropdown */
+  border-radius: 0.25rem; /* Bo góc của dropdown */
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Hiệu ứng chuyển tiếp */
+}
+
+.form-select:focus {
+  border-color: #007bff; /* Màu viền khi focus */
+  outline: 0;
+  box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Hiệu ứng bóng đổ khi focus */
+}
+
+/* Style cho label của dropdown */
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem; /* Khoảng cách dưới của label */
+  font-weight: 600; /* Định dạng font chữ của label */
+  color: #333; /* Màu chữ của label */
 }
 </style>

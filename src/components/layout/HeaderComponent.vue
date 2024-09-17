@@ -11,35 +11,48 @@
   <header class="site-navbar">
     <div class="container-fluid">
       <div class="row align-items-center">
-        <div class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar">
+        <div
+          class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar"
+        >
           <h1 class="mb-0 site-logo">
             <img src="../../assets/Techzenlogo.png" alt="logo" />
           </h1>
           <div class="d-flex align-items-center">
-            <!-- <span class="ml-3 text-black font-weight-bold">Còn</span>
-            <div class="countdown-timer" id="countdown">{{ countdown }}</div>
-            <span class="text-black font-weight-bold">để mở đánh giá</span> -->
             <span class="ml-3 text-black font-weight-bold">Còn</span>
-            <div class="countdown-timer" id="countdown">{{ countdown }}</div>
+            <div class="countdown-timer" id="countdown">
+              <span v-if="loading">Loading...</span>
+              <span v-else>{{ countdown }}</span>
+            </div>
             <span class="text-black font-weight-bold">để đánh giá</span>
           </div>
         </div>
         <div class="col-6 d-none d-xl-block right-navbar">
-          <nav class="site-navigation position-relative text-right" role="navigation">
-            <ul class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto">
-              <li v-for="(item, index) in menuItems" :key="index" :class="{ active: activeIndex === index }"
-                @click="setActive(index)">
-                <a :href="item.link"><span>{{ item.text }}</span></a>
+          <nav
+            class="site-navigation position-relative text-right"
+            role="navigation"
+          >
+            <ul
+              class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto"
+            >
+              <li
+                v-for="(item, index) in menuItems"
+                :key="index"
+                :class="{ active: activeIndex === index }"
+              >
+                <a :href="item.link"
+                  ><span>{{ item.text }}</span></a
+                >
               </li>
             </ul>
           </nav>
         </div>
       </div>
       <div class="d-xl-none ml-md-0 mr-auto py-3">
-        <a href="#" class="site-menu-toggle js-menu-toggle text-white"><span class="icon-menu h3"></span></a>
+        <a href="#" class="site-menu-toggle js-menu-toggle text-white"
+          ><span class="icon-menu h3"></span
+        ></a>
       </div>
     </div>
-    <!-- <div v-if="loading" class="loading-screen">Loading...</div> -->
   </header>
 </template>
 
@@ -67,15 +80,21 @@ export default {
   mounted() {
     this.startCountdown();
     // so sánh active với path
-    const path = window.location.pathname;
-    this.menuItems.forEach((item, index) => {
-      if (item.link === path) {
-        this.activeIndex = index;
-      }
-    });
+    this.checkActivePath();
     window.addEventListener("resize", this.handleResize);
+    this.$router.beforeEach((to, from, next) => {
+      this.checkActivePath(to.path);
+      next();
+    });
   },
   methods: {
+    checkActivePath(path = window.location.pathname) {
+      this.menuItems.forEach((item, index) => {
+        if (item.link === path) {
+          this.activeIndex = index;
+        }
+      });
+    },
     startCountdown() {
       // Kiểm tra nếu đã có giá trị lưu trong localStorage
       const storedCountDownDate = localStorage.getItem("countDownDate");
@@ -108,17 +127,6 @@ export default {
         // Tắt màn hình loading sau khi bộ đếm bắt đầu
         this.loading = false;
       }, 1000);
-    },
-    setActive(index) {
-      const menuItems = document.querySelectorAll(".site-menu li");
-
-      // Xóa class 'active' từ tất cả các mục
-      menuItems.forEach((item) => {
-        item.classList.remove("active");
-      });
-
-      // Thêm class 'active' vào mục được chọn
-      menuItems[index].classList.add("active");
     },
     handleResize() {
       const element = document.querySelector(".left-navbar"); // Thay '.element-class' bằng lớp bạn muốn theo dõi
@@ -176,10 +184,7 @@ export default {
 }
 
 .site-navbar {
-  background: rgba(108,
-      117,
-      125,
-      0.5);
+  background: rgba(108, 117, 125, 0.5);
   /* bg-secondary màu mặc định là #6c757d */
   backdrop-filter: blur(10px);
   /* Làm mờ nền */

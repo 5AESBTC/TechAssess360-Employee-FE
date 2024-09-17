@@ -19,7 +19,7 @@
               <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
             </div>
           </div>
-          <div class="dropdowns mb-4">
+          <!-- <div class="dropdowns mb-4">
             <label for="year" class="form-label">Chọn năm:</label>
             <select id="year" v-model="selectedYear" class="form-select">
               <option v-for="year in years" :key="year" :value="year">
@@ -33,7 +33,7 @@
                 {{ quarter }}
               </option>
             </select>
-          </div>
+          </div> -->
           <div class="table-wrapper">
             <table>
               <thead>

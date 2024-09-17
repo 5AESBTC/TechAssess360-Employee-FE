@@ -1,240 +1,837 @@
 <template>
-  <div class="container-fluid d-flex md-2 row justify-content-md-center">
-    <div class="col-md-5 left-menu">
-      <div class="d-flex flex-column">
-        <div class="d-flex profile mb-5 gap-3">
-          <div class="avatar">
-            <img src="../assets/logo.png" alt="avatar" />
+  <div class="container-fluid row justify-content-md-center align-items-center">
+    <!-- Left Menu -->
+    <div class="col-md-4 left-menu p-3">
+      <div class="profile mb-3 d-flex align-items-center">
+        <div class="avatar">
+          <img :src="profile.avatarUrl" alt="avatar" />
+        </div>
+        <div class="info ms-3 text-start">
+          <h3 class="mb-2">{{ profile.name }}</h3>
+          <div class="line">
+            <strong>Bộ Phận:</strong> {{ profile.department }}
           </div>
-          <div class="info text-start">
-            <div class="line">Trình Thái Quân</div>
-            <div class="line">Intern</div>
+          <div class="line">
+            <strong>Vị trí:</strong> {{ profile.position }}
+          </div>
+          <div class="line">
+            <strong>Bậc hiện tại:</strong> {{ profile.level }}
+          </div>
+          <div class="line">
+            <strong>Dự án hiện tại:</strong> {{ profile.project }}
+          </div>
+          <div class="line">
+            <strong>Thời gian làm việc:</strong> {{ profile.time }}
           </div>
         </div>
-        <div class="team-mate">
-          <table class="table">
-            <thead>
-              <tr>
-                <td>#</td>
-                <td>Name</td>
-                <td>Position</td>
-                <td>Action</td>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1</td>
-                <td>Nguyễn Lê Quốc Huy</td>
-                <td>Manager</td>
-                <td>
-                  <button class="btn btn-primary">Đánh giá</button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+      </div>
+      <div class="mb-3">
+        <button
+          v-if="profile.isProcessing"
+          class="btn btn-sm btn-primary me-2"
+          :disabled="true"
+          style="width: 150px"
+        >
+          Đang đánh giá
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-primary me-2"
+          @click="selectPerson(profile)"
+          style="width: 150px"
+        >
+          Đánh giá bản thân
+        </button>
+      </div>
+      <div class="team-mate">
+        <div class="text-start fw-bold">
+          Danh sách thành viên có chung dự án hiện tại:
         </div>
+        <table class="table table-hover">
+          <thead class="thead-light">
+            <tr>
+              <th>#</th>
+              <th @click="sortBy('name')" style="cursor: pointer">Tên</th>
+              <th>Vị Trí</th>
+              <th>Dự Án</th>
+              <th>Tác Vụ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="(mate, index) in sortedTeamMates" :key="index">
+              <td>{{ index + 1 }}</td>
+              <td>{{ mate.name }}</td>
+              <td>{{ mate.position }}</td>
+              <td>{{ mate.project }}</td>
+              <td>
+                <button
+                  v-if="mate.isProcessing"
+                  class="btn btn-sm btn-primary me-2 btn-custom"
+                  :disabled="true"
+                >
+                  Đang đánh giá
+                </button>
+                <button
+                  v-else
+                  class="btn btn-sm btn-primary me-2 btn-custom"
+                  @click="selectPerson(mate)"
+                >
+                  Đánh giá
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
-    <div class="col-md-7 right-menu">
-      <div class="d-flex text-start mb-3 gap-2">
-        <label>Đánh giá quý 4 năm 2024 cho :</label>
-        <label class="fw-bold">Nguyễn Lê Quốc Huy</label>
-      </div>
-      <form class="d-flex flex-column justify-content-between">
-        <div
-          v-for="(question, index) in questions"
-          :key="index"
-          class="question text-start mb-2"
+
+    <!-- Right Menu -->
+    <div class="col-md-8 right-menu p-4">
+      <!-- Evaluation Header -->
+      <div class="evaluation-header text-start mb-2">
+        <label class="fw-bold fs-4"
+          >Đánh giá quý III năm 2024 cho:
+          {{ isSelected ? isSelected.name : profile.name }}</label
         >
-          <div class="title d-flex justify-content-between">
-            <label>{{ question.label }}</label>
-            <div class="point">
-              <i class="bi bi-star-fill">
-                <span>5</span>
-              </i>
+      </div>
+      <form class="evaluation-form" @submit.prevent="submitForm">
+        <div class="section mb-4">
+          <h5>Hiệu suất Công việc</h5>
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.performanceQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="d-flex justify-content-between title">
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
             </div>
-          </div>
-          <div class="content">
-            <p>{{ question.content }}</p>
-          </div>
-          <div class="action d-flex flex-column">
-            <div class="radio d-flex justify-content-around">
-              <div class="form-check" v-for="i in 5" :key="i">
+            <div class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
                 <input
-                  class="form-check-input"
                   type="radio"
-                  :name="'flexRadioDefault' + index"
-                  :id="'flexRadioDefault' + index + i"
-                  :value="i"
-                  v-model="selectedValues[index]"
+                  :id="'performanceOption' + index + optIndex"
+                  :name="'performance' + index"
+                  class="form-check-input"
+                  v-model="selectedPerformanceValues[index]"
+                  :value="option.value"
                 />
                 <label
+                  :for="'performanceOption' + index + optIndex"
                   class="form-check-label"
-                  :for="'flexRadioDefault' + index + i"
+                  >{{ option.label }}</label
                 >
-                  {{ i }}
-                </label>
               </div>
             </div>
             <div class="description">
               <textarea
-                v-if="selectedValues[index] >= 3"
+                v-if="parseFloat(selectedPerformanceValues[index]) >= 3"
                 class="form-control"
                 rows="3"
                 placeholder="Nhận xét thêm"
+                v-model="question.description"
               ></textarea>
             </div>
           </div>
         </div>
-        <div class="d-flex justify-content-center gap-5 mt-3">
-          <button type="submit" class="btn btn-warning" @click="onSubmit">
-            <i class="fa-regular fa-flag"></i>
-          </button>
-          <button type="submit" class="btn btn-success" @click="onSubmit">
-            Xác nhận
-          </button>
-          <button type="submit" class="btn btn-danger" @click="onSubmit">
-            Xóa toàn bộ
-          </button>
+
+        <!-- Skills and Knowledge -->
+        <div class="section mb-4">
+          <h5>Kĩ Năng Và Kiến Thức</h5>
+          <div
+            v-for="(question, index) in performanceEvaluation.skillsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="d-flex justify-content-between title">
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
+            </div>
+            <div
+              v-if="index === 2"
+              class="options d-flex justify-content-around my-3"
+            >
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="checkbox"
+                  :id="'skillsOption' + index + optIndex"
+                  :name="'skills' + index"
+                  class="form-check-input"
+                  v-model="selectedSkillsValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'skillsOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div v-else class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'skillsOption' + index + optIndex"
+                  :name="'skills' + index"
+                  class="form-check-input"
+                  v-model="selectedSkillsValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'skillsOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div class="description">
+              <textarea
+                v-if="parseFloat(selectedSkillsValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+                v-model="question.description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attitude and Spirit -->
+        <div class="section mb-4">
+          <h5>Tinh thần làm việc và Thái độ</h5>
+          <div
+            v-for="(question, index) in performanceEvaluation.attitudeQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="d-flex justify-content-between title">
+              <label
+                >{{ index + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span></label
+              >
+            </div>
+            <div class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'attitudeOption' + index + optIndex"
+                  :name="'attitude' + index"
+                  class="form-check-input"
+                  v-model="selectedAttitudeValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'attitudeOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div class="description">
+              <textarea
+                v-if="parseFloat(selectedAttitudeValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+                v-model="question.description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contributions and Initiatives -->
+        <div class="section mb-4">
+          <h5>Đóng góp và Sáng kiến <span class="text-danger"> *</span></h5>
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.contributionsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'contributionOption' + index + optIndex"
+                  :name="'contribution' + index"
+                  class="form-check-input"
+                  v-model="selectedContributionValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'contributionOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div class="description">
+              <textarea
+                v-if="parseFloat(selectedContributionValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+                v-model="question.description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Regulations and Policies -->
+        <div class="section mb-4">
+          <h5>Quy định và Chính sách <span class="text-danger"> *</span></h5>
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.regulationsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'regulationOption' + index + optIndex"
+                  :name="'regulation' + index"
+                  class="form-check-input"
+                  v-model="selectedRegulationValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'regulationOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div class="description">
+              <textarea
+                v-if="parseFloat(selectedRegulationValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
+                v-model="question.description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Contributions and Results -->
+        <div class="section mb-4">
+          <h5>
+            Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
+          </h5>
+          <div class="form-group">
+            <textarea
+              class="form-control"
+              rows="5"
+              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
+              v-model="performanceEvaluation.personalResults"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn btn-primary">Gửi Đánh Giá</button>
         </div>
       </form>
     </div>
   </div>
 </template>
-
 <script>
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 export default {
+  name: "AssessPage",
   data() {
     return {
-      questions: [
+      profile: {
+        name: "Trịnh Thái Quân",
+        position: "Fresher",
+        avatarUrl: require("@/assets/avata.png"),
+        department: "Phát triển",
+        project: "StudyArt",
+        level: "3",
+        time: "2 năm 3 tháng",
+        isProcessing: false,
+      },
+      sortKey: "name",
+      sortOrder: "asc",
+      teamMates: [
         {
-          label: "Hiệu suất công việc 1",
-          content: "Ví dụ một một một một một...",
+          name: "Nguyễn Văn B",
+          position: "Manager",
+          project: "StudyArt",
         },
         {
-          label: "Hiệu suất công việc 2",
-          content: "Ví dụ hai hai hai hai hai...",
+          name: "Nguyễn Văn C",
+          position: "Junior",
+          project: "StudyArt",
+          level: "3",
+          isProcessing: false,
         },
         {
-          label: "Hiệu suất công việc 3",
-          content: "Ví dụ ba ba ba ba ba...",
+          name: "Nguyễn Văn A",
+          position: "Tester",
+          project: "StudyArt",
+          level: "3",
+          isProcessing: false,
         },
-        {
-          label: "Hiệu suất các việc 4",
-          content: "Ví dụ bài bài bài bài...",
-        },
-        {
-          label: "Hiệu suất các việc 5",
-          content: "Ví dụ tài tài tài tài...",
-        },
-        {
-          label: "Hiệu suất các việc 6",
-          content: "Ví dụ nhiên nhiên nhiên nhiên...",
-        },
-        {
-          label: "Hiệu suất các việc 7",
-          content: "Ví dụ bài bài bài bài...",
-        },
-        {
-          label: "Hiệu suất các việc 8",
-          content: "Ví dụ bài bài bài bài...",
-        },
-        {
-          label: "Hiệu suất các việc 9",
-          content: "Ví dụ bài bài bài bài...",
-        },
-        {
-          label: "Hiệu suất các việc 10",
-          content: "Ví dụ bài bài bài bài...",
-        },
-        // Bạn có thể thêm nhiều câu hỏi hơn vào đây
       ],
-      selectedValues: [], // Mảng để lưu giá trị cho từng câu hỏi
+      performanceEvaluation: {
+        performanceQuestions: [
+          {
+            label:
+              "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
+            score: 5,
+            options: [
+              { label: "50%", value: "1" },
+              { label: "75%", value: "2" },
+              { label: "100%", value: "3" },
+              { label: "150%", value: "4" },
+              { label: "200%", value: "5" },
+            ],
+            description: '',
+          },
+          {
+            label: "Mức độ chính xác của công việc bạn thực hiện là?",
+            score: 10,
+            options: [
+              { label: "50%", value: "1" },
+              { label: "75%", value: "2" },
+              { label: "100%", value: "3" },
+              { label: "150%", value: "4" },
+              { label: "200%", value: "5" },
+            ],
+            description: '',
+          },
+          {
+            label: " Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
+            score: 15,
+            options: [
+              { label: "Hiếm khi", value: "1" },
+              { label: "Thỉnh thoảng", value: "2" },
+              { label: "Đôi khi", value: "3" },
+              { label: "Thường xuyên", value: "4" },
+              { label: "Luôn luôn", value: "5" },
+            ],
+            description: '',
+          },
+        ],
+        skillsQuestions: [
+          {
+            label:
+              "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
+            score: 5,
+            options: [
+              { label: "Không cải thiện", value: "1" },
+              { label: "Cải thiện ít", value: "2" },
+              { label: "Cải thiện vừa phải", value: "3" },
+              { label: "Cải thiện đáng kể", value: "4" },
+              { label: "Cải thiện vượt bậc", value: "5" },
+            ],
+            description: '',
+
+          },
+          {
+            label:
+              " Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+            score: 10,
+            options: [
+              { label: "Hoàn toàn không", value: "1" },
+              { label: "Ít hiệu quả", value: "2" },
+              { label: "Hiệu quả trung bình", value: "3" },
+              { label: "Khá hiệu quả", value: "4" },
+              { label: "Rất hiệu quả", value: "5" },
+            ],
+            description: '',
+
+          },
+          {
+            label:
+              " Bạn cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
+            score: 15,
+            options: [
+              { label: "Quản lý thời gian", value: "1" },
+              { label: "Giao tiếp và hợp tác", value: "2" },
+              { label: "Chuyên môn kỹ thuật", value: "3" },
+              { label: "Giải quyết vấn đề và ra quyết định", value: "4" },
+              { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
+            ],
+            description: '',
+
+          },
+        ],
+        attitudeQuestions: [
+          {
+            label:
+              " Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
+            score: 5,
+            options: [
+              { label: "Rất hiếm khi", value: "1" },
+              { label: "Thỉnh thoảng", value: "2" },
+              { label: "Đôi khi", value: "3" },
+              { label: "Thường xuyên", value: "4" },
+              { label: "Luôn luôn", value: "5" },
+            ],
+            description: '',
+
+          },
+          {
+            label: " Thái độ làm việc của bạn trong công việc là",
+            score: 15,
+            options: [
+              { label: "Thiếu động lực", value: "1" },
+              { label: "Hơi thụ động", value: "2" },
+              { label: "Cần cải thiện", value: "3" },
+              { label: "Tích cực", value: "4" },
+              { label: "Rất chủ động", value: "5" },
+            ],
+            description: '',
+
+          },
+          {
+            label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
+            score: 10,
+            options: [
+              {
+                label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                value: "1",
+              },
+              {
+                label:
+                  "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                value: "2",
+              },
+              {
+                label:
+                  "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                value: "3",
+              },
+              {
+                label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                value: "4",
+              },
+              {
+                label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                value: "5",
+              },
+            ],
+            description: '',
+          },
+        ],
+        contributionsQuestions: [
+          {
+            score: 10,
+            options: [
+              { label: "Hầu như không", value: "1" },
+              { label: "Có ít đóng góp", value: "2" },
+              { label: "Đóng góp mức trung bình", value: "3" },
+              { label: "Có nhiều đóng góp", value: "4" },
+              { label: "Có rất nhiều đóng góp", value: "5" },
+            ],
+            description: '',
+          },
+        ],
+        regulationsQuestions: [
+          {
+            score: 10,
+            options: [
+              { label: "Hầu như không tuân thủ", value: "1" },
+              { label: "Tuân thủ ít", value: "2" },
+              { label: "Tuân thủ mức trung bình", value: "3" },
+              { label: "Tuân thủ tốt", value: "4" },
+              { label: "Tuân thủ hoàn toàn", value: "5" },
+            ],
+            description: '',
+          },
+        ],
+        personalContributionsQuestions: [
+          {
+            label:
+              "Thành tích cá nhân nổi bật nhất của bạn trong thời gian qua là:",
+          },
+          {
+            label:
+              "Bạn cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?",
+          },
+        ],
+      },
+      selectedPerformanceValues: [],
+      selectedSkillsValues: [],
+      selectedAttitudeValues: [],
+      selectedContributionValues: [],
+      selectedRegulationValues: [],
+      isSelected: null,
     };
+  },
+  computed: {
+    sortedTeamMates() {
+      return [...this.teamMates].sort((a, b) => {
+        let comparison = 0;
+        if (a[this.sortKey] > b[this.sortKey]) {
+          comparison = 1;
+        } else if (a[this.sortKey] < b[this.sortKey]) {
+          comparison = -1;
+        }
+        return this.sortOrder === "asc" ? comparison : -comparison;
+      });
+    },
+  },
+  methods: {
+    submitForm() {
+      // submit dữ liệu
+      const formData = {
+        performance: this.performanceEvaluation.performanceQuestions.map((question, index) => ({
+          value: this.selectedPerformanceValues[index],
+          description: question.description
+        })),
+        skills: this.performanceEvaluation.skillsQuestions.map((question, index) => ({
+          value: this.selectedSkillsValues[index],
+          description: question.description
+        })),
+        attitude: this.performanceEvaluation.attitudeQuestions.map((question, index) => ({
+          value: this.selectedAttitudeValues[index],
+          description: question.description,
+        })),
+        // persionalContribute: this.performanceEvaluation.personalContributionsQuestions.map(
+        //   (question, index) => ({
+        //     value: this.selectedContributionValues[index],
+        //     description: question.description
+        //   })
+        // ),
+        regulation: this.performanceEvaluation.regulationsQuestions.map((question, index) => ({
+          value:this.selectedRegulationValues[index],
+          description: question.description
+        })),
+        personalContribute: this.selectedContributionValues,
+        personalResults: this.performanceEvaluation.personalResults,
+      };
+      console.log(formData)
+      toast.success('Đánh giá đã được gửi thành công!', {
+        autoClose: 1000,
+      });
+    },
+    sortBy(key) {
+      if (this.sortKey === key) {
+        this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
+      } else {
+        this.sortKey = key;
+        this.sortOrder = "asc";
+      }
+    },
+    selectPerson(person) {
+      if (this.isSelected && this.isSelected !== person) {
+        this.isSelected.isProcessing = false;
+      }
+
+      if (this.isSelected === person) {
+        this.isSelected = null;
+        person.isProcessing = false;
+      } else {
+        this.isSelected = person;
+        person.isProcessing = true;
+      }
+      console.log(this.isSelected);
+    },
   },
 };
 </script>
 
 <style scoped>
 /* Left menu */
+.btn-custom {
+  width: 110px;
+}
 tbody > tr > td {
   vertical-align: middle;
 }
 
-.info {
-  display: flex; /* Sử dụng flexbox để xếp các dòng theo chiều dọc */
-  flex: 1;
-  flex-direction: column; /* Sắp xếp các phần tử theo chiều dọc */
+.container-fluid {
+  background-color: #4e7fcf;
+  min-height: 100vh;
+  padding-top: 100px;
+  padding-bottom: 100px;
+  margin: 0 auto;
+  height: 100%;
 }
 
-.line {
-  position: relative; /* Để có thể sử dụng pseudo-element cho đường gạch chân */
-  padding-bottom: 2px; /* Khoảng cách giữa nội dung và đường gạch chân */
-  border-bottom: 2px solid black; /* Đường gạch chân cho từng dòng */
-  margin-bottom: 10px;
+.section h5 {
+  font-weight: bold;
+  text-transform: uppercase;
 }
-.line::after {
-  position: absolute; /* Đặt pseudo-element ở vị trí tuyệt đối so với phần tử chứa */
-  width: 100%; /* Chiếm toàn bộ chiều rộng của phần tử chứa */
+
+.left-menu {
+  background-color: #f7f7f7;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  margin-left: 20px;
+  height: 80vh;
+  margin-top: 25px;
+}
+
+.profile {
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  padding: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .avatar {
-  width: 200px;
-  height: 200px;
-  border-radius: 50%; /* Để tạo hình tròn cho phần tử chứa */
-  background-color: #ccc;
-  overflow: hidden; /* Đảm bảo hình ảnh không tràn ra ngoài phần tử chứa */
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  border: 3px solid #007bff;
+  /* Add a border around the avatar */
 }
 
-img {
+.avatar img {
   width: 100%;
   height: 100%;
-  border-radius: 50%; /* Để hình ảnh có hình tròn giống như phần tử chứa */
-  object-fit: cover; /* Đảm bảo hình ảnh không bị biến dạng */
+  object-fit: cover;
 }
 
-/* Right menu */
+.info h4 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 10px;
+}
 
+.line {
+  font-size: 16px;
+  margin-bottom: 5px;
+  line-height: 1.5;
+}
+
+.line strong {
+  color: #007bff;
+  /* Highlight the labels with a color */
+}
+
+/* Team Mate Table */
+
+.team-mate .table {
+  font-size: 14px;
+  margin-top: 20px;
+}
+
+/* Right Menu Styles */
 .right-menu {
-  height: 80vh; /* Đặt chiều cao của right-menu là chiều cao màn hình */
+  height: 80vh;
+  background-color: #fff;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  height: 80vh;
+  margin-right: 20px;
+  margin-top: 25px;
+  margin-left: 20px;
 }
 
-.title {
-  background-color: rgb(122, 182, 250);
+.evaluation-form {
+  flex: 1;
+  /* Take up remaining space */
+  padding: 20px;
+  border-radius: 8px;
+  overflow-y: auto;
+  /* Allow scrolling if content overflows */
+}
+
+.evaluation-header {
   font-size: 18px;
   font-weight: bold;
-  padding : 10px;
+  color: #333;
+}
+
+.evaluation-form .title {
+  background-color: #99c6f8;
+  padding: 10px;
   border-radius: 5px;
 }
+
 .point {
   color: red;
 }
-.content {
-  padding-left: 40px;
+
+.evaluation-form .content {
+  padding-left: 20px;
 }
 
-form {
-  padding: 20px;
-  border-radius: 8px;
-  background-color: #f8d3ff;
-  flex: 1;
-  max-height: 100%;
-  overflow-y: auto; /* Tạo thanh cuộn cho form */
-}
-/* Tạo kiểu cho thanh cuộn */
-form::-webkit-scrollbar {
-  width: 8px; /* Chiều rộng của thanh cuộn */
+.content > p {
+  color: black;
 }
 
-form::-webkit-scrollbar-thumb {
-  background-color: #888; /* Màu của thanh cuộn */
-  border-radius: 10px; /* Độ cong của thanh cuộn */
+.evaluation-form .form-check-label {
+  font-weight: normal;
 }
 
-form::-webkit-scrollbar-thumb:hover {
-  background-color: #555; /* Màu của thanh cuộn khi hover */
+.evaluation-form::-webkit-scrollbar {
+  width: 8px;
+}
+
+.evaluation-form::-webkit-scrollbar-thumb {
+  background-color: #aaa;
+  border-radius: 10px;
+}
+
+.evaluation-form::-webkit-scrollbar-thumb:hover {
+  background-color: #888;
+}
+
+/* Form Buttons */
+.form-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  padding: 10px;
+  background-color: #fff;
+  border-top: 1px solid #ddd;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  z-index: 10;
+  position: absolute;
 }
 </style>

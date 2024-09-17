@@ -61,6 +61,7 @@
 
 <script>
 export default {
+  name: 'ProfilePage',
   data() {
     return {
       profileImage: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
@@ -121,13 +122,13 @@ export default {
 <style scoped>
 
 .background-container {
-    margin-top:-50px;
   background-color: #4e7fcf;
   min-height: 100vh; 
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 20px; 
+  padding-top: 100px; 
+  
 }
 .container {
   display: flex;

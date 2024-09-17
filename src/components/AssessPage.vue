@@ -95,6 +95,10 @@
         >
       </div>
       <form class="evaluation-form" @submit.prevent="submitForm">
+      <!-- Evaluation Form -->
+      <!-- @submit.prevent="submit" -->
+      <form class="evaluation-form">
+        <!-- Performance Evaluation -->
         <div class="section mb-4">
           <h5>Hiệu suất Công việc</h5>
           <div
@@ -330,6 +334,15 @@
                 />
                 <label
                   :for="'regulationOption' + index + optIndex"
+                  type="radio"
+                  :id="'contributionOption' + index + optIndex"
+                  :name="'contribution' + index"
+                  class="form-check-input"
+                  v-model="selectedContributionValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'contributionOption' + index + optIndex"
                   class="form-check-label"
                   >{{ option.label }}</label
                 >
@@ -342,6 +355,47 @@
                 rows="3"
                 placeholder="Nhận xét thêm"
                 v-model="question.description"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <!-- Regulations and Policies -->
+        <div class="section mb-4">
+          <h5>Quy định và Chính sách <span class="text-danger"> *</span></h5>
+          <div
+            v-for="(
+              question, index
+            ) in performanceEvaluation.regulationsQuestions"
+            :key="index"
+            class="question mb-3"
+          >
+            <div class="options d-flex justify-content-around my-3">
+              <div
+                v-for="(option, optIndex) in question.options"
+                :key="optIndex"
+                class="form-check"
+              >
+                <input
+                  type="radio"
+                  :id="'regulationOption' + index + optIndex"
+                  :name="'regulation' + index"
+                  class="form-check-input"
+                  v-model="selectedRegulationValues[index]"
+                  :value="option.value"
+                />
+                <label
+                  :for="'regulationOption' + index + optIndex"
+                  class="form-check-label"
+                  >{{ option.label }}</label
+                >
+              </div>
+            </div>
+            <div class="description">
+              <textarea
+                v-if="parseFloat(selectedRegulationValues[index]) >= 3"
+                class="form-control"
+                rows="3"
+                placeholder="Nhận xét thêm"
               ></textarea>
             </div>
           </div>
@@ -364,6 +418,11 @@
 
         <div class="d-flex justify-content-end">
           <button type="submit" class="btn btn-primary">Gửi Đánh Giá</button>
+        <!-- Submit Button -->
+        <div class="d-flex justify-content-end">
+          <button class="btn btn-primary" type="submit">
+            Gửi Đánh Giá
+          </button>
         </div>
       </form>
     </div>
@@ -372,6 +431,7 @@
 <script>
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+
 export default {
   name: "AssessPage",
   data() {
@@ -462,7 +522,6 @@ export default {
               { label: "Cải thiện vượt bậc", value: "5" },
             ],
             description: '',
-
           },
           {
             label:
@@ -476,7 +535,6 @@ export default {
               { label: "Rất hiệu quả", value: "5" },
             ],
             description: '',
-
           },
           {
             label:
@@ -490,7 +548,6 @@ export default {
               { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
             ],
             description: '',
-
           },
         ],
         attitudeQuestions: [
@@ -506,7 +563,6 @@ export default {
               { label: "Luôn luôn", value: "5" },
             ],
             description: '',
-
           },
           {
             label: " Thái độ làm việc của bạn trong công việc là",
@@ -519,7 +575,6 @@ export default {
               { label: "Rất chủ động", value: "5" },
             ],
             description: '',
-
           },
           {
             label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
@@ -643,6 +698,7 @@ export default {
         autoClose: 1000,
       });
     },
+
     sortBy(key) {
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -656,6 +712,8 @@ export default {
         this.isSelected.isProcessing = false;
       }
 
+
+      // Nếu chọn lại người đang được chọn, bỏ chọn (tắt xem)
       if (this.isSelected === person) {
         this.isSelected = null;
         person.isProcessing = false;
@@ -665,6 +723,22 @@ export default {
       }
       console.log(this.isSelected);
     },
+        // Chọn người mới và bật trạng thái xem
+        this.isSelected = person;
+        person.isProcessing = true;
+      }
+
+      console.log(this.isSelected);
+    },
+    // submit() {
+    //   // toast -vue3
+    //   Swal.fire({
+    //     title: 'Thông báo!',
+    //     text: 'Đây là một thông báo đẹp mắt.',
+    //     icon: 'success',
+    //     confirmButtonText: 'OK'
+    //   });
+    // },
   },
 };
 </script>

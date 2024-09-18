@@ -462,9 +462,8 @@ export default {
         this.isSelected.isProcessing = false;
       }
 
-      if (this.profile === person) {
-        person.isProcessing = true;
-        return; // Kết thúc nếu người được chọn trùng với profile
+      if (this.profile !== person) {
+        this.profile.isProcessing = false; // Luôn tắt xử lý profile sau khi chọn người mới
       }
 
       // Chọn người mới nếu khác người hiện tại
@@ -474,7 +473,6 @@ export default {
         person.isProcessing = true;
       }
 
-      this.profile.isProcessing = false; // Luôn tắt xử lý profile sau khi chọn người mới
       console.log(this.isSelected);
     },
     selectPerformanceValue(criteriaIndex, questionIndex, value) {

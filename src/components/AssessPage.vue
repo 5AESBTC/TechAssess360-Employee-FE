@@ -143,27 +143,29 @@
                 placeholder="Nhận xét thêm"
                 v-model="question.description"
               ></textarea>
+        <div
+          v-for="(criteria, criteriaIndex) in performanceEvaluation"
+          :key="criteriaIndex"
+          class="section mb-4"
+        >
+          <div class="d-flex justify-content-center gap-2">
+            <label>
+              <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
+            </label>
+            <div class="multi">
+              <!-- (?/criteria.multi) -->
+              ({{ criteria.total ? criteria.total : "?" }} /
+              {{ criteria.multi }})
             </div>
           </div>
-        </div>
-
-        <!-- Skills and Knowledge -->
-        <div class="section mb-4">
-          <h5>Kĩ Năng Và Kiến Thức</h5>
           <div
-            v-for="(question, index) in performanceEvaluation.skillsQuestions"
-            :key="index"
+            v-for="(question, questionIndex) in criteria.question"
+            :key="questionIndex"
             class="question mb-3"
           >
-            <div class="d-flex justify-content-between title">
-              <label
-                >{{ index + 1 }}. {{ question.label }}
-                <span class="text-danger"> *</span></label
-              >
-            </div>
             <div
-              v-if="index === 2"
-              class="options d-flex justify-content-around my-3"
+              class="d-flex justify-content-between title"
+              v-if="question.label"
             >
               <div
                 v-for="(option, optIndex) in question.options"
@@ -228,7 +230,7 @@
           >
             <div class="d-flex justify-content-between title">
               <label
-                >{{ index + 1 }}. {{ question.label }}
+                >{{ questionIndex + 1 }}. {{ question.label }}
                 <span class="text-danger"> *</span></label
               >
             </div>
@@ -322,14 +324,27 @@
               <div
                 v-for="(option, optIndex) in question.options"
                 :key="optIndex"
+                v-for="(option, optionIndex) in question.options"
+                :key="optionIndex"
                 class="form-check"
               >
                 <input
                   type="radio"
-                  :id="'regulationOption' + index + optIndex"
-                  :name="'regulation' + index"
+                  :id="
+                    'performanceOption' +
+                    criteriaIndex +
+                    questionIndex +
+                    optionIndex
+                  "
+                  :name="'performance' + criteriaIndex + questionIndex"
                   class="form-check-input"
-                  v-model="selectedRegulationValues[index]"
+                  @click="
+                    selectPerformanceValue(
+                      criteriaIndex,
+                      questionIndex,
+                      option.value
+                    )
+                  "
                   :value="option.value"
                 />
                 <label
@@ -385,6 +400,12 @@
                 />
                 <label
                   :for="'regulationOption' + index + optIndex"
+                  :for="
+                    'performanceOption' +
+                    criteriaIndex +
+                    questionIndex +
+                    optionIndex
+                  "
                   class="form-check-label"
                   >{{ option.label }}</label
                 >
@@ -392,7 +413,7 @@
             </div>
             <div class="description">
               <textarea
-                v-if="parseFloat(selectedRegulationValues[index]) >= 3"
+                v-if="isShowDescription(criteriaIndex, questionIndex)"
                 class="form-control"
                 rows="3"
                 placeholder="Nhận xét thêm"
@@ -420,9 +441,7 @@
           <button type="submit" class="btn btn-primary">Gửi Đánh Giá</button>
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit">
-            Gửi Đánh Giá
-          </button>
+          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
         </div>
         </div>
       </form>
@@ -432,6 +451,9 @@
 <script>
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
+// import { reactive } from "vue";
+
+// import { Swal } from "sweetalert2";
 
 export default {
   name: "AssessPage",
@@ -445,7 +467,7 @@ export default {
         project: "StudyArt",
         level: "3",
         time: "2 năm 3 tháng",
-        isProcessing: false,
+        isProcessing: true,
       },
       sortKey: "name",
       sortOrder: "asc",
@@ -470,188 +492,211 @@ export default {
           isProcessing: false,
         },
       ],
-      performanceEvaluation: {
-        performanceQuestions: [
-          {
-            label:
-              "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
-            score: 5,
-            options: [
-              { label: "50%", value: "1" },
-              { label: "75%", value: "2" },
-              { label: "100%", value: "3" },
-              { label: "150%", value: "4" },
-              { label: "200%", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label: "Mức độ chính xác của công việc bạn thực hiện là?",
-            score: 10,
-            options: [
-              { label: "50%", value: "1" },
-              { label: "75%", value: "2" },
-              { label: "100%", value: "3" },
-              { label: "150%", value: "4" },
-              { label: "200%", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label: " Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
-            score: 15,
-            options: [
-              { label: "Hiếm khi", value: "1" },
-              { label: "Thỉnh thoảng", value: "2" },
-              { label: "Đôi khi", value: "3" },
-              { label: "Thường xuyên", value: "4" },
-              { label: "Luôn luôn", value: "5" },
-            ],
-            description: '',
-          },
-        ],
-        skillsQuestions: [
-          {
-            label:
-              "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-            score: 5,
-            options: [
-              { label: "Không cải thiện", value: "1" },
-              { label: "Cải thiện ít", value: "2" },
-              { label: "Cải thiện vừa phải", value: "3" },
-              { label: "Cải thiện đáng kể", value: "4" },
-              { label: "Cải thiện vượt bậc", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label:
-              " Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-            score: 10,
-            options: [
-              { label: "Hoàn toàn không", value: "1" },
-              { label: "Ít hiệu quả", value: "2" },
-              { label: "Hiệu quả trung bình", value: "3" },
-              { label: "Khá hiệu quả", value: "4" },
-              { label: "Rất hiệu quả", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label:
-              " Bạn cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-            score: 15,
-            options: [
-              { label: "Quản lý thời gian", value: "1" },
-              { label: "Giao tiếp và hợp tác", value: "2" },
-              { label: "Chuyên môn kỹ thuật", value: "3" },
-              { label: "Giải quyết vấn đề và ra quyết định", value: "4" },
-              { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
-            ],
-            description: '',
-          },
-        ],
-        attitudeQuestions: [
-          {
-            label:
-              " Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-            score: 5,
-            options: [
-              { label: "Rất hiếm khi", value: "1" },
-              { label: "Thỉnh thoảng", value: "2" },
-              { label: "Đôi khi", value: "3" },
-              { label: "Thường xuyên", value: "4" },
-              { label: "Luôn luôn", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label: " Thái độ làm việc của bạn trong công việc là",
-            score: 15,
-            options: [
-              { label: "Thiếu động lực", value: "1" },
-              { label: "Hơi thụ động", value: "2" },
-              { label: "Cần cải thiện", value: "3" },
-              { label: "Tích cực", value: "4" },
-              { label: "Rất chủ động", value: "5" },
-            ],
-            description: '',
-          },
-          {
-            label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
-            score: 10,
-            options: [
-              {
-                label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
-                value: "1",
-              },
-              {
-                label:
-                  "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
-                value: "2",
-              },
-              {
-                label:
-                  "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
-                value: "3",
-              },
-              {
-                label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
-                value: "4",
-              },
-              {
-                label: "Giải quyết tình huống một cách hiệu quả và tự tin",
-                value: "5",
-              },
-            ],
-            description: '',
-          },
-        ],
-        contributionsQuestions: [
-          {
-            score: 10,
-            options: [
-              { label: "Hầu như không", value: "1" },
-              { label: "Có ít đóng góp", value: "2" },
-              { label: "Đóng góp mức trung bình", value: "3" },
-              { label: "Có nhiều đóng góp", value: "4" },
-              { label: "Có rất nhiều đóng góp", value: "5" },
-            ],
-            description: '',
-          },
-        ],
-        regulationsQuestions: [
-          {
-            score: 10,
-            options: [
-              { label: "Hầu như không tuân thủ", value: "1" },
-              { label: "Tuân thủ ít", value: "2" },
-              { label: "Tuân thủ mức trung bình", value: "3" },
-              { label: "Tuân thủ tốt", value: "4" },
-              { label: "Tuân thủ hoàn toàn", value: "5" },
-            ],
-            description: '',
-          },
-        ],
-        personalContributionsQuestions: [
-          {
-            label:
-              "Thành tích cá nhân nổi bật nhất của bạn trong thời gian qua là:",
-          },
-          {
-            label:
-              "Bạn cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?",
-          },
-        ],
-      },
+      performanceEvaluation: [
+        {
+          id: 1,
+          title: "Hiệu suất công việc",
+          multi: 30,
+          total: 0,
+          question: [
+            {
+              label:
+                "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
+              score: 5,
+              options: [
+                { label: "50%", value: "1" },
+                { label: "75%", value: "2" },
+                { label: "100%", value: "3" },
+                { label: "150%", value: "4" },
+                { label: "200%", value: "5" },
+              ],
+              description: ''
+            },
+            {
+              label: "Mức độ chính xác của công việc bạn thực hiện là?",
+              score: 10,
+              options: [
+                { label: "50%", value: "1" },
+                { label: "75%", value: "2" },
+                { label: "100%", value: "3" },
+                { label: "150%", value: "4" },
+                { label: "200%", value: "5" },
+              ],
+                            description: ''
+
+            },
+            {
+              label:
+                " Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
+              score: 15,
+              options: [
+                { label: "Hiếm khi", value: "1" },
+                { label: "Thỉnh thoảng", value: "2" },
+                { label: "Đôi khi", value: "3" },
+                { label: "Thường xuyên", value: "4" },
+                { label: "Luôn luôn", value: "5" },
+              ],
+                            description: ''
+
+            },
+          ],
+        },
+        {
+          id: 2,
+          title: "Kỹ năng và Kiến thức",
+          multi: 15,
+          question: [
+            {
+              label:
+                "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
+              score: 5,
+              options: [
+                { label: "Không cải thiện", value: "1" },
+                { label: "Cải thiện ít", value: "2" },
+                { label: "Cải thiện vừa phải", value: "3" },
+                { label: "Cải thiện đáng kể", value: "4" },
+                { label: "Cải thiện vượt bậc", value: "5" },
+              ],
+                            description: ''
+
+            },
+            {
+              label:
+                " Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 5,
+              options: [
+                { label: "Hoàn toàn không", value: "1" },
+                { label: "Ít hiệu quả", value: "2" },
+                { label: "Hiệu quả trung bình", value: "3" },
+                { label: "Khá hiệu quả", value: "4" },
+                { label: "Rất hiệu quả", value: "5" },
+              ],
+                            description: ''
+
+            },
+            {
+              label:
+                " Bạn cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
+              score: 5,
+              options: [
+                { label: "Quản lý thời gian", value: "1" },
+                { label: "Giao tiếp và hợp tác", value: "2" },
+                { label: "Chuyên môn kỹ thuật", value: "3" },
+                { label: "Giải quyết vấn đề và ra quyết định", value: "4" },
+                { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
+              ],
+                            description: ''
+
+            },
+          ],
+        },
+        {
+          id: 3,
+          title: "Tinh thần làm việc và Thái độ",
+          multi: 10,
+          question: [
+            {
+              label:
+                " Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
+              score: 3,
+              options: [
+                { label: "Rất hiếm khi", value: "1" },
+                { label: "Thỉnh thoảng", value: "2" },
+                { label: "Đôi khi", value: "3" },
+                { label: "Thường xuyên", value: "4" },
+                { label: "Luôn luôn", value: "5" },
+              ],
+                            description: ''
+
+            },
+            {
+              label: " Thái độ làm việc của bạn trong công việc là",
+              score: 3,
+              options: [
+                { label: "Thiếu động lực", value: "1" },
+                { label: "Hơi thụ động", value: "2" },
+                { label: "Cần cải thiện", value: "3" },
+                { label: "Tích cực", value: "4" },
+                { label: "Rất chủ động", value: "5" },
+              ],
+                            description: ''
+
+            },
+            {
+              label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
+              score: 4,
+              options: [
+                {
+                  label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                  value: "1",
+                },
+                {
+                  label:
+                    "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                  value: "2",
+                },
+                {
+                  label:
+                    "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                  value: "3",
+                },
+                {
+                  label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                  value: "4",
+                },
+                {
+                  label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                  value: "5",
+                },
+              ],
+            },
+          ],
+        },
+        {
+          id: 4,
+          title: "Đóng góp và sáng kiến",
+          multi: 10,
+          question: [
+            {
+              score: 10,
+              options: [
+                { label: "Hầu như không", value: "1" },
+                { label: "Có ít đóng góp", value: "2" },
+                { label: "Đóng góp mức trung bình", value: "3" },
+                { label: "Có nhiều đóng góp", value: "4" },
+                { label: "Có rất nhiều đóng góp", value: "5" },
+              ],
+                            description: ''
+
+            },
+          ],
+        },
+        {
+          id: 5,
+          title: "Quy định và Chính sách",
+          multi: 10,
+          question: [
+            {
+              score: 10,
+              options: [
+                { label: "Hầu như không tuân thủ", value: "1" },
+                { label: "Tuân thủ ít", value: "2" },
+                { label: "Tuân thủ mức trung bình", value: "3" },
+                { label: "Tuân thủ tốt", value: "4" },
+                { label: "Tuân thủ hoàn toàn", value: "5" },
+              ],
+                            description: ''
+
+            },
+          ],
+        },
+      ],
+      isSelected: this.profile,
       selectedPerformanceValues: [],
-      selectedSkillsValues: [],
-      selectedAttitudeValues: [],
-      selectedContributionValues: [],
-      selectedRegulationValues: [],
-      isSelected: null,
+      listScore: [],
     };
   },
+
   computed: {
     sortedTeamMates() {
       return [...this.teamMates].sort((a, b) => {
@@ -664,7 +709,16 @@ export default {
         return this.sortOrder === "asc" ? comparison : -comparison;
       });
     },
+    isShowDescription() {
+      return (criteriaIndex, questionIndex) => {
+        // Access reactive author data and evaluate if the score is >= 3
+        return (
+          this.selectedPerformanceValues[criteriaIndex]?.[questionIndex] >= 3
+        );
+      };
+    },
   },
+
   methods: {
     submitForm() {
       // submit dữ liệu
@@ -717,6 +771,14 @@ export default {
         this.isSelected = null;
         person.isProcessing = false;
       } else {
+
+      if (this.profile !== person) {
+        this.profile.isProcessing = false; // Luôn tắt xử lý profile sau khi chọn người mới
+      }
+
+      // Chọn người mới nếu khác người hiện tại
+      if (this.isSelected !== person) {
+        if (this.isSelected) this.isSelected.isProcessing = false; // Bỏ chọn người trước đó
         this.isSelected = person;
         person.isProcessing = true;
       }
@@ -726,6 +788,65 @@ export default {
         person.isProcessing = true;
       }
     },
+    selectPerformanceValue(criteriaIndex, questionIndex, value) {
+      // Tính điểm cho giá trị đã chọn
+      const question =
+        this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
+      const multiCriteriaIndex =
+        parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
+      const questionScore = parseFloat(question?.score) || 0;
+      const selectedValue = parseFloat(value) || 0;
+      console.log(questionScore, multiCriteriaIndex, selectedValue);
+      // Tính toán điểm cho câu hỏi này
+      const score = (questionScore / multiCriteriaIndex) * selectedValue;
+      const roundedScore = Math.round(score * 100) / 100;
+
+      // Lưu điểm vào listScore
+      this.listScore[criteriaIndex] = {
+        ...this.listScore[criteriaIndex],
+        [questionIndex]: roundedScore,
+      };
+
+      // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
+      const questionsCount =
+        this.performanceEvaluation[criteriaIndex]?.question?.length || 0;
+      const answeredQuestionsCount = Object.keys(
+        this.listScore[criteriaIndex] || {}
+      ).length;
+
+      if (answeredQuestionsCount === questionsCount) {
+        // Tính tổng điểm cho criteriaIndex này
+        const totalScore = this.calculateTotalScore(criteriaIndex);
+        // 5 * 20 = 100% của 30 điểm
+        const percentage = Math.round(
+          ((totalScore * 20) / 100) *
+            (this.performanceEvaluation[criteriaIndex]?.multi || 1)
+        );
+        this.performanceEvaluation[criteriaIndex].total = percentage;
+        console.log("Tổng điểm:", totalScore);
+      }
+
+      console.log("Danh sách điểm:", this.listScore);
+    },
+
+    calculateTotalScore(criteriaIndex) {
+      const listScoreForCriteria = this.listScore[criteriaIndex] || {};
+      let total = 0;
+
+      for (const questionIndex in listScoreForCriteria) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            listScoreForCriteria,
+            questionIndex
+          )
+        ) {
+          total += listScoreForCriteria[questionIndex];
+        }
+      }
+      total = Math.round(total * 100) / 100;
+      return total;
+    },
+  },
 };
 </script>
 
@@ -734,6 +855,7 @@ export default {
 .btn-custom {
   width: 110px;
 }
+
 tbody > tr > td {
   vertical-align: middle;
 }
@@ -813,6 +935,12 @@ tbody > tr > td {
 }
 
 /* Right Menu Styles */
+.multi {
+  color: red;
+  font-weight: bold;
+  font-size: 16px;
+}
+
 .right-menu {
   height: 80vh;
   background-color: #fff;

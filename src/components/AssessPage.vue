@@ -424,6 +424,7 @@
             Gửi Đánh Giá
           </button>
         </div>
+        </div>
       </form>
     </div>
   </div>
@@ -711,8 +712,6 @@ export default {
       if (this.isSelected && this.isSelected !== person) {
         this.isSelected.isProcessing = false;
       }
-
-
       // Nếu chọn lại người đang được chọn, bỏ chọn (tắt xem)
       if (this.isSelected === person) {
         this.isSelected = null;
@@ -722,24 +721,11 @@ export default {
         person.isProcessing = true;
       }
       console.log(this.isSelected);
-    },
         // Chọn người mới và bật trạng thái xem
         this.isSelected = person;
         person.isProcessing = true;
       }
-
-      console.log(this.isSelected);
     },
-    // submit() {
-    //   // toast -vue3
-    //   Swal.fire({
-    //     title: 'Thông báo!',
-    //     text: 'Đây là một thông báo đẹp mắt.',
-    //     icon: 'success',
-    //     confirmButtonText: 'OK'
-    //   });
-    // },
-  },
 };
 </script>
 

@@ -97,7 +97,7 @@
 
       <!-- Evaluation Form -->
       <!-- @submit.prevent="submit" -->
-      <form class="evaluation-form">
+      <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
         <div
           v-for="(criteria, criteriaIndex) in performanceEvaluation"
@@ -199,9 +199,9 @@
   </div>
 </template>
 <script>
-// import { reactive } from "vue";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
-// import { Swal } from "sweetalert2";
 
 export default {
   name: "AssessPage",
@@ -476,14 +476,18 @@ export default {
       console.log(this.isSelected);
     },
     selectPerformanceValue(criteriaIndex, questionIndex, value) {
+    // Cập nhật giá trị đã chọn
+      if (!this.selectedPerformanceValues[criteriaIndex]) {
+        this.selectedPerformanceValues[criteriaIndex] = [];
+      }
+      this.selectedPerformanceValues[criteriaIndex][questionIndex] = value;
+
       // Tính điểm cho giá trị đã chọn
-      const question =
-        this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
-      const multiCriteriaIndex =
-        parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
+      const question = this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
+      const multiCriteriaIndex = parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
       const questionScore = parseFloat(question?.score) || 0;
       const selectedValue = parseFloat(value) || 0;
-      console.log(questionScore, multiCriteriaIndex, selectedValue);
+
       // Tính toán điểm cho câu hỏi này
       const score = (questionScore / multiCriteriaIndex) * selectedValue;
       const roundedScore = Math.round(score * 100) / 100;
@@ -495,25 +499,39 @@ export default {
       };
 
       // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
-      const questionsCount =
-        this.performanceEvaluation[criteriaIndex]?.question?.length || 0;
-      const answeredQuestionsCount = Object.keys(
-        this.listScore[criteriaIndex] || {}
-      ).length;
+      const questionsCount = this.performanceEvaluation[criteriaIndex]?.question?.length || 0;
+      const answeredQuestionsCount = Object.keys(this.listScore[criteriaIndex] || {}).length;
 
       if (answeredQuestionsCount === questionsCount) {
         // Tính tổng điểm cho criteriaIndex này
         const totalScore = this.calculateTotalScore(criteriaIndex);
-        // 5 * 20 = 100% của 30 điểm
-        const percentage = Math.round(
-          ((totalScore * 20) / 100) *
-            (this.performanceEvaluation[criteriaIndex]?.multi || 1)
-        );
+        const percentage = Math.round(((totalScore * 20) / 100) * (this.performanceEvaluation[criteriaIndex]?.multi || 1));
         this.performanceEvaluation[criteriaIndex].total = percentage;
         console.log("Tổng điểm:", totalScore);
       }
 
       console.log("Danh sách điểm:", this.listScore);
+    },
+
+    submitForm() {
+      console.log('selectedPerformanceValues:', this.selectedPerformanceValues);
+      this.selectedPerformanceValues.forEach((value, index) => {
+        const criteria = this.performanceEvaluation[index];
+        console.log(`Criteria ${index}:`, criteria);
+        criteria.question.forEach((question, questionIndex) => {
+          console.log(`Question ${index + 1}.${questionIndex + 1}:`, question);
+          const score = question.options.find(option => option.value === value[questionIndex]);
+          if (score) {
+            console.log(`Điểm câu hỏi ${index + 1}.${questionIndex + 1}: ${score.label} - ${score.value}`);
+          } else {
+            console.log(`Không tìm thấy điểm cho câu hỏi ${index + 1}.${questionIndex + 1}`);
+          }
+        });
+      });
+      localStorage.setItem('selectedPerformanceValues', JSON.stringify(this.selectedPerformanceValues));
+      toast.success('Operation successful!', {
+        autoClose: 2000,
+      });
     },
 
     calculateTotalScore(criteriaIndex) {

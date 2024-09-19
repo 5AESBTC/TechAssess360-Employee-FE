@@ -97,7 +97,7 @@
 
       <!-- Evaluation Form -->
       <!-- @submit.prevent="submit" -->
-      <form class="evaluation-form">
+      <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
         <div
           v-for="(criteria, criteriaIndex) in performanceEvaluation"
@@ -171,6 +171,7 @@
                 class="form-control"
                 rows="3"
                 placeholder="Nhận xét thêm"
+                v-model="question.description"
               ></textarea>
             </div>
           </div>
@@ -192,16 +193,15 @@
 
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
+          <button type="submit" class="btn btn-primary">Gửi Đánh Giá</button>
         </div>
       </form>
     </div>
   </div>
 </template>
 <script>
-// import { reactive } from "vue";
-
-// import { Swal } from "sweetalert2";
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 export default {
   name: "AssessPage",
@@ -258,6 +258,8 @@ export default {
                 { label: "150%", value: "4" },
                 { label: "200%", value: "5" },
               ],
+              description:''
+
             },
             {
               label: "Mức độ chính xác của công việc bạn thực hiện là?",
@@ -281,6 +283,8 @@ export default {
                 { label: "Thường xuyên", value: "4" },
                 { label: "Luôn luôn", value: "5" },
               ],
+              description:''
+
             },
           ],
         },
@@ -300,6 +304,8 @@ export default {
                 { label: "Cải thiện đáng kể", value: "4" },
                 { label: "Cải thiện vượt bậc", value: "5" },
               ],
+              description:''
+
             },
             {
               label:
@@ -312,6 +318,8 @@ export default {
                 { label: "Khá hiệu quả", value: "4" },
                 { label: "Rất hiệu quả", value: "5" },
               ],
+              description:''
+
             },
             {
               label:
@@ -324,6 +332,8 @@ export default {
                 { label: "Giải quyết vấn đề và ra quyết định", value: "4" },
                 { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
               ],
+              description:''
+
             },
           ],
         },
@@ -343,6 +353,8 @@ export default {
                 { label: "Thường xuyên", value: "4" },
                 { label: "Luôn luôn", value: "5" },
               ],
+              description:''
+
             },
             {
               label: " Thái độ làm việc của bạn trong công việc là",
@@ -354,6 +366,8 @@ export default {
                 { label: "Tích cực", value: "4" },
                 { label: "Rất chủ động", value: "5" },
               ],
+              description:''
+
             },
             {
               label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
@@ -382,6 +396,8 @@ export default {
                   value: "5",
                 },
               ],
+              description:''
+
             },
           ],
         },
@@ -399,6 +415,7 @@ export default {
                 { label: "Có nhiều đóng góp", value: "4" },
                 { label: "Có rất nhiều đóng góp", value: "5" },
               ],
+              description:''
             },
           ],
         },
@@ -416,6 +433,7 @@ export default {
                 { label: "Tuân thủ tốt", value: "4" },
                 { label: "Tuân thủ hoàn toàn", value: "5" },
               ],
+              description: ''
             },
           ],
         },
@@ -449,6 +467,7 @@ export default {
   },
 
   methods: {
+    
     sortBy(key) {
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -461,24 +480,48 @@ export default {
       if (this.isSelected && this.isSelected !== person) {
         this.isSelected.isProcessing = false;
       }
-
+      
       if (this.profile !== person) {
         this.profile.isProcessing = false; // Luôn tắt xử lý profile sau khi chọn người mới
       }
-
+      
       // Chọn người mới nếu khác người hiện tại
       if (this.isSelected !== person) {
         if (this.isSelected) this.isSelected.isProcessing = false; // Bỏ chọn người trước đó
         this.isSelected = person;
         person.isProcessing = true;
       }
-
+      
       console.log(this.isSelected);
+    },
+    submitForm() {
+      if (!this.performanceEvaluation || this.performanceEvaluation.length === 0) {
+        console.error("Performance evaluation data is not available.");
+        return;
+      }
+      const formData = {
+        evaluations: this.performanceEvaluation.map((criteria, criteriaIndex) => ({
+          title: criteria.title,
+          totalScore: this.performanceEvaluation[criteriaIndex].total,
+          questions: criteria.question.map((question, questionIndex) => ({
+            label: question.label,
+            score: this.listScore[criteriaIndex]?.[questionIndex] || 0,
+            description: question.description
+          })),
+        })),
+      };
+
+      console.log(formData);
+
+      toast.success('Đánh giá đã được gửi thành công!', {
+        autoClose: 1000,
+      });
+
     },
     selectPerformanceValue(criteriaIndex, questionIndex, value) {
       // Tính điểm cho giá trị đã chọn
       const question =
-        this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
+      this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
       const multiCriteriaIndex =
         parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
       const questionScore = parseFloat(question?.score) || 0;
@@ -512,10 +555,8 @@ export default {
         this.performanceEvaluation[criteriaIndex].total = percentage;
         console.log("Tổng điểm:", totalScore);
       }
-
       console.log("Danh sách điểm:", this.listScore);
     },
-
     calculateTotalScore(criteriaIndex) {
       const listScoreForCriteria = this.listScore[criteriaIndex] || {};
       let total = 0;

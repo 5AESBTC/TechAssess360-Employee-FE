@@ -89,247 +89,42 @@
   <span style="color: red; font-size: 24px;">Tổng điểm: {{ calculateGrandTotalScore() }}</span>
 </div>
 
-          
-          <!-- <div class="dropdowns mb-4">
-            <label for="year" class="form-label">Chọn năm:</label>
-            <select id="year" v-model="selectedYear" class="form-select">
-              <option v-for="year in years" :key="year" :value="year">
-                {{ year }}
-              </option>
-            </select>
-  
-            <label for="quarter" class="form-label">Chọn quý:</label>
-            <select id="quarter" v-model="selectedQuarter" class="form-select">
-              <option v-for="quarter in quarters" :key="quarter" :value="quarter">
-                {{ quarter }}
-              </option>
-            </select>
-          </div> -->
-        
-  
-        <!-- Evaluation Form -->
-        <form v-if="selectedPerson" class="evaluation-form">
-          <!-- Performance Evaluation -->
-          <div class="section mb-4">
-            <h5>
-  Hiệu suất Công việc 
- 
-</h5>
-<span style="color: red;">
-    (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation.performanceQuestions) }}</strong> / 🏆 Hệ số tổng : <strong>{{ maxScore.performance }}</strong>)
-  </span>
+      
+<form v-if="selectedPerson" class="evaluation-form">
+  <div v-for="(section, sectionIndex) in evaluationSections" :key="sectionIndex" class="section mb-4">
+    <h5>{{ section.title }}</h5>
+    
+    <div>
+      <div v-if="section.questions">
+        <span style="color: red;">
+          (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation[section.key]) }}</strong> / 🏆 Hệ số tổng: <strong>{{ maxScore[section.key] }}</strong>)
+        </span>
 
+        <div v-for="(question, index) in selectedPerson?.evaluation[section.key] ?? []" :key="index" class="question mb-3">
+          <div v-if="question.label" class="d-flex justify-content-between title">
+  <label>{{ index + 1 }}. {{ question.label }}<span class="text-danger"> *</span></label>
+</div>
+          <div class="options d-flex justify-content-around my-3">
+            <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check d-flex flex-column align-items-center">
+              <span class="answer-label me-2">{{ option.label }}</span>
+              <div class="avatar-group mt-2">
+                <img v-for="(avatar, avatarIndex) in option.avatarUrls" :key="avatarIndex" :src="avatar" alt="Avatar" class="avatar-img" />
+                <span class="tooltiptext">{{ option.description }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <div v-for="(question, index) in selectedPerson?.evaluation?.performanceQuestions ?? []" :key="index" class="question mb-3">
-              <div class="d-flex justify-content-between title">
-                <label
-                  >{{ index + 1 }}. {{ question.label }}
-                  <span class="text-danger"> *</span></label
-                >
-                <span class="average-score">Điểm trung bình: {{ calculateQuestionAverage(question,maxScore.performance) }}</span>
-              </div>
-              <div class="options d-flex justify-content-around my-3">
-                <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check d-flex flex-column align-items-center"
-                >
-                  <span class="answer-label me-2">{{ option.label }}</span>
-                  <div class="avatar-group mt-2">
-                    <img
-                      v-for="(avatar, avatarIndex) in option.avatarUrls"
-                      :key="avatarIndex"
-                      :src="avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                    <span class="tooltiptext">{{ option.description? option.description : '' }}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Skills and Knowledge -->
-          <div class="section mb-4">
-            <h5>Kĩ Năng Và Kiến Thức </h5>
-            <span style="color: red;">
-    (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation.skillsQuestions) }}</strong> / 🏆 Hệ số tổng : <strong>{{ maxScore.skill }}</strong>)
-  </span>
-            <div
-    v-for="(question, index) in selectedPerson?.evaluation?.skillsQuestions ?? []"
-    :key="index"
-    class="question mb-3"
-  >
-              <div class="d-flex justify-content-between title">
-                <label
-                  >{{ index + 1 }}. {{ question.label }}
-                  <span class="text-danger"> *</span></label
-                >
-                <span class="average-score">Điểm trung bình: {{ calculateQuestionAverage(question,maxScore.skill) }}</span>
-              </div>
-  
-              <div
-                class="options d-flex justify-content-around my-3"
-              >
-              <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check d-flex flex-column align-items-center"
-                >
-                  <span class="answer-label me-2">{{ option.label }}</span>
-                  <div class="avatar-group mt-2">
-                    <img
-                      v-for="(avatar, avatarIndex) in option.avatarUrls"
-                      :key="avatarIndex"
-                      :src="avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Attitude and Spirit -->
-          <div class="section mb-4">
-            <h5>Tinh thần làm việc và Thái độ </h5>
-            <span style="color: red;">
-    (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation.attitudeQuestions) }}</strong> / 🏆 Hệ số tổng : <strong>{{ maxScore.attitude }}</strong>)
-  </span>
-            <div
-    v-for="(question, index) in selectedPerson?.evaluation?.attitudeQuestions ?? []"
-    :key="index"
-    class="question mb-3"
-  >
-              <div class="d-flex justify-content-between title">
-                <label
-                  >{{ index + 1 }}. {{ question.label }}
-                  <span class="text-danger"> *</span></label
-                >
-                <span class="average-score">Điểm trung bình: {{ calculateQuestionAverage(question,maxScore.attitude) }}</span>
-              </div>
-              <div class="options d-flex justify-content-around my-3">
-                <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check d-flex flex-column align-items-center"
-                >
-                  <span class="answer-label me-2">{{ option.label }}</span>
-                  <div class="avatar-group mt-2">
-                    <img
-                      v-for="(avatar, avatarIndex) in option.avatarUrls"
-                      :key="avatarIndex"
-                      :src="avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                  </div>
-                </div>
-              </div>
-              
-            </div>
-          </div>
-  
-          <!-- Contributions and Initiatives -->
-          <div class="section mb-4">
-            <h5>Đóng góp và Sáng kiến </h5>
-            <span style="color: red;">
-    (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation.contributionsQuestions) }}</strong> / 🏆 Hệ số tổng : <strong>{{ maxScore.contributions }}</strong>)
-  </span>
-            <div
-    v-for="(question, index) in selectedPerson?.evaluation?.contributionsQuestions ?? []"
-    :key="index"
-    class="question mb-3"
-  >
-              <div class="options d-flex justify-content-around my-3">
-                <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check"
-                >
-
-                  <span class="answer-label me-2">{{ option.label }}</span>
-                  <div class="avatar-group mt-2">
-                    <img
-                      v-for="(avatar, avatarIndex) in option.avatarUrls"
-                      :key="avatarIndex"
-                      :src="avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Regulations and Policies -->
-          <div class="section mb-4">
-            <h5>Quy định và Chính sách </h5>
-            <span style="color: red;">
-    (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation.regulationsQuestions) }}</strong> / 🏆 Hệ số tổng : <strong>{{ maxScore.regulations }}</strong>)
-  </span>
-            <div
-              v-for="(
-                question, index
-              ) in selectedPerson?.evaluation?.regulationsQuestions ?? []"
-              :key="index"
-              class="question mb-3"
-            >
-              <div class="options d-flex justify-content-around my-3">
-                <div
-                  v-for="(option, optIndex) in question.options"
-                  :key="optIndex"
-                  class="form-check"
-                >
-                  <span class="answer-label me-2">{{ option.label }}</span>
-                  <div class="avatar-group mt-2">
-                    <img
-                      v-for="(avatar, avatarIndex) in option.avatarUrls"
-                      :key="avatarIndex"
-                      :src="avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-  
-          <!-- Personal Contributions and Results -->
-          <div class="section mb-4">
-            <h5>Đóng góp Cá nhân và Kết quả</h5>
-            <div class="question mb-3">
-              <label class="d-flex title"
-                >Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là
-                <span class="text-danger"> *</span></label
-              >
-              <div class="form-control text-start" rows="3">
-                Có được chứng chỉ SM, Hoàn thành task xuất sắc
-              </div>
-            </div>
-            <div class="question mb-3">
-              <label class="d-flex title"
-                >Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức
-                không? <span class="text-danger"> *</span></label
-              >
-              <div class="form-control text-start" rows="3">
-                Sẽ cống hiến hết mình vì công ty, không có giới hạn nào là đủ
-              </div>
-            </div>
-          </div>
-  
-          <!-- Quarter Goals -->
-          <div class="section mb-4">
-            <h5>Mục tiêu quý IV <span class="text-danger"> *</span></h5>
-            <div class="form-control text-start" rows="3">
-              Được tăng lương, Hoàn thành task nhanh hơn, Có được chứng chỉ N2
-            </div>
-          </div>
-        </form>
+      <div v-else>
+        <div class="question mb-3">
+          <label class="d-flex title">{{ selectedPerson.evaluation[section.key]?.label }}<span class="text-danger"> *</span></label>
+          <div class="form-control text-start">{{ selectedPerson.evaluation[section.key]?.answer }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</form>
       </div>
     </div>
   </template>
@@ -339,1292 +134,532 @@
 export default {
   name: "AssessPage",
   data() {
-    return {
-      profile: {
-        name: "Trịnh Thái Quân",
-        position: "Tester",
-        avatarUrl: require("@/assets/avata.png"),
-        department: "Phát triển",
+  return {
+    profile: {
+      name: "Trịnh Thái Quân",
+      position: "Tester",
+      avatarUrl: require("@/assets/avata.png"),
+      department: "Phát triển",
+      project: "StudyArt",
+      level: "1",
+      time: "2 năm 3 tháng",
+    },
+    sortKey: "name",
+    sortOrder: "asc",
+    maxScore: {
+      performance: 30,
+      skills: 25,
+      attitude: 20,
+      contributions: 10,
+      regulations: 10,
+    },
+    teamMates: [
+      {
+        name: "Nguyễn Văn B",
+        position: "Middle",
+        project: "StudyArt",
+        level: "3",
+        isViewing: false,
+        evaluation: {
+          performance: [
+            {
+              label: "Mức độ chính xác của công việc bạn thực hiện là?",
+              score: 15,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [ require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [] },
+                { label: "150%", value: 4, avatarUrls: [] },
+                { label: "200%", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
+              score: 10,
+              options: [
+                { label: "Hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
+                { label: "Đôi khi", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
+              score: 5,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],description:'hahaha' },
+                { label: "150%", value: 4, avatarUrls: [] },
+                { label: "200%", value: 5, avatarUrls: [] },
+              ],
+            },
+          ],
+          skills: [
+            {
+              label: "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
+              score: 5,
+              options: [
+                { label: "Không cải thiện", value: 1, avatarUrls: [] },
+                { label: "Cải thiện ít", value: 2, avatarUrls: [] },
+                { label: "Cải thiện vừa phải", value: 3, avatarUrls: [] },
+                { label: "Cải thiện đáng kể", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Cải thiện vượt bậc", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Hoàn toàn không", value: 1, avatarUrls: [] },
+                { label: "Ít hiệu quả", value: 2, avatarUrls: [] },
+                { label: "Hiệu quả trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Khá hiệu quả", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Rất hiệu quả", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Quản lý thời gian", value: 1, avatarUrls: [] },
+                { label: "Giao tiếp và hợp tác", value: 2, avatarUrls: [] },
+                { label: "Chuyên môn kỹ thuật", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Giải quyết vấn đề và ra quyết định", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Lãnh đạo và quản lý đội nhóm", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+          ],
+          attitude: [
+            {
+              label: "Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
+              score: 10,
+              options: [
+                { label: "Rất hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
+                { label: "Đôi khi", value: 3, avatarUrls: [] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Thái độ làm việc của Bạn trong công việc là",
+              score: 5,
+              options: [
+                { label: "Thiếu động lực", value: 1, avatarUrls: [] },
+                { label: "Hơi thụ động", value: 2, avatarUrls: [] },
+                { label: "Cần cải thiện", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tích cực", value: 4, avatarUrls: [] },
+                { label: "Rất chủ động", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
+              score: 5,
+              options: [
+                {
+                  label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                  value: "1",
+                },
+                {
+                  label:
+                    "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                  value: "2",avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")]
+                },
+                {
+                  label:
+                    "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                  value: "3",
+                },
+                {
+                  label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                  value: "4",
+                },
+                {
+                  label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                  value: "5",
+                },
+              ],
+            },
+          ],
+          contributions: [
+            {
+              score: 10,
+            options: [
+            { label: "Hầu như không",value:1, avatarUrls: [] },
+                    { label: "Có ít đóng góp",value:2, avatarUrls: [] },
+                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                    { label: "Có nhiều đóng góp",value:4, avatarUrls: [] },
+                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [] },
+                 
+            ],
+            },
+          ],
+          regulations: [
+            {
+              score: 10,
+              options: [
+                { label: "Hầu như không tuân thủ", value: 1, avatarUrls: [] },
+                { label: "Tuân thủ ít", value: 2, avatarUrls: [] },
+                { label: "Tuân thủ mức trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Tuân thủ tốt", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tuân thủ hoàn toàn", value: 5, avatarUrls: [] },
+              ],
+            },
+          ],
+          person: {
+      label: "Thành tích cá nhân nổi bật nhất của Bạn trong thời gian qua là",
+      answer: "Có được chứng chỉ SM, Hoàn thành task xuất sắc"
+    },
+    goals: {
+      label: "Mục tiêu của bạn trong quý IV là",
+      answer: "Được tăng lương, Hoàn thành task nhanh hơn, Có được chứng chỉ N2"
+    }
+        },
+      },
+      {
+        name: "Nguyễn Văn c",
+        position: "Middle",
         project: "StudyArt",
         level: "1",
-        time: "2 năm 3 tháng",
-      },
-      sortKey: "name",
-      sortOrder: "asc",
-      maxScore:{
-                performance:30,
-                skill:25,
-                attitude:20,
-                contributions:20,
-                regulations:10,
+        isViewing: false,
+        evaluation: {
+          performance: [
+            {
+              label: "Mức độ chính xác của công việc bạn thực hiện là?",
+              score: 15,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "150%", value: 4, avatarUrls: [] },
+                { label: "200%", value: 5, avatarUrls: [] },
+              ],
             },
-      teamMates: [
-        {
-          name: "Nguyễn Văn B",
-          position: "Middle",
-          project: "StudyArt",
-          level: "3",
-          isViewing: false,
-          evaluation:{
-            
-            performanceQuestions: [
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 15,
-            options: [
-              
-                { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png"),require("@/assets/avata.png"),require("@/assets/avata.png"),require("@/assets/avata.png"),require("@/assets/avata.png")], description: "description" },
-                    { label: "75%",value:2, avatarUrls: [], description: "description" },
-                    { label: "100%", value:3,avatarUrls: [] },
-                    { label: "150%", value:4,avatarUrls: [] },
-                    { label: "200%", value:5,avatarUrls: [] },
-              
+            {
+              label: "Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
+              score: 10,
+              options: [
+                { label: "Hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
+                { label: "Đôi khi", value: 3, avatarUrls: [] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
               ],
-          },
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 5,
+            },
+            {
+              label: "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
+              score: 5,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [] },
+                { label: "150%", value: 4, avatarUrls: [] },
+                { label: "200%", value: 5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+              ],
+            },
+          ],
+          skills: [
+            {
+              label: "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
+              score: 5,
+              options: [
+                { label: "Không cải thiện", value: 1, avatarUrls: [] },
+                { label: "Cải thiện ít", value: 2, avatarUrls: [] },
+                { label: "Cải thiện vừa phải", value: 3, avatarUrls: [] },
+                { label: "Cải thiện đáng kể", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Cải thiện vượt bậc", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Hoàn toàn không", value: 1, avatarUrls: [] },
+                { label: "Ít hiệu quả", value: 2, avatarUrls: [] },
+                { label: "Hiệu quả trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Khá hiệu quả", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Rất hiệu quả", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Quản lý thời gian", value: 1, avatarUrls: [] },
+                { label: "Giao tiếp và hợp tác", value: 2, avatarUrls: [] },
+                { label: "Chuyên môn kỹ thuật", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Giải quyết vấn đề và ra quyết định", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Lãnh đạo và quản lý đội nhóm", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+          ],
+          attitude: [
+            {
+              label: "Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
+              score: 10,
+              options: [
+                { label: "Rất hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
+                { label: "Đôi khi", value: 3, avatarUrls: [] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Thái độ làm việc của Bạn trong công việc là",
+              score: 5,
+              options: [
+                { label: "Thiếu động lực", value: 1, avatarUrls: [] },
+                { label: "Hơi thụ động", value: 2, avatarUrls: [] },
+                { label: "Cần cải thiện", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tích cực", value: 4, avatarUrls: [] },
+                { label: "Rất chủ động", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
+              score: 5,
+              options: [
+                {
+                  label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                  value: "1",
+                },
+                {
+                  label:
+                    "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                  value: "2",avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")]
+                },
+                {
+                  label:
+                    "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                  value: "3",
+                },
+                {
+                  label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                  value: "4",
+                },
+                {
+                  label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                  value: "5",
+                },
+              ],
+            },
+          ],
+          contributions: [
+            {
+              score: 10,
             options: [
-            { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "75%",value:2, avatarUrls: [] },
-                    { label: "100%",value:3, avatarUrls: [] },
-                    { label: "150%",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "200%",value:5, avatarUrls: [] },
-            ],
-          },
-          {
-            label: " Quân có thường xuyên hoàn thành công việc đúng hạn không?",
-            score: 10,
-            options: [
-            { label: "Hiếm khi",value:1, avatarUrls: [] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [] },
-            ],
-          },
-        ],
-        skillsQuestions: [
-          {
-            label:
-              "Quân đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-            score: 5,
-            options: [
-            { label: "Không cải thiện",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cải thiện ít",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện vừa phải",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện đáng kể",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cải thiện vượt bậc",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label:
-              " Quân có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-            score: 10,
-            options: [
-            { label: "Hoàn toàn không",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Ít hiệu quả",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hiệu quả trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Khá hiệu quả",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất hiệu quả",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label:
-              " Quân cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-            score: 15,
-            options: [
-            { label: "Quản lý thời gian",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Giao tiếp và hợp tác",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Chuyên môn kỹ thuật",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Giải quyết vấn đề và ra quyết định",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Lãnh đạo và quản lý đội nhóm",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        attitudeQuestions: [
-          {
-            label:
-              " Quân có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-            score: 5,
-            options: [
-            { label: "Rất hiếm khi",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [require("@/assets/avata.png")] },
-
-            ],
-          },
-          {
-            label: " Thái độ làm việc của Quân trong công việc là",
-            score: 15,
-            options: [
-            { label: "Thiếu động lực",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hơi thụ động",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cần cải thiện",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tích cực",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất chủ động",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label: "Khi gặp tình huống khó khăn, Quân xử lý như thế nào?",
-            score: 10,
-            options: [
-            { label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        contributionsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Có ít đóng góp",value:2, avatarUrls: [require("@/assets/avata.png")] },
+            { label: "Hầu như không",value:1, avatarUrls: [] },
+                    { label: "Có ít đóng góp",value:2, avatarUrls: [] },
                     { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Có nhiều đóng góp",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [require("@/assets/avata.png")] },
-                 
-            ],
-          },
-        ],
-        regulationsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không tuân thủ",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ ít",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Tuân thủ tốt",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ hoàn toàn",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                  
-            ],
-          },
-        ],
-        personalContributionsQuestions: [
-        { label: "Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là:" },
-        { label: "Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?" }, ],
-      },
-          
-        },
-        {
-          name: "Nguyễn Văn C",
-          position: "Junior",
-          project: "StudyArt",
-          level: "5",
-          isViewing: false,
-          evaluation:{
-            
-            performanceQuestions: [
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 10,
-            options: [
-              
-                { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png")], description: "description" },
-                    { label: "75%",value:2, avatarUrls: [require("@/assets/avata.png")], description: "description" },
-                    { label: "100%",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "150%",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "200%",value:5, avatarUrls: [require("@/assets/avata.png")] },
-              
-              ],
-          },
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 10,
-            options: [
-            { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "75%",value:2, avatarUrls: [] },
-                    { label: "100%",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "150%",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "200%",value:5, avatarUrls: [] },
-            ],
-          },
-          {
-            label: " Quân có thường xuyên hoàn thành công việc đúng hạn không?",
-            score: 15,
-            options: [
-            { label: "Hiếm khi",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [] },
-            ],
-          },
-        ],
-        skillsQuestions: [
-          {
-            label:
-              "Quân đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-            score: 5,
-            options: [
-            { label: "Không cải thiện",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cải thiện ít",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện vừa phải",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện đáng kể",value:4, avatarUrls: [] },
-                    { label: "Cải thiện vượt bậc",value:5, avatarUrls: [] },
-            ],
-          },
-          {
-            label:
-              " Quân có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-            score: 10,
-            options: [
-            { label: "Hoàn toàn không",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Ít hiệu quả",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hiệu quả trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Khá hiệu quả",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất hiệu quả",value:5, avatarUrls: [] },
-            ],
-          },
-          {
-            label:
-              " Quân cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-            score: 15,
-            options: [
-            { label: "Quản lý thời gian",value:1, avatarUrls: [] },
-                    { label: "Giao tiếp và hợp tác",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Chuyên môn kỹ thuật",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Giải quyết vấn đề và ra quyết định",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Lãnh đạo và quản lý đội nhóm",value:5, avatarUrls: [] },
-            ],
-          },
-        ],
-        attitudeQuestions: [
-          {
-            label:
-              " Quân có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-            score: 5,
-            options: [
-            { label: "Rất hiếm khi",value:1, avatarUrls: [] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [require("@/assets/avata.png")] },
-
-            ],
-          },
-          {
-            label: " Thái độ làm việc của Quân trong công việc là",
-            score: 15,
-            options: [
-            { label: "Thiếu động lực",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hơi thụ động",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cần cải thiện",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tích cực",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất chủ động",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label: "Khi gặp tình huống khó khăn, Quân xử lý như thế nào?",
-            score: 10,
-            options: [
-            { label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Giải quyết tình huống một cách hiệu quả và tự tin",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        contributionsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Có ít đóng góp",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Có nhiều đóng góp",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [require("@/assets/avata.png")] },
-                 
-            ],
-          },
-        ],
-        regulationsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không tuân thủ",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ ít",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Tuân thủ tốt",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ hoàn toàn",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                  
-            ],
-          },
-        ],
-        personalContributionsQuestions: [
-        { label: "Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là:" },
-        { label: "Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?" }, ],
-      },
-        },
-        {
-          name: "Trịnh Thái Quân",
-          position: "Tester",
-          project: "StudyArt",
-          level: "1",
-          isViewing: false,
-          evaluation:{
-            performanceQuestions: [
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 10,
-            options: [
-              
-                { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png")], description: "description" },
-                    { label: "75%",value:2, avatarUrls: [require("@/assets/avata.png")], description: "description" },
-                    { label: "100%",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "150%",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "200%",value:5, avatarUrls: [require("@/assets/avata.png")] },
-              
-              ],
-          },
-          {
-            label: "Mức độ chính xác của công việc Quân thực hiện là?",
-            score: 10,
-            options: [
-            { label: "50%",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "75%",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "100%",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "150%",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "200%",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label: " Quân có thường xuyên hoàn thành công việc đúng hạn không?",
-            score: 15,
-            options: [
-            { label: "Hiếm khi",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        skillsQuestions: [
-          {
-            label:
-              "Quân đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-            score: 5,
-            options: [
-            { label: "Không cải thiện",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cải thiện ít",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện vừa phải",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cải thiện đáng kể",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Cải thiện vượt bậc",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label:
-              " Quân có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-            score: 10,
-            options: [
-            { label: "Hoàn toàn không",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Ít hiệu quả",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hiệu quả trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Khá hiệu quả",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất hiệu quả",value:5, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label:
-              " Quân cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-            score: 15,
-            options: [
-            { label: "Quản lý thời gian",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Giao tiếp và hợp tác",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Chuyên môn kỹ thuật",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Giải quyết vấn đề và ra quyết định",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Lãnh đạo và quản lý đội nhóm",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        attitudeQuestions: [
-          {
-            label:
-              " Quân có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-            score: 5,
-            options: [
-            { label: "Rất hiếm khi",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thỉnh thoảng",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đôi khi",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Thường xuyên",value:4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Luôn luôn",value:5, avatarUrls: [require("@/assets/avata.png")] },
-
-            ],
-          },
-          {
-            label: " Thái độ làm việc của Quân trong công việc là",
-            score: 15,
-            options: [
-            { label: "Thiếu động lực",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Hơi thụ động",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cần cải thiện",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tích cực",value:4, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Rất chủ động",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-          {
-            label: "Khi gặp tình huống khó khăn, Quân xử lý như thế nào?",
-            score: 10,
-            options: [
-            { label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau", value:3,avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",value:4, avatarUrls: [] },
-                    { label: "Giải quyết tình huống một cách hiệu quả và tự tin",value:5, avatarUrls: [require("@/assets/avata.png")] },
-            ],
-          },
-        ],
-        contributionsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không",value:1, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Có ít đóng góp",value:2, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [ require("@/assets/avata.png")] },
                     { label: "Có nhiều đóng góp",value:4, avatarUrls: [] },
-                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [require("@/assets/avata.png")] },
+                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [] },
                  
             ],
-          },
-        ],
-        regulationsQuestions: [
-          {
-            score: 10,
-            options: [
-            { label: "Hầu như không tuân thủ",value:1, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Tuân thủ ít",value:2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
-                    { label: "Tuân thủ mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png")] },
-                    { label: "Tuân thủ tốt",value:4, avatarUrls: [] },
-                    { label: "Tuân thủ hoàn toàn",value:5, avatarUrls: [] },
-                  
-            ],
-          },
-        ],
-        personalContributionsQuestions: [
-        { label: "Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là:" },
-        { label: "Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?" }, ],
-      },
+            },
+          ],
+          regulations: [
+            {
+              score: 10,
+              options: [
+                { label: "Hầu như không tuân thủ", value: 1, avatarUrls: [] },
+                { label: "Tuân thủ ít", value: 2, avatarUrls: [] },
+                { label: "Tuân thủ mức trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Tuân thủ tốt", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tuân thủ hoàn toàn", value: 5, avatarUrls: [] },
+              ],
+            },
+          ],
+          person: {
+      label: "Thành tích cá nhân nổi bật nhất của Bạn trong thời gian qua là",
+      answer: "Có được chứng chỉ SM, Hoàn thành task xuất sắc"
+    },
+    goals: {
+      label: "Mục tiêu của bạn trong quý IV là",
+      answer: "Được tăng lương, Hoàn thành task nhanh hơn, Có được chứng chỉ N2"
+    }
         },
-    //     {
-    //       name: "Hồ Xuân Đại",
-    //       position: "Fresher",
-    //       project: "StudyArt",
-    //       level: "3",
-    //       isViewing: false,
-    //       evaluation:{
-    //         performanceQuestions: [
-    //       {
-    //         label: "Mức độ chính xác của công việc Quân thực hiện là?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "50%",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //             description: "description",
-    //           },
-    //           {
-    //             label: "75%",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //             description: "description",
-    //           },
-    //           {
-    //             label: "100%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "150%", avatarUrls: [require("@/assets/avata.png")] },
-    //           { label: "200%", avatarUrls: [require("@/assets/avata.png")] },
-    //         ],
-    //       },
-    //       {
-    //         label: "Mức độ chính xác của công việc Quân thực hiện là?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "50%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "75%", avatarUrls: [require("@/assets/avata.png")] },
-    //           { label: "100%", avatarUrls: [require("@/assets/avata.png")] },
-    //           {
-    //             label: "150%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "200%", avatarUrls: [require("@/assets/avata.png")] },
-    //         ],
-    //       },
-    //       {
-    //         label: " Quân có thường xuyên hoàn thành công việc đúng hạn không?",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Hiếm khi",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Thỉnh thoảng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đôi khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thường xuyên",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Luôn luôn",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     skillsQuestions: [
-    //       {
-    //         label:
-    //           "Quân đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-    //         score: 5,
-    //         options: [
-    //           {
-    //             label: "Không cải thiện",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Cải thiện ít",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cải thiện vừa phải",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cải thiện đáng kể",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Cải thiện vượt bậc",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label:
-    //           " Quân có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hoàn toàn không",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Ít hiệu quả",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Hiệu quả trung bình",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Khá hiệu quả",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Rất hiệu quả",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label:
-    //           " Quân cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Quản lý thời gian",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Giao tiếp và hợp tác",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Chuyên môn kỹ thuật",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Giải quyết vấn đề và ra quyết định",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Lãnh đạo và quản lý đội nhóm",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     attitudeQuestions: [
-    //       {
-    //         label:
-    //           " Quân có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-    //         score: 5,
-    //         options: [
-    //           {
-    //             label: "Rất hiếm khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thỉnh thoảng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đôi khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thường xuyên",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Luôn luôn",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label: " Thái độ làm việc của Quân trong công việc là",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Thiếu động lực",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Hơi thụ động",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cần cải thiện",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tích cực",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Rất chủ động",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label: "Khi gặp tình huống khó khăn, Quân xử lý như thế nào?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label:
-    //               "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label:
-    //               "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Giải quyết tình huống một cách hiệu quả và tự tin",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     contributionsQuestions: [
-    //       {
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hầu như không",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Có ít đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đóng góp mức trung bình",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Có nhiều đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Có rất nhiều đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     regulationsQuestions: [
-    //       {
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hầu như không tuân thủ",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ ít",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ mức trung bình",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Tuân thủ tốt",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ hoàn toàn",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     personalContributionsQuestions: [
-    //       {
-    //         label:
-    //           "Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là:",
-    //       },
-    //       {
-    //         label:
-    //           "Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?",
-    //       },
-    //     ],
-    //   },
-    //     },
-    //     {
-    //       name: "Trần Văn E",
-    //       position: "Senior",
-    //       project: "StudyArt",
-    //       level: "4",
-    //       isViewing: false,
-    //       evaluation:{
-    //         performanceQuestions: [
-    //       {
-    //         label: "Mức độ chính xác của công việc Quân thực hiện là?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "50%",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //             description: "description",
-    //           },
-    //           {
-    //             label: "75%",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //             description: "description",
-    //           },
-    //           {
-    //             label: "100%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "150%", avatarUrls: [require("@/assets/avata.png")] },
-    //           { label: "200%", avatarUrls: [require("@/assets/avata.png")] },
-    //         ],
-    //       },
-    //       {
-    //         label: "Mức độ chính xác của công việc Quân thực hiện là?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "50%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "75%", avatarUrls: [require("@/assets/avata.png")] },
-    //           { label: "100%", avatarUrls: [require("@/assets/avata.png")] },
-    //           {
-    //             label: "150%",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           { label: "200%", avatarUrls: [require("@/assets/avata.png")] },
-    //         ],
-    //       },
-    //       {
-    //         label: " Quân có thường xuyên hoàn thành công việc đúng hạn không?",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Hiếm khi",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Thỉnh thoảng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đôi khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thường xuyên",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Luôn luôn",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     skillsQuestions: [
-    //       {
-    //         label:
-    //           "Quân đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
-    //         score: 5,
-    //         options: [
-    //           {
-    //             label: "Không cải thiện",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Cải thiện ít",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cải thiện vừa phải",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cải thiện đáng kể",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Cải thiện vượt bậc",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label:
-    //           " Quân có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hoàn toàn không",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Ít hiệu quả",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Hiệu quả trung bình",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Khá hiệu quả",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Rất hiệu quả",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label:
-    //           " Quân cảm thấy cần cải thiện kỹ năng nào để nâng cao hiệu suất công việc?",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Quản lý thời gian",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Giao tiếp và hợp tác",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Chuyên môn kỹ thuật",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Giải quyết vấn đề và ra quyết định",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Lãnh đạo và quản lý đội nhóm",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     attitudeQuestions: [
-    //       {
-    //         label:
-    //           " Quân có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
-    //         score: 5,
-    //         options: [
-    //           {
-    //             label: "Rất hiếm khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thỉnh thoảng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đôi khi",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Thường xuyên",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Luôn luôn",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label: " Thái độ làm việc của Quân trong công việc là",
-    //         score: 15,
-    //         options: [
-    //           {
-    //             label: "Thiếu động lực",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Hơi thụ động",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Cần cải thiện",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tích cực",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Rất chủ động",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //       {
-    //         label: "Khi gặp tình huống khó khăn, Quân xử lý như thế nào?",
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label:
-    //               "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label:
-    //               "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Giải quyết tình huống một cách hiệu quả và tự tin",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     contributionsQuestions: [
-    //       {
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hầu như không",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Có ít đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Đóng góp mức trung bình",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Có nhiều đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Có rất nhiều đóng góp",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     regulationsQuestions: [
-    //       {
-    //         score: 10,
-    //         options: [
-    //           {
-    //             label: "Hầu như không tuân thủ",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ ít",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ mức trung bình",
-    //             avatarUrls: [require("@/assets/avata.png")],
-    //           },
-    //           {
-    //             label: "Tuân thủ tốt",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //           {
-    //             label: "Tuân thủ hoàn toàn",
-    //             avatarUrls: [
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //               require("@/assets/avata.png"),
-    //             ],
-    //           },
-    //         ],
-    //       },
-    //     ],
-    //     personalContributionsQuestions: [
-    //       {
-    //         label:
-    //           "Thành tích cá nhân nổi bật nhất của Quân trong thời gian qua là:",
-    //       },
-    //       {
-    //         label:
-    //           "Quân cảm thấy mình đã đóng góp đủ cho sự phát triển của tổ chức không?",
-    //       },
-    //     ],
-    //   },
-    //     },
-      ],
-      selectedPerson: null,
-      selectedValues: null, 
-    };
-  },
+      },
+      {
+        name: "Nguyễn Văn D",
+        position: "Middle",
+        project: "StudyArt",
+        level: "2",
+        isViewing: false,
+        evaluation: {
+          performance: [
+            {
+              label: "Mức độ chính xác của công việc bạn thực hiện là?",
+              score: 15,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [ ] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [] },
+                { label: "150%", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "200%", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
+              score: 10,
+              options: [
+                { label: "Hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Đôi khi", value: 3, avatarUrls: [] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
+              score: 5,
+              options: [
+                { label: "50%", value: 1, avatarUrls: [] },
+                { label: "75%", value: 2, avatarUrls: [] },
+                { label: "100%", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "150%", value: 4, avatarUrls: [] },
+                { label: "200%", value: 5, avatarUrls: [] },
+              ],
+            },
+          ],
+          skills: [
+            {
+              label: "Bạn đã nâng cao kỹ năng chuyên môn của mình trong năm qua như thế nào?",
+              score: 5,
+              options: [
+                { label: "Không cải thiện", value: 1, avatarUrls: [] },
+                { label: "Cải thiện ít", value: 2, avatarUrls: [] },
+                { label: "Cải thiện vừa phải", value: 3, avatarUrls: [] },
+                { label: "Cải thiện đáng kể", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Cải thiện vượt bậc", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Hoàn toàn không", value: 1, avatarUrls: [] },
+                { label: "Ít hiệu quả", value: 2, avatarUrls: [] },
+                { label: "Hiệu quả trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Khá hiệu quả", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Rất hiệu quả", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+            {
+              label: "Bạn có cảm thấy mình áp dụng kiến thức mới vào công việc hiệu quả không?",
+              score: 10,
+              options: [
+                { label: "Quản lý thời gian", value: 1, avatarUrls: [] },
+                { label: "Giao tiếp và hợp tác", value: 2, avatarUrls: [] },
+                { label: "Chuyên môn kỹ thuật", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Giải quyết vấn đề và ra quyết định", value: 4, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Lãnh đạo và quản lý đội nhóm", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+              ],
+            },
+          ],
+          attitude: [
+            {
+              label: "Bạn có thường xuyên hỗ trợ đồng nghiệp trong công việc không?",
+              score: 10,
+              options: [
+                { label: "Rất hiếm khi", value: 1, avatarUrls: [] },
+                { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
+                { label: "Đôi khi", value: 3, avatarUrls: [] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Luôn luôn", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Thái độ làm việc của Bạn trong công việc là",
+              score: 5,
+              options: [
+                { label: "Thiếu động lực", value: 1, avatarUrls: [] },
+                { label: "Hơi thụ động", value: 2, avatarUrls: [] },
+                { label: "Cần cải thiện", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tích cực", value: 4, avatarUrls: [] },
+                { label: "Rất chủ động", value: 5, avatarUrls: [] },
+              ],
+            },
+            {
+              label: "Khi gặp tình huống khó khăn, bạn xử lý như thế nào?",
+              score: 5,
+              options: [
+                {
+                  label: "Tìm kiếm sự trợ giúp từ đồng nghiệp hoặc cấp trên",
+                  value: "1",
+                },
+                {
+                  label:
+                    "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
+                  value: "2",avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")]
+                },
+                {
+                  label:
+                    "Đánh giá tình huống và thử nghiệm các giải pháp khác nhau",
+                  value: "3",
+                },
+                {
+                  label: "Tìm ra giải pháp sáng tạo và chủ động áp dụng",
+                  value: "4",
+                },
+                {
+                  label: "Giải quyết tình huống một cách hiệu quả và tự tin",
+                  value: "5",
+                },
+              ],
+            },
+          ],
+          contributions: [
+            {
+              score: 10,
+            options: [
+            { label: "Hầu như không",value:1, avatarUrls: [] },
+                    { label: "Có ít đóng góp",value:2, avatarUrls: [] },
+                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                    { label: "Có nhiều đóng góp",value:4, avatarUrls: [] },
+                    { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [] },
+                 
+            ],
+            },
+          ],
+          regulations: [
+            {
+              score: 10,
+              options: [
+                { label: "Hầu như không tuân thủ", value: 1, avatarUrls: [] },
+                { label: "Tuân thủ ít", value: 2, avatarUrls: [] },
+                { label: "Tuân thủ mức trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Tuân thủ tốt", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tuân thủ hoàn toàn", value: 5, avatarUrls: [] },
+              ],
+            },
+          ],
+          person: {
+      label: "Thành tích cá nhân nổi bật nhất của Bạn trong thời gian qua là",
+      answer: "Có được chứng chỉ SM, Hoàn thành task xuất sắc"
+    },
+    goals: {
+      label: "Mục tiêu của bạn trong quý IV là",
+      answer: "Được tăng lương, Hoàn thành task nhanh hơn, Có được chứng chỉ N2"
+    }
+        },
+      },
+    ],
+    selectedPerson: null,
+    selectedValues: null,
+    evaluationSections: [
+  { title: "Hiệu suất công việc", key: "performance", questions: true, mutil: 30 },
+  { title: "Kỹ năng", key: "skills", questions: true, mutil: 25 },
+  { title: "Thái độ", key: "attitude", questions: true, mutil: 20 },
+  { title: "Đóng góp cá nhân", key: "contributions", questions: true, mutil: 20 },
+  { title: "Tuân thủ quy định", key: "regulations", questions: true, mutil: 10 },
+  { title: "Đóng góp Cá nhân và Kết quả", key: "person", questions: false },
+  { title: "Mục tiêu quý IV", key: "goals", questions: false }
+],
+  };
+},
   computed: {
     sortedTeamMates() {
       return [...this.teamMates].sort((a, b) => {
@@ -1648,75 +683,55 @@ export default {
   return questions.reduce((sum, question) => sum + (question.score || 0), 0);
 },  
 calculateTotalScore(questions) {
-  if (!questions || !Array.isArray(questions)) return 0;
+    if (!questions || !Array.isArray(questions)) return 0;
 
-  // Tính điểm tối đa từ các câu hỏi
-  const maxScore = this.calculateMaxScore(questions);
-  let totalScore = 0;
+    let totalScore = 0;
 
-  questions.forEach(question => {
-    // Tính điểm cho câu hỏi
-    totalScore += parseFloat(this.calculateQuestionAverage(question, maxScore));
-  });
+    questions.forEach(question => {
+      totalScore += this.calculateQuestionAverage(question, this.getMutilForQuestion(question));
+    });
 
-  return totalScore.toFixed(0);
-}
-,
-calculateQuestionAverage(question, maxScore) {
-  if (!question || !question.options || question.options.length === 0) return 0;
+    return parseFloat(((totalScore*20)/100).toFixed(0));
+  },
 
-  let totalScore = 0;
-  let totalAvatars = 0;
 
-  question.options.forEach(option => {
-    const numberOfPeople = option.avatarUrls ? option.avatarUrls.length : 0;
-    const value = option.value || 0;
+  getMutilForQuestion(question) {
+    return question.mutil || 1; 
+  },
+  calculateQuestionAverage(question, mutil) {
+    if (!question || !question.options || question.options.length === 0) return 0;
 
-    totalScore += value * numberOfPeople;
-    totalAvatars += numberOfPeople;
-  });
+    let totalScore = 0;
+    let totalAvatars = 0;
 
-  // Tính điểm trung bình, tránh chia cho 0
-  const average = totalAvatars > 0 ? (totalScore / totalAvatars) : 0;
+    question.options.forEach(option => {
+      const numberOfPeople = option.avatarUrls ? option.avatarUrls.length : 0;
+      const value = option.value || 0;
 
-  // Trả về điểm trung bình đã điều chỉnh theo tỷ lệ (score / maxScore)
-  return parseFloat((average * (question.score || 0) / maxScore).toFixed(2));
-}
+      totalScore += value * numberOfPeople;
+      totalAvatars += numberOfPeople;
+    });
+
+    // Tính điểm trung bình cho câu hỏi
+    const average = totalAvatars > 0 ? (totalScore / totalAvatars) : 0;
+
+    // Trả về điểm trung bình đã điều chỉnh theo tỷ lệ (score / mutil)
+    const adjustedScore = (average * (question.score || 0)) / mutil;
+
+    return parseFloat(adjustedScore.toFixed(2));
+  }
 ,
 calculateGrandTotalScore() {
+  if (!this.selectedPerson) return 0;
+
   let grandTotalScore = 0;
 
-  if (this.selectedPerson) {
-    const evaluation = this.selectedPerson.evaluation;
+  this.evaluationSections.forEach(section => {
+    const sectionScore = this.calculateTotalScore(this.selectedPerson.evaluation[section.key]);
+    grandTotalScore += sectionScore;
+  });
 
-    // Cộng các điểm sau khi đã làm tròn
-    if (evaluation.performanceQuestions) {
-      const performanceScore = Math.round(this.calculateTotalScore(evaluation.performanceQuestions));
-      grandTotalScore += performanceScore;
-    }
-
-    if (evaluation.skillQuestions) {
-      const skillScore = Math.round(this.calculateTotalScore(evaluation.skillQuestions));
-      grandTotalScore += skillScore;
-    }
-
-    if (evaluation.attitudeQuestions) {
-      const attitudeScore = Math.round(this.calculateTotalScore(evaluation.attitudeQuestions));
-      grandTotalScore += attitudeScore;
-    }
-
-    if (evaluation.contributionsQuestions) {
-      const contributionsScore = Math.round(this.calculateTotalScore(evaluation.contributionsQuestions));
-      grandTotalScore += contributionsScore;
-    }
-
-    if (evaluation.regulationsQuestions) {
-      const regulationsScore = Math.round(this.calculateTotalScore(evaluation.regulationsQuestions));
-      grandTotalScore += regulationsScore;
-    }
-  }
-
-  return grandTotalScore; 
+  return parseFloat(grandTotalScore.toFixed(2));
 }
 ,
     sortBy(key) {

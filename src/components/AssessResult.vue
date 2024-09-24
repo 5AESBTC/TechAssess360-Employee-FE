@@ -2,114 +2,58 @@
   <div class="background-container">
     <div class="container">
       <div class="container-fluid row justify-content-md-center align-items-center">
-        <div class="col-md-4 left-menu p-3">
-          <div class="profile mb-5 d-flex align-items-center">
-            <div class="avatar">
-              <img :src="profile.avatarUrl" alt="avatar" />
-            </div>
-            <div class="info ms-3 text-start">
-              <h3 class="mb-2">{{ profile.name }}</h3>
-              <div class="line">
-                <strong>Bộ Phận:</strong> {{ profile.department }}
+        <div class="content p-4 d-flex">
+          <div class="left-content">
+            <div class="profile mb-5 d-flex align-items-center">
+              <div class="avatar">
+                <img :src="profile.avatarUrl" alt="avatar" />
               </div>
-              <div class="line">
-                <strong>Vị trí:</strong> {{ profile.position }}
+              <div class="info ms-3 text-start">
+                <h3 class="mb-2">{{ profile.name }}</h3>
+                <div class="line">
+                  <strong>Bộ Phận:</strong> {{ profile.department }}
+                </div>
+                <div class="line">
+                  <strong>Vị trí:</strong> {{ profile.position }}
+                </div>
+                <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
+                <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
               </div>
-              <div class="line"><strong>Bậc hiện tại:</strong> {{ profile.level }}</div>
-              <div class="line"><strong>Dự án hiện tại:</strong> {{ profile.project }}</div>
             </div>
-          </div>
-          <!-- <div class="dropdowns mb-4">
-            <label for="year" class="form-label">Chọn năm:</label>
-            <select id="year" v-model="selectedYear" class="form-select">
-              <option v-for="year in years" :key="year" :value="year">
-                {{ year }}
-              </option>
-            </select>
-            
-            <label for="quarter" class="form-label">Chọn quý:</label>
-            <select id="quarter" v-model="selectedQuarter" class="form-select">
-              <option v-for="quarter in quarters" :key="quarter" :value="quarter">
-                {{ quarter }}
-              </option>
-            </select>
-          </div> -->
-          <div class="table-wrapper">
-            <table>
-              <thead>
-                <tr>
-                  <th>Hệ số</th>
-                  <th>Tiêu Chí</th>
-                  <th>Tự đánh giá</th>
-                  <th>Quản Lý</th>
-                  <th>Team</th>
-                  <th>Tổng Điểm</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>30</td>
-                  <td>Hiệu suất Công việc</td>
-                  <td>4</td>
-                  <td>2</td>
-                  <td>3</td>
-                  <td>22.00</td>
-                </tr>
-                <tr>
-                  <td>15</td>
-                  <td>Kỹ năng và Kiến thức</td>
-                  <td>2</td>
-                  <td>3</td>
-                  <td>2</td>
-                  <td>10.00</td>
-                </tr>
-                <tr>
-                  <td>10</td>
-                  <td>Tinh thần làm việc và Thái độ</td>
-                  <td>4</td>
-                  <td>2</td>
-                  <td>1</td>
-                  <td>6.00</td>
-                </tr>
-                <tr>
-                  <td>10</td>
-                  <td>Đóng góp và Sáng kiến</td>
-                  <td>3</td>
-                  <td>2</td>
-                  <td>3</td>
-                  <td>6.67</td>
-                </tr>
-                <tr>
-                  <td>10</td>
-                  <td>Quy định và Chính sách</td>
-                  <td>5</td>
-                  <td>2</td>
-                  <td>2</td>
-                  <td>7.33</td>
-                </tr>
-                <tr>
-                  <td>25</td>
-                  <td>Đóng góp Cá nhân và Kết quả</td>
-                  <td>3</td>
-                  <td>3</td>
-                  <td>3</td>
-                  <td>20.00</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <div class="col-md-8 right-menu p-4">
-          <div class="radar">
+            <div class="table-wrapper">
+              <table class="styled-table">
+                <thead>
+                  <tr>
+                    <th>Hệ số</th>
+                    <th>Tiêu Chí</th>
+                    <th>Tự đánh giá</th>
+                    <th>Tổng Điểm</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="(row, index) in tableData" :key="index">
+                    <td>{{ row.factor }}</td>
+                    <td>{{ row.criteria }}</td>
+                    <td>{{ row.selfAssessment }}</td>
+                    <td>{{ row.totalScore.toFixed(2) }}</td> 
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <div class="radar-container">
             <RadarChart :data="radarData" />
+            <div class="note-section mt-4">
+                <label for="note"><strong>Ghi chú:</strong></label>
+                <p v-if="showNote" id="note" class="note-display">{{ note }}</p>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
 </template>
-
 
 <script>
 import RadarChart from './RadarChart.vue';
@@ -121,6 +65,7 @@ export default {
   },
   data() {
     return {
+      showNote: false,
       profile: {
         name: "Trịnh Thái Quân",
         position: "Fresher",
@@ -138,14 +83,54 @@ export default {
       selectedYear: '',
       selectedQuarter: '',
       years: ['2022', '2023', '2024', '2025'],
-      quarters: ['Qúy 1', 'Qúy 2', 'Qúy 3', 'Qúy 4']
+      quarters: ['Qúy 1', 'Qúy 2', 'Qúy 3', 'Qúy 4'],
+      note: '', 
+      tableData: [
+        {
+          factor: 0.5,
+          criteria: 'Hiệu suất Công việc',
+          selfAssessment: 4,
+          totalScore: 3
+        },
+        {
+          factor: 0.3,
+          criteria: 'Kỹ năng và Kiến Thức',
+          selfAssessment: 2,
+          totalScore: 2.3
+        },
+        {
+          factor: 0.2,
+          criteria: 'Tinh thần làm việc và Thái độ',
+          selfAssessment: 4,
+          totalScore: 2.6
+        },
+        {
+          factor: 0.4,
+          criteria: 'Đóng góp và Sáng kiến',
+          selfAssessment: 3,
+          totalScore: 2.8
+        },
+        {
+          factor: 0.3,
+          criteria: 'Quy định và Chính sách',
+          selfAssessment: 5,
+          totalScore: 3.3
+        },
+        {
+          factor: 0.4,
+          criteria: 'Đóng góp Cá nhân và Kết quả',
+          selfAssessment: 3,
+          totalScore: 3
+        }
+      ]
     }
-  }
+
+  },
+  
 }
 </script>
 
 <style scoped>
-
 .background-container {
   background-color: #4e7fcf;
   margin: 0 auto;
@@ -153,82 +138,62 @@ export default {
   padding-bottom: 100px;
   box-sizing: border-box;
   width: 100%;
-
 }
-
-
 .container-fluid {
-  
   display: flex;
-  flex-direction: row;
+  justify-content: center;
   padding: 20px;
-  gap: 20px;
-  margin-top: 17px;
-  flex-wrap: nowrap; /* Avoid line breaks if space is insufficient */
 }
 
-.left-menu {
-  width: 50%;
-  background-color: #f7f7f7;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  margin-left: 20px;
-  height: 700px;
-}
-
-
-.right-menu {
-  background-color: #fff;
-  border-radius: 10px;
-  padding: 20px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  height: 700px;
-}
-.radar {
-  width: 30%;
-  max-width: 500px; /* Ensure radar fits in the container */
-  height: auto;
-  margin-top: -75px;
-  margin-left: 90px;
-  text-align: center;
-}
-
-.table-wrapper {
-  overflow-x: auto;
-}
-
-table {
+.content {
+  display: flex;
+  background-color: #ffffff;
+  border-radius: 15px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  padding: 10px;
   width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
+  justify-content: space-between;
+  min-height: 400px; 
+  height: auto;
+  flex-wrap: wrap;
+  margin-top: -20px;
 }
 
-table td,
-table th {
-  padding: 7px;
-  border: 1px solid #ddd;
-  text-align: center;
+.left-content,
+.radar-container {
+  flex: 1;
+  height: 700px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  
 }
 
+.left-content {
+  background-color: #eef2f7;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  margin-bottom: 25px;
+  width: 40%;
+}
 .profile {
   background-color: #f9f9f9;
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 350px;
+  max-width: 400px;
   margin: 0 auto;
 }
-
 .avatar {
-  width: 100px;
-  height: 100px;
+  width: 120px;
+  height: 120px;
   border-radius: 50%;
   overflow: hidden;
+  border: 4px solid #007bff;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 3px solid #007bff;
 }
 
 .avatar img {
@@ -237,15 +202,20 @@ table th {
   object-fit: cover;
 }
 
-.info h4 {
-  font-size: 20px;
+.info {
+  margin-left: 20px;
+}
+
+.info h3 {
+  font-size: 22px;
+  font-weight: bold;
   color: #333;
-  margin-bottom: 10px;
 }
 
 .line {
   font-size: 16px;
-  margin-bottom: 5px;
+  color: #555;
+  margin-bottom: 8px;
   line-height: 1.5;
 }
 
@@ -253,97 +223,75 @@ table th {
   color: #007bff;
 }
 
-.details {
-  padding-top: 13px;
+.table-wrapper {
+  overflow-x: auto;
+  margin-top: -30px;
+}
+
+.styled-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 15px 0;
+  font-size: 14px;
+  font-family: 'Arial', sans-serif;
+  text-align: left;
+  
+}
+.styled-table th {
+  width: 25%; /* Set width for each header (4 headers = 100% total) */
+}
+.styled-table thead tr {
+  background-color: #007bff;
+  color: #ffffff;
+  text-align: center;
+}
+
+.styled-table th, .styled-table td {
+  padding: 7px 10px;
+  text-align: center;
+}
+
+.styled-table tbody tr {
+  border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+  background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+  border-bottom: 2px solid #007bff;
+}
+
+.styled-table tbody tr:hover {
+  background-color: #f1f1f1;
+}
+
+.radar-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  margin-left: 30px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+  min-height: 100%; 
+  
 }
 
-.detail-item {
-  display: flex;
-  margin-bottom: 5px;
+.radar-container canvas {
+  width: 100% !important;
+  max-width: 400px;
 }
 
-.label {
-  font-weight: bold;
-  margin-right: 5px;
+.note-section {
+  width: 100%;
+  margin-top: 20px;
+  text-align: center;
 }
 
-.value {
-  font-weight: normal;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .content {
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 20px;
-  }
-
-  .left,
-  .right {
-    width: 100%;
-    margin-left: 0;
-    margin-right: 0;
-  }
-
-  .radar {
-    max-width: 100%; /* Ensure radar adjusts on smaller screens */
-  }
-}
-
-@media (max-width: 480px) {
-  .detail-item {
-    font-size: 14px;
-  }
-
-  table th,
-  table td {
-    padding: 8px;
-  }
-
-  .avatar img {
-    width: 80px;
-    height: 80px;
-  }
-}
-/* Container cho dropdowns */
-.dropdowns {
-  display: flex; /* Sử dụng Flexbox để sắp xếp các dropdown nằm cùng hàng */
-  flex-wrap: nowrap; /* Ngăn không cho các dropdown xuống hàng */
-  gap: 20px; /* Khoảng cách giữa các dropdown */
-  align-items: center; /* Căn giữa các dropdown theo chiều dọc */
-  margin-bottom: 20px; /* Khoảng cách dưới của container */
-}
-
-/* Style cho mỗi dropdown */
-.form-select {
-  width: 150px; /* Đặt chiều rộng cho dropdown */
-  height: 40px; /* Thay đổi chiều cao của dropdown */
-  padding: 0.375rem 0.75rem; /* Padding cho dropdown */
-  font-size: 1rem; /* Kích thước font chữ */
-  font-weight: 400;
-  line-height: 1.5;
-  color: #495057;
-  background-color: #fff; /* Màu nền của dropdown */
-  background-clip: padding-box;
-  border: 1px solid #ced4da; /* Viền của dropdown */
-  border-radius: 0.25rem; /* Bo góc của dropdown */
-  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; /* Hiệu ứng chuyển tiếp */
-}
-
-.form-select:focus {
-  border-color: #007bff; /* Màu viền khi focus */
-  outline: 0;
-  box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25); /* Hiệu ứng bóng đổ khi focus */
-}
-
-/* Style cho label của dropdown */
-.form-label {
-  display: block;
-  margin-bottom: 0.5rem; /* Khoảng cách dưới của label */
-  font-weight: 600; /* Định dạng font chữ của label */
-  color: #333; /* Màu chữ của label */
-}
 </style>
+

@@ -386,7 +386,7 @@ export default {
                 { label: "Quản lý thời gian", value: "1" },
                 { label: "Giao tiếp và hợp tác", value: "2" },
                 { label: "Chuyên môn kỹ thuật", value: "3" },
-                { label: "Giải quyết vấn đề và ra quyết định", value: "4" },
+                { label: "Chuyên môn kỹ thuật", value: "4" },
                 { label: "Lãnh đạo và quản lý đội nhóm", value: "5" },
               ],
             },

@@ -3,17 +3,17 @@
   <div id="app">
     <router-view />
   </div>
-  <FooterComponent />
+  <!-- <FooterComponent /> -->
 </template>
 
 <script>
 import HeaderComponent from "./components/layout/HeaderComponent.vue";
-import FooterComponent from "./components/layout/FooterComponent.vue";
+// import FooterComponent from "./components/layout/FooterComponent.vue";
 export default {
   name: "App",
   components: {
     HeaderComponent,
-    FooterComponent
+    // FooterComponent
   },
 };
 </script>

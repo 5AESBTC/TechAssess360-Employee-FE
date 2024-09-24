@@ -27,27 +27,32 @@
       </div>
       <div class="mb-3">
         <button
-          v-if="profile.isProcessing"
-          class="btn btn-sm btn-primary me-2"
+          v-if="profile.isSubmitted"
+          class="btn btn-success btn-custom"
           :disabled="true"
-          style="width: 150px"
+        >
+          Đã đánh giá
+        </button>
+        <button
+          v-else-if="profile.isProcessing"
+          class="btn btn-primary btn-custom"
+          :disabled="true"
         >
           Đang đánh giá
         </button>
         <button
           v-else
-          class="btn btn-sm btn-primary me-2"
+          class="btn btn-primary btn-custom"
           @click="selectPerson(profile)"
-          style="width: 150px"
         >
-          Đánh giá bản thân
+          Đánh giá
         </button>
       </div>
       <div class="team-mate">
         <div class="text-start fw-bold">
           Danh sách thành viên có chung dự án hiện tại:
         </div>
-        <table class="table table-hover">
+        <table class="table">
           <thead class="thead-light">
             <tr>
               <th>#</th>
@@ -65,8 +70,15 @@
               <td>{{ mate.project }}</td>
               <td>
                 <button
-                  v-if="mate.isProcessing"
-                  class="btn btn-sm btn-primary me-2 btn-custom"
+                  v-if="mate.isSubmitted"
+                  class="btn btn-success btn-custom"
+                  :disabled="true"
+                >
+                  Đã đánh giá
+                </button>
+                <button
+                  v-else-if="mate.isProcessing"
+                  class="btn btn-primary btn-custom"
                   :disabled="true"
                 >
                   Đang đánh giá
@@ -91,7 +103,7 @@
       <div class="evaluation-header text-start mb-2">
         <label class="fw-bold fs-4"
           >Đánh giá quý III năm 2024 cho:
-          {{ isSelected ? isSelected.name : profile.name }}</label
+          {{ selectedPerson ? selectedPerson.name : "" }}</label
         >
       </div>
 
@@ -104,12 +116,16 @@
           :key="criteriaIndex"
           class="section mb-4"
         >
-          <div class="d-flex justify-content-center gap-2">
-            <label>
+          <div class="d-flex justify-content-between">
+            <label class="d-flex gap-2">
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
+              <span
+                v-if="criteria.question.length < 2"
+                class="text-danger fw-bold"
+                >*</span
+              >
             </label>
             <div class="multi">
-              <!-- (?/criteria.multi) -->
               ({{ criteria.total ? criteria.total : "?" }} /
               {{ criteria.multi }})
             </div>
@@ -123,10 +139,10 @@
               class="d-flex justify-content-between title"
               v-if="question.label"
             >
-              <label
-                >{{ questionIndex + 1 }}. {{ question.label }}
-                <span class="text-danger"> *</span></label
-              >
+              <label>
+                {{ questionIndex + 1 }}. {{ question.label }}
+                <span class="text-danger"> *</span>
+              </label>
             </div>
             <div class="options d-flex justify-content-around my-3">
               <div
@@ -144,7 +160,7 @@
                   "
                   :name="'performance' + criteriaIndex + questionIndex"
                   class="form-check-input"
-                  @click="
+                  @change="
                     selectPerformanceValue(
                       criteriaIndex,
                       questionIndex,
@@ -169,14 +185,20 @@
               <textarea
                 v-if="isShowDescription(criteriaIndex, questionIndex)"
                 class="form-control"
+                :class="{
+                  'error-textarea':
+                    perfValues[criteriaIndex][questionIndex]?.hasError,
+                }"
                 rows="3"
                 placeholder="Nhận xét thêm"
+                v-model="perfValues[criteriaIndex][questionIndex].description"
+                :ref="'description_' + criteriaIndex + '_' + questionIndex"
               ></textarea>
             </div>
           </div>
         </div>
 
-        <!-- Personal Contributions and Results -->
+        <!-- Personal contribution and Results -->
         <div class="section mb-4">
           <h5>
             Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
@@ -184,8 +206,44 @@
           <div class="form-group">
             <textarea
               class="form-control"
+              :class="{
+                'error-textarea': perfValues.contributionHasError,
+              }"
               rows="5"
+              v-model="perfDetails.contribution"
               placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="section mb-4">
+          <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
+          <div class="form-group">
+            <textarea
+              class="form-control"
+              rows="5"
+              v-model="perfDetails.nextTarget"
+              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
+            ></textarea>
+          </div>
+        </div>
+
+        <div
+          v-if="
+            profile.role === 'Manager' && this.selectedPerson?.id !== profile.id
+          "
+          class="section mb-4"
+        >
+          <h5>
+            Đánh giá của quản lý
+            <span class="text-danger"> *</span>
+          </h5>
+          <div class="form-group">
+            <textarea
+              class="form-control"
+              rows="5"
+              v-model="perfDetails.commentManager"
+              placeholder="Ghi rõ ý kiến của bạn"
             ></textarea>
           </div>
         </div>
@@ -199,45 +257,52 @@
   </div>
 </template>
 <script>
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
 
 export default {
   name: "AssessPage",
   data() {
     return {
       profile: {
+        id: 1,
         name: "Trịnh Thái Quân",
         position: "Fresher",
+        role: "Manager",
         avatarUrl: require("@/assets/avata.png"),
         department: "Phát triển",
         project: "StudyArt",
         level: "3",
         time: "2 năm 3 tháng",
-        isProcessing: true,
+        isProcessing: false,
+        isSubmitted: false,
       },
-      sortKey: "name",
-      sortOrder: "asc",
       teamMates: [
         {
+          id: 2,
           name: "Nguyễn Văn B",
           position: "Manager",
           project: "StudyArt",
+          isProcessing: false,
+          isSubmitted: false,
         },
         {
+          id: 3,
           name: "Nguyễn Văn C",
           position: "Junior",
           project: "StudyArt",
           level: "3",
           isProcessing: false,
+          isSubmitted: false,
         },
         {
+          id: 4,
           name: "Nguyễn Văn A",
           position: "Tester",
           project: "StudyArt",
           level: "3",
           isProcessing: false,
+          isSubmitted: false,
         },
       ],
       performanceEvaluation: [
@@ -250,7 +315,7 @@ export default {
             {
               label:
                 "Bạn đã hoàn thành tất cả các mục tiêu công việc được giao trong thời gian qua?",
-              score: 5,
+              score: 15,
               options: [
                 { label: "50%", value: "1" },
                 { label: "75%", value: "2" },
@@ -273,7 +338,7 @@ export default {
             {
               label:
                 " Bạn có thường xuyên hoàn thành công việc đúng hạn không?",
-              score: 15,
+              score: 5,
               options: [
                 { label: "Hiếm khi", value: "1" },
                 { label: "Thỉnh thoảng", value: "2" },
@@ -420,12 +485,29 @@ export default {
           ],
         },
       ],
-      isSelected: this.profile,
-      selectedPerformanceValues: [],
+      selectedPerson: this.profile,
+      perfValues: [],
+      perfDetails: {},
       listScore: [],
+      sortKey: "name",
+      sortOrder: "asc",
     };
   },
-
+  created() {
+    // Khởi tạo perfValues dựa trên số lượng tiêu chí và câu hỏi
+    this.perfValues = this.performanceEvaluation.map((criteria) =>
+      criteria.question.map(() => ({
+        value: null, // Giá trị ban đầu là null (chưa chọn)
+        description: "", // Mô tả ban đầu là chuỗi rỗng
+        hasError: false,
+      }))
+    );
+    this.perfDetails = {
+      contribution: "",
+      nextTarget: "",
+      commentManager: "",
+    };
+  },
   computed: {
     sortedTeamMates() {
       return [...this.teamMates].sort((a, b) => {
@@ -441,13 +523,10 @@ export default {
     isShowDescription() {
       return (criteriaIndex, questionIndex) => {
         // Access reactive author data and evaluate if the score is >= 3
-        return (
-          this.selectedPerformanceValues[criteriaIndex]?.[questionIndex] >= 3
-        );
+        return this.perfValues[criteriaIndex]?.[questionIndex]?.value >= 3;
       };
     },
   },
-
   methods: {
     sortBy(key) {
       if (this.sortKey === key) {
@@ -458,82 +537,88 @@ export default {
       }
     },
     selectPerson(person) {
-      if (this.isSelected && this.isSelected !== person) {
-        this.isSelected.isProcessing = false;
+      if (this.listScore.length > 0) {
+        if (window.confirm("Bạn có chắc thay đổi người để đánh giá không ?")) {
+          if (window.confirm("Dữ liệu đã nhập sẽ bị xóa!")) {
+            this.selectedPerson.isProcessing = false;
+            this.clearForm();
+          }
+        }
       }
 
       if (this.profile !== person) {
-        this.profile.isProcessing = false; // Luôn tắt xử lý profile sau khi chọn người mới
+        this.profile.isProcessing = false;
       }
 
       // Chọn người mới nếu khác người hiện tại
-      if (this.isSelected !== person) {
-        if (this.isSelected) this.isSelected.isProcessing = false; // Bỏ chọn người trước đó
-        this.isSelected = person;
+      if (this.selectedPerson !== person) {
+        if (this.selectedPerson) this.selectedPerson.isProcessing = false; // Bỏ chọn người trước đó
+        this.selectedPerson = person;
         person.isProcessing = true;
       }
-
-      console.log(this.isSelected);
     },
     selectPerformanceValue(criteriaIndex, questionIndex, value) {
-    // Cập nhật giá trị đã chọn
-      if (!this.selectedPerformanceValues[criteriaIndex]) {
-        this.selectedPerformanceValues[criteriaIndex] = [];
+      if (!this.selectedPerson) {
+        toast.error("Vui lòng chọn một người để đánh giá!", {
+          autoClose: 2000,
+        });
+        document.querySelectorAll("input[type=radio]").forEach((input) => {
+          input.checked = false;
+        });
+        return; // Dừng lại nếu chưa chọn selectedPerson
       }
-      this.selectedPerformanceValues[criteriaIndex][questionIndex] = value;
+      // Đảm bảo perfValues[criteriaIndex] đã được khởi tạo
+      if (!this.perfValues[criteriaIndex]) {
+        this.perfValues[criteriaIndex] = {};
+      }
 
+      // Đảm bảo perfValues[criteriaIndex][questionIndex] là đối tượng
+      if (!this.perfValues[criteriaIndex][questionIndex]) {
+        this.perfValues[criteriaIndex][questionIndex] = {
+          value: null,
+          description: "",
+          hasError: false,
+        };
+      }
+      this.perfValues[criteriaIndex][questionIndex].value = value;
+
+      // Cập nhật vào list để hiển thị
+      if (!this.listScore[criteriaIndex]) {
+        this.listScore[criteriaIndex] = {};
+      }
+      this.listScore[criteriaIndex][questionIndex] =
+        this.calculateScoreSelected(criteriaIndex, questionIndex, value);
+
+      // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
+      const questionsCount =
+        this.performanceEvaluation[criteriaIndex]?.question?.length || 0;
+      const answeredQuestionsCount = Object.keys(
+        this.listScore[criteriaIndex] || {}
+      ).length;
+
+      if (answeredQuestionsCount === questionsCount) {
+        // Tính tổng điểm cho criteriaIndex này
+        const totalScore = this.calculateTotalScore(criteriaIndex);
+        const percentage = Math.round(
+          ((totalScore * 20) / 100) *
+            (this.performanceEvaluation[criteriaIndex]?.multi || 1)
+        );
+        this.performanceEvaluation[criteriaIndex].total = percentage;
+      }
+    },
+    calculateScoreSelected(criteriaIndex, questionIndex, value) {
       // Tính điểm cho giá trị đã chọn
-      const question = this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
-      const multiCriteriaIndex = parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
+      const question =
+        this.performanceEvaluation[criteriaIndex]?.question[questionIndex];
+      const multiCriteriaIndex =
+        parseFloat(this.performanceEvaluation[criteriaIndex]?.multi) || 1;
       const questionScore = parseFloat(question?.score) || 0;
       const selectedValue = parseFloat(value) || 0;
 
       // Tính toán điểm cho câu hỏi này
       const score = (questionScore / multiCriteriaIndex) * selectedValue;
-      const roundedScore = Math.round(score * 100) / 100;
-
-      // Lưu điểm vào listScore
-      this.listScore[criteriaIndex] = {
-        ...this.listScore[criteriaIndex],
-        [questionIndex]: roundedScore,
-      };
-
-      // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
-      const questionsCount = this.performanceEvaluation[criteriaIndex]?.question?.length || 0;
-      const answeredQuestionsCount = Object.keys(this.listScore[criteriaIndex] || {}).length;
-
-      if (answeredQuestionsCount === questionsCount) {
-        // Tính tổng điểm cho criteriaIndex này
-        const totalScore = this.calculateTotalScore(criteriaIndex);
-        const percentage = Math.round(((totalScore * 20) / 100) * (this.performanceEvaluation[criteriaIndex]?.multi || 1));
-        this.performanceEvaluation[criteriaIndex].total = percentage;
-        console.log("Tổng điểm:", totalScore);
-      }
-
-      console.log("Danh sách điểm:", this.listScore);
+      return Math.round(score * 100) / 100;
     },
-
-    submitForm() {
-      console.log('selectedPerformanceValues:', this.selectedPerformanceValues);
-      this.selectedPerformanceValues.forEach((value, index) => {
-        const criteria = this.performanceEvaluation[index];
-        console.log(`Criteria ${index}:`, criteria);
-        criteria.question.forEach((question, questionIndex) => {
-          console.log(`Question ${index + 1}.${questionIndex + 1}:`, question);
-          const score = question.options.find(option => option.value === value[questionIndex]);
-          if (score) {
-            console.log(`Điểm câu hỏi ${index + 1}.${questionIndex + 1}: ${score.label} - ${score.value}`);
-          } else {
-            console.log(`Không tìm thấy điểm cho câu hỏi ${index + 1}.${questionIndex + 1}`);
-          }
-        });
-      });
-      localStorage.setItem('selectedPerformanceValues', JSON.stringify(this.selectedPerformanceValues));
-      toast.success('Operation successful!', {
-        autoClose: 2000,
-      });
-    },
-
     calculateTotalScore(criteriaIndex) {
       const listScoreForCriteria = this.listScore[criteriaIndex] || {};
       let total = 0;
@@ -551,6 +636,126 @@ export default {
       total = Math.round(total * 100) / 100;
       return total;
     },
+    submitForm() {
+      //validate select Person
+      if (!this.selectedPerson) {
+        toast.error("Vui lòng chọn một người để đánh giá!", {
+          autoClose: 2000,
+        });
+        document.querySelectorAll("input[type=radio]").forEach((input) => {
+          input.checked = false;
+        });
+        document.querySelectorAll("textarea").forEach((input) => {
+          input.value = "";
+        });
+        return; // Dừng lại nếu chưa chọn selectedPerson
+      }
+      let allDescriptionsFilled = true;
+      let allValuesSelected = true;
+      let firstErrorRef = null;
+
+      this.perfValues.forEach((selectedCriteria, index) => {
+        selectedCriteria.forEach((question, qIndex) => {
+          if (question.value === undefined || question.value === null) {
+            allValuesSelected = false;
+          }
+
+          if (question.value >= 3) {
+            if (!question.description || question.description.trim() === "") {
+              allDescriptionsFilled = false;
+              question.hasError = true;
+              // Kiểm tra ref có tồn tại trước khi truy cập
+              if (!firstErrorRef) {
+                const refKey = `description_${index}_${qIndex}`;
+                firstErrorRef = this.$refs[refKey][0]; // Lưu ref ô lỗi đầu tiên
+              }
+            } else {
+              question.hasError = false;
+            }
+          } else {
+            question.hasError = false;
+          }
+        });
+      });
+
+      // Kiểm tra và thông báo lỗi
+      if (!allValuesSelected) {
+        toast.error("Vui lòng chọn cho tất cả các câu hỏi!", {
+          autoClose: 2000,
+        });
+        return; // Dừng lại nếu có lỗi
+      }
+
+      if (!allDescriptionsFilled) {
+        toast.error("Vui lòng nhập đầy đủ nhận xét cho các câu hỏi!", {
+          autoClose: 2000,
+        });
+        if (firstErrorRef) {
+          firstErrorRef.scrollIntoView({ behavior: "smooth", block: "center" }); // Cuộn tới ô lỗi đầu tiên
+        }
+        return; // Dừng lại nếu có lỗi
+      }
+
+      // Validate perfDetails
+      if (this.profile.role === "Manager") {
+        const shouldCheckcommentManager = this.selectedPerson === this.profile;
+
+        for (const key in this.perfDetails) {
+          if (shouldCheckcommentManager && key === "commentManager") {
+            continue;
+          }
+          if (!this.perfDetails[key] || this.perfDetails[key].trim() === "") {
+            toast.error("Vui lòng không để trống phần đánh giá chi tiết", {
+              autoClose: 2000,
+            });
+            return;
+          }
+        }
+      }
+
+      // Lưu dữ liệu và thông báo thành công
+      localStorage.setItem(
+        this.profile.id + "assessTo" + this.selectedPerson.id,
+        JSON.stringify(this.perfValues)
+      );
+
+      localStorage.setItem(
+        this.profile.id + "assessDetailsTo" + this.selectedPerson.id,
+        JSON.stringify(this.perfDetails)
+      );
+
+      toast.success("Gửi đánh giá thành công!", { autoClose: 2000 });
+      this.selectedPerson.isSubmitted = true;
+      this.clearForm();
+    },
+    clearForm() {
+      this.perfValues = this.performanceEvaluation.map((criteria) =>
+        criteria.question.map(() => ({
+          value: null, // Giá trị ban đầu là null (chưa chọn)
+          description: "", // Mô tả ban đầu là chuỗi rỗng
+          hasError: false,
+        }))
+      );
+      this.perfDetails = {
+        contribution: "",
+        nextTarget: "",
+        commentManager: "",
+      };
+      this.listScore = [];
+      // clear input radio
+      document.querySelectorAll("input[type=radio]").forEach((input) => {
+        input.checked = false;
+      });
+
+      // clear textarea
+      document.querySelectorAll("textarea").forEach((input) => {
+        input.value = "";
+      });
+      this.performanceEvaluation.forEach((criteria) => {
+        criteria.total = 0;
+      });
+      this.selectedPerson = null;
+    },
   },
 };
 </script>
@@ -558,7 +763,7 @@ export default {
 <style scoped>
 /* Left menu */
 .btn-custom {
-  width: 110px;
+  width: 150px;
 }
 
 tbody > tr > td {
@@ -640,6 +845,10 @@ tbody > tr > td {
 }
 
 /* Right Menu Styles */
+.error-textarea {
+  border: 2px solid red; /* Đặt viền đỏ */
+}
+
 .multi {
   color: red;
   font-weight: bold;

@@ -92,14 +92,15 @@
       
 <form v-if="selectedPerson" class="evaluation-form">
   <div v-for="(section, sectionIndex) in evaluationSections" :key="sectionIndex" class="section mb-4">
-    <h5>{{ section.title }}</h5>
-    
+    <div class="section-header" >
+  <h5 >{{ sectionIndex + 1 }}. {{ section.title }}</h5>
+  <span v-if="section.questions" class="score-display" style="color: red; text-align: right;">
+    (<strong>{{ calculateTotalScore(selectedPerson.evaluation[section.key]) }}</strong> / <strong>{{ maxScore[section.key] }}</strong>)
+  </span>
+</div>
+
     <div>
       <div v-if="section.questions">
-        <span style="color: red;">
-          (🎯 Điểm đạt được: <strong>{{ calculateTotalScore(selectedPerson.evaluation[section.key]) }}</strong> / 🏆 Hệ số tổng: <strong>{{ maxScore[section.key] }}</strong>)
-        </span>
-
         <div v-for="(question, index) in selectedPerson?.evaluation[section.key] ?? []" :key="index" class="question mb-3">
           <div v-if="question.label" class="d-flex justify-content-between title">
   <label>{{ index + 1 }}. {{ question.label }}<span class="text-danger"> *</span></label>
@@ -1127,6 +1128,16 @@ tbody > tr > td {
     width: 24px;
     height: 24px;
   }
+}
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.score-display {
+  color: red;
+  text-align: right; 
 }
 
 </style>

@@ -520,14 +520,11 @@ export default {
         return this.sortOrder === "asc" ? comparison : -comparison;
       });
     },
-    isShowDescription() {
-      return (criteriaIndex, questionIndex) => {
-        // Access reactive author data and evaluate if the score is >= 3
-        return this.perfValues[criteriaIndex]?.[questionIndex]?.value >= 3;
-      };
-    },
   },
   methods: {
+    isShowDescription(criteriaIndex, questionIndex) {
+      return this.perfValues[criteriaIndex][questionIndex]?.value >= 3;
+    },
     sortBy(key) {
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";

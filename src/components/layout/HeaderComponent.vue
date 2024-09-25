@@ -11,9 +11,7 @@
   <header class="site-navbar">
     <div class="container-fluid">
       <div class="row align-items-center">
-        <div
-          class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar"
-        >
+        <div class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar">
           <h1 class="mb-0 site-logo">
             <img src="../../assets/Techzenlogo.png" alt="logo" />
           </h1>
@@ -27,37 +25,53 @@
           </div>
         </div>
         <div class="col-6 d-none d-xl-block right-navbar">
-          <nav
-            class="site-navigation position-relative text-right"
-            role="navigation"
-          >
-            <ul
-              class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto"
-            >
-              <li
-                v-for="(item, index) in menuItems"
-                :key="index"
-                :class="{ active: activeIndex === index }"
-              >
-                <a :href="item.link"
-                  ><span>{{ item.text }}</span></a
-                >
+          <nav class="site-navigation position-relative text-right" role="navigation">
+            <ul class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto">
+              <li v-for="(item, index) in filteredMenuItems" :key="index" :class="{ active: activeIndex === index }">
+                <a :href="item.link"><span>{{ item.text }}</span></a>
+              </li>
+              <!-- <li v-if="userInfo?.position === 'Manager'">
+                <router-link to="/team-manage" class="user-info d-flex align-items-center">
+                  Quản lý thành viên
+                </router-link>
+              </li> -->
+              <li v-if="userInfo">
+                <div class="user-info d-flex align-items-center">
+                  <img :src="userInfo.avatar" alt="Avatar" class="avatar" />
+                  <span class="ml-2" data-bs-toggle="dropdown">
+                    {{ userInfo.name }}
+                    <i class="ms-2 bi bi-caret-down-square-fill dropdown"></i>
+                  </span>
+                  <ul class="dropdown-menu">
+                    <li>
+                      <router-link to="/profile" class="dropdown-item" href="#">Thông tin cá nhân</router-link>
+                    </li>
+                    <li @click.prevent="handleLogout">
+                      <a class="dropdown-item" href="#">
+                        <i class="bi bi-box-arrow-right me-3"></i> Đăng xuất
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </li>
+              <li v-else>
+                <router-link to="/login" class="user-info d-flex align-items-center">
+                  <button type="button" class="btn btn-primary ml-2">Đăng nhập</button>
+                </router-link>
               </li>
             </ul>
           </nav>
         </div>
       </div>
       <div class="d-xl-none ml-md-0 mr-auto py-3">
-        <a href="#" class="site-menu-toggle js-menu-toggle text-white"
-          ><span class="icon-menu h3"></span
-        ></a>
+        <a href="#" class="site-menu-toggle js-menu-toggle text-white"><span class="icon-menu h3"></span></a>
       </div>
     </div>
   </header>
 </template>
 
 <script>
-// import $ from 'jquery';
+import { toast } from "vue3-toastify";
 
 export default {
   name: "HeaderComponent",
@@ -67,20 +81,30 @@ export default {
       countDownDate: new Date().getTime() + 60 * 60 * 1000, // Đặt thời gian đếm ngược (ví dụ: 1 giờ)
       loading: true,
       activeIndex: 0,
+      userInfo: null,
       menuItems: [
         { text: "Trang chủ", link: "/" },
         { text: "Đánh giá", link: "/assess-page" },
-        { text: "Quản lí thành viên", link: "/team-manage" },
         { text: "Kết quả đánh giá", link: "/assess-result" },
-        { text: "Thông tin cá nhân", link: "/profile" },
       ],
     };
   },
-
+  computed: {
+    filteredMenuItems() {
+      const items = [...this.menuItems];
+      // Kiểm tra vai trò của người dùng để thêm mục Quản lý thành viên
+      if (this.userInfo && this.userInfo.position === 'Manager') {
+        items.push({ text: "Quản lý thành viên", link: "/team-manage" });
+      }
+      return items;
+    },
+  },
   mounted() {
     this.startCountdown();
     // so sánh active với path
     this.checkActivePath();
+
+    this.checkUserLogin();
     window.addEventListener("resize", this.handleResize);
     this.$router.beforeEach((to, from, next) => {
       this.checkActivePath(to.path);
@@ -88,8 +112,23 @@ export default {
     });
   },
   methods: {
+    handleLogout() {
+      localStorage.removeItem("userInfo");
+      this.userInfo = null;
+      toast.success("Đăng xuất thành công", {
+        autoClose: 2000,
+      });
+      this.$router.push('/');
+    },
+    checkUserLogin() {
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      if (userInfo) {
+        this.userInfo = userInfo;
+      }
+    },
     checkActivePath(path = window.location.pathname) {
-      this.menuItems.forEach((item, index) => {
+      const items = this.filteredMenuItems;
+      items.forEach((item, index) => {
         if (item.link === path) {
           this.activeIndex = index;
         }

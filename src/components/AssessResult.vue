@@ -36,7 +36,7 @@
                     <td>{{ row.factor }}</td>
                     <td>{{ row.criteria }}</td>
                     <td>{{ row.selfAssessment }}</td>
-                    <td>{{ row.totalScore.toFixed(2) }}</td> 
+                    <td>{{ row.totalScore.toFixed(2) }}</td>
                   </tr>
                 </tbody>
               </table>
@@ -45,8 +45,8 @@
           <div class="radar-container">
             <RadarChart :data="radarData" />
             <div class="note-section mt-4">
-                <label for="note"><strong>Ghi chú:</strong></label>
-                <p v-if="showNote" id="note" class="note-display">{{ note }}</p>
+              <label for="note"><strong>Ghi chú:</strong></label>
+              <p v-if="showNote" id="note" class="note-display">{{ note }}</p>
             </div>
           </div>
         </div>
@@ -84,7 +84,7 @@ export default {
       selectedQuarter: '',
       years: ['2022', '2023', '2024', '2025'],
       quarters: ['Qúy 1', 'Qúy 2', 'Qúy 3', 'Qúy 4'],
-      note: '', 
+      note: '',
       tableData: [
         {
           factor: 0.5,
@@ -122,11 +122,21 @@ export default {
           selfAssessment: 3,
           totalScore: 3
         }
-      ]
+      ],
+      userInfo: null
     }
-
   },
-  
+  mounted() {
+    this.isLogin()
+  },
+  methods: {
+    isLogin() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      if (!userInfo) {
+        this.$router.push('/login');
+      }
+    },
+  }
 }
 </script>
 
@@ -139,6 +149,7 @@ export default {
   box-sizing: border-box;
   width: 100%;
 }
+
 .container-fluid {
   display: flex;
   justify-content: center;
@@ -153,7 +164,7 @@ export default {
   padding: 10px;
   width: 100%;
   justify-content: space-between;
-  min-height: 400px; 
+  min-height: 400px;
   height: auto;
   flex-wrap: wrap;
   margin-top: -20px;
@@ -166,7 +177,7 @@ export default {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  
+
 }
 
 .left-content {
@@ -177,6 +188,7 @@ export default {
   margin-bottom: 25px;
   width: 40%;
 }
+
 .profile {
   background-color: #f9f9f9;
   border-radius: 10px;
@@ -185,6 +197,7 @@ export default {
   max-width: 400px;
   margin: 0 auto;
 }
+
 .avatar {
   width: 120px;
   height: 120px;
@@ -235,18 +248,22 @@ export default {
   font-size: 14px;
   font-family: 'Arial', sans-serif;
   text-align: left;
-  
+
 }
+
 .styled-table th {
-  width: 25%; /* Set width for each header (4 headers = 100% total) */
+  width: 25%;
+  /* Set width for each header (4 headers = 100% total) */
 }
+
 .styled-table thead tr {
   background-color: #007bff;
   color: #ffffff;
   text-align: center;
 }
 
-.styled-table th, .styled-table td {
+.styled-table th,
+.styled-table td {
   padding: 7px 10px;
   text-align: center;
 }
@@ -278,8 +295,8 @@ export default {
   background-color: #f9f9f9;
   border-radius: 10px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
-  min-height: 100%; 
-  
+  min-height: 100%;
+
 }
 
 .radar-container canvas {
@@ -292,6 +309,4 @@ export default {
   margin-top: 20px;
   text-align: center;
 }
-
 </style>
-

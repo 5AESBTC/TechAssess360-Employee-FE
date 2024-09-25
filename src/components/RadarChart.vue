@@ -81,26 +81,25 @@ export default {
   position: relative;
   width: 680px;
   height: 600px;
-  
+  margin: 0 auto; /* Centers the chart horizontally */
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Centers the chart vertically */
+  align-items: center; /* Ensures the chart is aligned properly */
 }
 
 .chart-legend {
   display: flex;
-  justify-content: center;
-  /* Center horizontally */
-  gap: 20px;
-  /* Space between legend items */
+  justify-content: center; /* Center horizontally */
+  gap: 20px; /* Space between legend items */
   position: absolute;
-  bottom: 10px;
-  /* Position from the bottom of the chart */
+  bottom: 10px; /* Position from the bottom of the chart */
   left: 0;
-  width: 90%;
-  background: #fff;
-  /* Optional: background to separate legend from chart */
+  width: 100%;
+  background: #fff; /* Optional: background to separate legend from chart */
   padding: 10px;
   border-top: 1px solid #ccc;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-  /* Optional: shadow for better visibility */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Optional: shadow for better visibility */
 }
 
 .legend-item {
@@ -119,4 +118,5 @@ export default {
 .legend-label {
   display: inline;
 }
+
 </style>

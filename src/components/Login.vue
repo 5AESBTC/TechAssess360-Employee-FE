@@ -14,19 +14,19 @@
                     </div>
                     <div class="card border border-light-subtle rounded-4">
                         <div class="card-body p-3 p-md-4 p-xl-5">
-                            <form action="#!">
+                            <form @submit.prevent="handleLogin">
                                 <div class="row gy-3 overflow-hidden">
                                     <div class="col-12">
                                         <div class="form-floating mb-3">
-                                            <input type="email" class="form-control" v-model="email" id="email"
-                                                placeholder="name@example.com" required>
-                                            <label for="email" class="form-label">Email</label>
+                                            <input type="text" class="form-control" v-model="username"
+                                                placeholder="anv (Nguyễn Văn A)">
+                                            <label for="username" class="form-label">Tài khoản</label>
                                         </div>
                                     </div>
                                     <div class="col-12">
                                         <div class="form-floating mb-3">
                                             <input type="password" class="form-control" v-model="password" id="password"
-                                                value="" placeholder="Password" required>
+                                                value="" placeholder="Password">
                                             <label for="password" class="form-label">Mật khẩu</label>
                                         </div>
                                     </div>
@@ -55,20 +55,47 @@
 </template>
 
 <script>
+import { toast } from "vue3-toastify";
+import "vue3-toastify/dist/index.css";
+import axios from 'axios';
+
 export default {
     name: "LoginPage",
     data() {
         return {
-            email: '',
+            apiUrl: process.env.VUE_APP_DB_URL,
+            username: '',
             password: ''
         };
     },
     methods: {
-        handleLogin() {
-            if (this.email === 'user@example.com' && this.password === 'password') {
-                this.$router.push('/home-page');
-            } else {
-                alert('Invalid credentials');
+        async handleLogin() {
+            try {
+                if (!this.username || !this.password) {
+                    toast.error('Vui lòng nhập tài khoản và mật khẩu!');
+                    return;
+                }
+                const response = await axios.get(this.apiUrl + '/employees');
+                const users = await response.data;
+
+                const user = users.find(user => user.username === this.username && user.password === this.password);
+
+                if (user) {
+                    localStorage.setItem('userInfo', JSON.stringify(user));
+                    this.$router.push('/');
+                    toast.success("Đăng nhập thành công", {
+                        autoClose: 2000,
+                    });
+                } else {
+                    toast.error("Sai tài khoản hoặc mật khẩu, vui lòng thử lại", {
+                        autoClose: 2000,
+                    });
+                }
+            } catch (error) {
+                console.error('Lỗi khi đăng nhập:', error);
+                toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau", {
+                    autoClose: 2000,
+                });
             }
         }
     }

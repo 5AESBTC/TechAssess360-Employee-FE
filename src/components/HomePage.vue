@@ -34,9 +34,9 @@ export default {
         { title: 'Xem kết quả', text: 'Xem những đánh giá từ quản lý, team, cá nhân', color: '#FF6347' }
       ],
       titles: [
-      { text: '15/09 - 20/09', class: 'before' },
+        { text: '15/09 - 20/09', class: 'before' },
         { text: '21/09 - 30/09', class: 'now' },
-        { text: '01/10 - 10/10', class: 'new' }, 
+        { text: '01/10 - 10/10', class: 'new' },
         { text: '11/10 - 20/10', class: 'after' }
       ],
       currentDate: new Date() // Cập nhật giá trị này tùy thuộc vào nhu cầu
@@ -46,11 +46,11 @@ export default {
     isActiveTitle(index) {
       // Logic để xác định tiêu đề nào là hiện tại
       const titleDates = [
-    
-  { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
-  { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
-  { start: new Date('2024-10-01'), end: new Date('2024-10-10') }, 
-  { start: new Date('2024-10-11'), end: new Date('2024-10-20') }
+
+        { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
+        { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
+        { start: new Date('2024-10-01'), end: new Date('2024-10-10') },
+        { start: new Date('2024-10-11'), end: new Date('2024-10-20') }
 
       ];
 
@@ -67,7 +67,6 @@ export default {
 .background-container {
   background-color: #4e7fcf;
   min-height: 100vh;
-  padding: 150px;
 }
 
 .container {
@@ -161,9 +160,11 @@ export default {
 }
 
 .title {
-  background-color: #b3b5b5; /* Màu nền của tiêu đề để nổi bật hơn */
+  background-color: #b3b5b5;
+  /* Màu nền của tiêu đề để nổi bật hơn */
   color: #fff;
-  border-radius: 0; /* Đặt border-radius bằng 0 để loại bỏ bo tròn */
+  border-radius: 0;
+  /* Đặt border-radius bằng 0 để loại bỏ bo tròn */
   padding: 15px 20px;
   text-align: center;
   font-size: 16px;

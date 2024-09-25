@@ -8,6 +8,7 @@
 
 <script>
 import HeaderComponent from "./components/layout/HeaderComponent.vue";
+import 'bootstrap-icons/font/bootstrap-icons.css';
 // import FooterComponent from "./components/layout/FooterComponent.vue";
 export default {
   name: "App",

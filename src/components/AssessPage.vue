@@ -26,25 +26,13 @@
         </div>
       </div>
       <div class="mb-3">
-        <button
-          v-if="profile.isSubmitted"
-          class="btn btn-success btn-custom"
-          :disabled="true"
-        >
+        <button v-if="profile.isSubmitted" class="btn btn-success btn-custom" :disabled="true">
           Đã đánh giá
         </button>
-        <button
-          v-else-if="profile.isProcessing"
-          class="btn btn-primary btn-custom"
-          :disabled="true"
-        >
+        <button v-else-if="profile.isProcessing" class="btn btn-primary btn-custom" :disabled="true">
           Đang đánh giá
         </button>
-        <button
-          v-else
-          class="btn btn-primary btn-custom"
-          @click="selectPerson(profile)"
-        >
+        <button v-else class="btn btn-primary btn-custom" @click="selectPerson(profile)">
           Đánh giá
         </button>
       </div>
@@ -69,25 +57,13 @@
               <td>{{ mate.position }}</td>
               <td>{{ mate.project }}</td>
               <td>
-                <button
-                  v-if="mate.isSubmitted"
-                  class="btn btn-success btn-custom"
-                  :disabled="true"
-                >
+                <button v-if="mate.isSubmitted" class="btn btn-success btn-custom" :disabled="true">
                   Đã đánh giá
                 </button>
-                <button
-                  v-else-if="mate.isProcessing"
-                  class="btn btn-primary btn-custom"
-                  :disabled="true"
-                >
+                <button v-else-if="mate.isProcessing" class="btn btn-primary btn-custom" :disabled="true">
                   Đang đánh giá
                 </button>
-                <button
-                  v-else
-                  class="btn btn-sm btn-primary me-2 btn-custom"
-                  @click="selectPerson(mate)"
-                >
+                <button v-else class="btn btn-sm btn-primary me-2 btn-custom" @click="selectPerson(mate)">
                   Đánh giá
                 </button>
               </td>
@@ -101,99 +77,58 @@
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
       <div class="evaluation-header text-start mb-2">
-        <label class="fw-bold fs-4"
-          >Đánh giá quý III năm 2024 cho:
-          {{ selectedPerson ? selectedPerson.name : "" }}</label
-        >
+        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho:
+          {{ selectedPerson ? selectedPerson.name : "" }}</label>
       </div>
 
       <!-- Evaluation Form -->
       <!-- @submit.prevent="submit" -->
       <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
-        <div
-          v-for="(criteria, criteriaIndex) in performanceEvaluation"
-          :key="criteriaIndex"
-          class="section mb-4"
-        >
+        <div v-for="(criteria, criteriaIndex) in performanceEvaluation" :key="criteriaIndex" class="section mb-4">
           <div class="d-flex justify-content-between">
             <label class="d-flex gap-2">
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
-              <span
-                v-if="criteria.question.length < 2"
-                class="text-danger fw-bold"
-                >*</span
-              >
+              <span v-if="criteria.question.length < 2" class="text-danger fw-bold">*</span>
             </label>
             <div class="multi">
               ({{ criteria.total ? criteria.total : "?" }} /
               {{ criteria.multi }})
             </div>
           </div>
-          <div
-            v-for="(question, questionIndex) in criteria.question"
-            :key="questionIndex"
-            class="question mb-3"
-          >
-            <div
-              class="d-flex justify-content-between title"
-              v-if="question.label"
-            >
+          <div v-for="(question, questionIndex) in criteria.question" :key="questionIndex" class="question mb-3">
+            <div class="d-flex justify-content-between title" v-if="question.label">
               <label>
                 {{ questionIndex + 1 }}. {{ question.label }}
                 <span class="text-danger"> *</span>
               </label>
             </div>
             <div class="options d-flex justify-content-around my-3">
-              <div
-                v-for="(option, optionIndex) in question.options"
-                :key="optionIndex"
-                class="form-check"
-              >
-                <input
-                  type="radio"
-                  :id="
-                    'performanceOption' +
-                    criteriaIndex +
-                    questionIndex +
-                    optionIndex
-                  "
-                  :name="'performance' + criteriaIndex + questionIndex"
-                  class="form-check-input"
-                  @change="
+              <div v-for="(option, optionIndex) in question.options" :key="optionIndex" class="form-check">
+                <input type="radio" :id="'performanceOption' +
+                  criteriaIndex +
+                  questionIndex +
+                  optionIndex
+                  " :name="'performance' + criteriaIndex + questionIndex" class="form-check-input" @change="
                     selectPerformanceValue(
                       criteriaIndex,
                       questionIndex,
                       option.value
                     )
-                  "
-                  :value="option.value"
-                />
-                <label
-                  :for="
-                    'performanceOption' +
-                    criteriaIndex +
-                    questionIndex +
-                    optionIndex
-                  "
-                  class="form-check-label"
-                  >{{ option.label }}</label
-                >
+                    " :value="option.value" />
+                <label :for="'performanceOption' +
+                  criteriaIndex +
+                  questionIndex +
+                  optionIndex
+                  " class="form-check-label">{{ option.label }}</label>
               </div>
             </div>
             <div class="description">
-              <textarea
-                v-if="isShowDescription(criteriaIndex, questionIndex)"
-                class="form-control"
-                :class="{
-                  'error-textarea':
-                    perfValues[criteriaIndex][questionIndex]?.hasError,
-                }"
-                rows="3"
-                placeholder="Nhận xét thêm"
-                v-model="perfValues[criteriaIndex][questionIndex].description"
-                :ref="'description_' + criteriaIndex + '_' + questionIndex"
-              ></textarea>
+              <textarea v-if="isShowDescription(criteriaIndex, questionIndex)" class="form-control" :class="{
+                'error-textarea':
+                  perfValues[criteriaIndex][questionIndex]?.hasError,
+              }" rows="3" placeholder="Nhận xét thêm" v-model="perfValues[criteriaIndex][questionIndex].description"
+                :ref="'description_' + criteriaIndex + '_' + questionIndex"></textarea>
             </div>
           </div>
         </div>
@@ -204,47 +139,31 @@
             Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
           </h5>
           <div class="form-group">
-            <textarea
-              class="form-control"
-              :class="{
-                'error-textarea': perfValues.contributionHasError,
-              }"
-              rows="5"
-              v-model="perfDetails.contribution"
-              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
-            ></textarea>
+            <textarea class="form-control" :class="{
+              'error-textarea': perfValues.contributionHasError,
+            }" rows="5" v-model="perfDetails.contribution"
+              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
           </div>
         </div>
 
         <div class="section mb-4">
           <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
           <div class="form-group">
-            <textarea
-              class="form-control"
-              rows="5"
-              v-model="perfDetails.nextTarget"
-              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
-            ></textarea>
+            <textarea class="form-control" rows="5" v-model="perfDetails.nextTarget"
+              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"></textarea>
           </div>
         </div>
 
-        <div
-          v-if="
-            profile.role === 'Manager' && this.selectedPerson?.id !== profile.id
-          "
-          class="section mb-4"
-        >
+        <div v-if="
+          profile.role === 'Manager' && this.selectedPerson?.id !== profile.id
+        " class="section mb-4">
           <h5>
             Đánh giá của quản lý
             <span class="text-danger"> *</span>
           </h5>
           <div class="form-group">
-            <textarea
-              class="form-control"
-              rows="5"
-              v-model="perfDetails.commentManager"
-              placeholder="Ghi rõ ý kiến của bạn"
-            ></textarea>
+            <textarea class="form-control" rows="5" v-model="perfDetails.commentManager"
+              placeholder="Ghi rõ ý kiến của bạn"></textarea>
           </div>
         </div>
 
@@ -493,6 +412,9 @@ export default {
       sortOrder: "asc",
     };
   },
+  mounted() {
+    this.isLogin()
+  },
   created() {
     // Khởi tạo perfValues dựa trên số lượng tiêu chí và câu hỏi
     this.perfValues = this.performanceEvaluation.map((criteria) =>
@@ -522,6 +444,12 @@ export default {
     },
   },
   methods: {
+    isLogin() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      if (!userInfo) {
+        this.$router.push('/login');
+      }
+    },
     isShowDescription(criteriaIndex, questionIndex) {
       return this.perfValues[criteriaIndex][questionIndex]?.value >= 3;
     },
@@ -598,7 +526,7 @@ export default {
         const totalScore = this.calculateTotalScore(criteriaIndex);
         const percentage = Math.round(
           ((totalScore * 20) / 100) *
-            (this.performanceEvaluation[criteriaIndex]?.multi || 1)
+          (this.performanceEvaluation[criteriaIndex]?.multi || 1)
         );
         this.performanceEvaluation[criteriaIndex].total = percentage;
       }
@@ -763,7 +691,7 @@ export default {
   width: 150px;
 }
 
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -843,7 +771,8 @@ tbody > tr > td {
 
 /* Right Menu Styles */
 .error-textarea {
-  border: 2px solid red; /* Đặt viền đỏ */
+  border: 2px solid red;
+  /* Đặt viền đỏ */
 }
 
 .multi {
@@ -898,7 +827,7 @@ tbody > tr > td {
   padding-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 

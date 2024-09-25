@@ -108,10 +108,18 @@
           <div class="options d-flex justify-content-around my-3">
             <div v-for="(option, optIndex) in question.options" :key="optIndex" class="form-check d-flex flex-column align-items-center">
               <span class="answer-label me-2">{{ option.label }}</span>
-              <div class="avatar-group mt-2">
-                <img v-for="(avatar, avatarIndex) in option.avatarUrls" :key="avatarIndex" :src="avatar" alt="Avatar" class="avatar-img" />
-                <span class="tooltiptext">{{ option.description }}</span>
-              </div>
+              <div class="avatar-group mt-2" style="display: flex;">
+  <div v-for="(avatar, avatarIndex) in option.avatarUrls" 
+       :key="avatarIndex" 
+       style="position: relative; margin-right: 10px;" class="avatar-container">
+    <img :src="avatar" alt="Avatar" class="avatar-img" style="cursor: pointer;" />
+    <span v-if="option.avatarDescriptions && option.avatarDescriptions[avatarIndex]" 
+          class="tooltiptext" style="background-color: rgba(0, 0, 0, 0.7); color: #fff; padding: 5px; border-radius: 5px;">
+      {{ option.avatarDescriptions[avatarIndex] }}
+    </span>
+  </div>
+</div>
+
             </div>
           </div>
         </div>
@@ -180,7 +188,7 @@ export default {
               options: [
                 { label: "Hiếm khi", value: 1, avatarUrls: [] },
                 { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
-                { label: "Đôi khi", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Đôi khi", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")], avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "Thường xuyên", value: 4, avatarUrls: [] },
                 { label: "Luôn luôn", value: 5, avatarUrls: [] },
               ],
@@ -191,7 +199,7 @@ export default {
               options: [
                 { label: "50%", value: 1, avatarUrls: [] },
                 { label: "75%", value: 2, avatarUrls: [] },
-                { label: "100%", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],description:'hahaha' },
+                { label: "100%", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")], avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "150%", value: 4, avatarUrls: [] },
                 { label: "200%", value: 5, avatarUrls: [] },
               ],
@@ -205,7 +213,7 @@ export default {
                 { label: "Không cải thiện", value: 1, avatarUrls: [] },
                 { label: "Cải thiện ít", value: 2, avatarUrls: [] },
                 { label: "Cải thiện vừa phải", value: 3, avatarUrls: [] },
-                { label: "Cải thiện đáng kể", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Cải thiện đáng kể", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "Cải thiện vượt bậc", value: 5, avatarUrls: [] },
               ],
             },
@@ -215,9 +223,9 @@ export default {
               options: [
                 { label: "Hoàn toàn không", value: 1, avatarUrls: [] },
                 { label: "Ít hiệu quả", value: 2, avatarUrls: [] },
-                { label: "Hiệu quả trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
-                { label: "Khá hiệu quả", value: 4, avatarUrls: [require("@/assets/avata.png")] },
-                { label: "Rất hiệu quả", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Hiệu quả trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1'] },
+                { label: "Khá hiệu quả", value: 4, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 2'] },
+                { label: "Rất hiệu quả", value: 5, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 3'] },
               ],
             },
             {
@@ -226,9 +234,9 @@ export default {
               options: [
                 { label: "Quản lý thời gian", value: 1, avatarUrls: [] },
                 { label: "Giao tiếp và hợp tác", value: 2, avatarUrls: [] },
-                { label: "Chuyên môn kỹ thuật", value: 3, avatarUrls: [require("@/assets/avata.png")] },
-                { label: "Giải quyết vấn đề và ra quyết định", value: 4, avatarUrls: [require("@/assets/avata.png")] },
-                { label: "Lãnh đạo và quản lý đội nhóm", value: 5, avatarUrls: [require("@/assets/avata.png")] },
+                { label: "Chuyên môn kỹ thuật", value: 3, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1'] },
+                { label: "Giải quyết vấn đề và ra quyết định", value: 4, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 2'] },
+                { label: "Lãnh đạo và quản lý đội nhóm", value: 5, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 3'] },
               ],
             },
           ],
@@ -240,7 +248,7 @@ export default {
                 { label: "Rất hiếm khi", value: 1, avatarUrls: [] },
                 { label: "Thỉnh thoảng", value: 2, avatarUrls: [] },
                 { label: "Đôi khi", value: 3, avatarUrls: [] },
-                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Thường xuyên", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "Luôn luôn", value: 5, avatarUrls: [] },
               ],
             },
@@ -250,7 +258,7 @@ export default {
               options: [
                 { label: "Thiếu động lực", value: 1, avatarUrls: [] },
                 { label: "Hơi thụ động", value: 2, avatarUrls: [] },
-                { label: "Cần cải thiện", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Cần cải thiện", value: 3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "Tích cực", value: 4, avatarUrls: [] },
                 { label: "Rất chủ động", value: 5, avatarUrls: [] },
               ],
@@ -266,7 +274,7 @@ export default {
                 {
                   label:
                     "Cố gắng tự giải quyết với sự hỗ trợ từ tài liệu hoặc hướng dẫn",
-                  value: "2",avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")]
+                  value: "2",avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3']
                 },
                 {
                   label:
@@ -290,7 +298,7 @@ export default {
             options: [
             { label: "Hầu như không",value:1, avatarUrls: [] },
                     { label: "Có ít đóng góp",value:2, avatarUrls: [] },
-                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                    { label: "Đóng góp mức trung bình",value:3, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1', 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                     { label: "Có nhiều đóng góp",value:4, avatarUrls: [] },
                     { label: "Có rất nhiều đóng góp",value:5, avatarUrls: [] },
                  
@@ -303,8 +311,8 @@ export default {
               options: [
                 { label: "Hầu như không tuân thủ", value: 1, avatarUrls: [] },
                 { label: "Tuân thủ ít", value: 2, avatarUrls: [] },
-                { label: "Tuân thủ mức trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")] },
-                { label: "Tuân thủ tốt", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")] },
+                { label: "Tuân thủ mức trung bình", value: 3, avatarUrls: [require("@/assets/avata.png")],avatarDescriptions: ['Mô tả cho avatar 1'] },
+                { label: "Tuân thủ tốt", value: 4, avatarUrls: [require("@/assets/avata.png"), require("@/assets/avata.png")],avatarDescriptions: [ 'Mô tả cho avatar 2','Mô tả cho avatar 3'] },
                 { label: "Tuân thủ hoàn toàn", value: 5, avatarUrls: [] },
               ],
             },
@@ -969,7 +977,7 @@ tbody > tr > td {
   transition: opacity 0.3s;
 }
 
-.avatar-group:hover .tooltiptext {
+.avatar-container:hover .tooltiptext {
   visibility: visible;
   opacity: 1;
 }

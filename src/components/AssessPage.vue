@@ -1,16 +1,13 @@
 <template>
-  <div class="container-fluid row justify-content-md-center align-items-center">
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-3 d-flex align-items-center">
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
-          <img :src="profile.avatarUrl" alt="avatar" />
+          <img :src="profile.avatar" alt="avatar" />
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ profile.name }}</h3>
-          <div class="line">
-            <strong>Bộ Phận:</strong> {{ profile.department }}
-          </div>
           <div class="line">
             <strong>Vị trí:</strong> {{ profile.position }}
           </div>
@@ -21,20 +18,9 @@
             <strong>Dự án hiện tại:</strong> {{ profile.project }}
           </div>
           <div class="line">
-            <strong>Thời gian làm việc:</strong> {{ profile.time }}
+            <strong>Thời gian làm việc:</strong> {{ calculateWorkTime() }}
           </div>
         </div>
-      </div>
-      <div class="mb-3">
-        <button v-if="profile.isSubmitted" class="btn btn-success btn-custom" :disabled="true">
-          Đã đánh giá
-        </button>
-        <button v-else-if="profile.isProcessing" class="btn btn-primary btn-custom" :disabled="true">
-          Đang đánh giá
-        </button>
-        <button v-else class="btn btn-primary btn-custom" @click="selectPerson(profile)">
-          Đánh giá
-        </button>
       </div>
       <div class="team-mate">
         <div class="text-start fw-bold">
@@ -51,9 +37,9 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(mate, index) in sortedTeamMates" :key="index">
+            <tr v-for="(mate, index) in filteredTeamMates" :key="index">
               <td>{{ index + 1 }}</td>
-              <td>{{ mate.name }}</td>
+              <td class="text-start">{{ mate.name }}</td>
               <td>{{ mate.position }}</td>
               <td>{{ mate.project }}</td>
               <td>
@@ -63,7 +49,7 @@
                 <button v-else-if="mate.isProcessing" class="btn btn-primary btn-custom" :disabled="true">
                   Đang đánh giá
                 </button>
-                <button v-else class="btn btn-sm btn-primary me-2 btn-custom" @click="selectPerson(mate)">
+                <button v-else class="btn btn-sm btn-primary btn-custom" @click="selectPerson(mate)">
                   Đánh giá
                 </button>
               </td>
@@ -155,7 +141,7 @@
         </div>
 
         <div v-if="
-          profile.role === 'Manager' && this.selectedPerson?.id !== profile.id
+          userInfo.position === 'Manager' && this.selectedPerson?.id !== userInfo.id
         " class="section mb-4">
           <h5>
             Đánh giá của quản lý
@@ -178,52 +164,16 @@
 <script>
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
+import axios from 'axios';
 
 export default {
   name: "AssessPage",
   data() {
     return {
-      profile: {
-        id: 1,
-        name: "Trịnh Thái Quân",
-        position: "Fresher",
-        role: "Manager",
-        avatarUrl: require("@/assets/avata.png"),
-        department: "Phát triển",
-        project: "StudyArt",
-        level: "3",
-        time: "2 năm 3 tháng",
-        isProcessing: false,
-        isSubmitted: false,
-      },
-      teamMates: [
-        {
-          id: 2,
-          name: "Nguyễn Văn B",
-          position: "Manager",
-          project: "StudyArt",
-          isProcessing: false,
-          isSubmitted: false,
-        },
-        {
-          id: 3,
-          name: "Nguyễn Văn C",
-          position: "Junior",
-          project: "StudyArt",
-          level: "3",
-          isProcessing: false,
-          isSubmitted: false,
-        },
-        {
-          id: 4,
-          name: "Nguyễn Văn A",
-          position: "Tester",
-          project: "StudyArt",
-          level: "3",
-          isProcessing: false,
-          isSubmitted: false,
-        },
-      ],
+      apiUrl: process.env.VUE_APP_DB_URL,
+      userInfo: null,
+      profile: null,
+      teamMates: [],
       performanceEvaluation: [
         {
           id: 1,
@@ -404,7 +354,7 @@ export default {
           ],
         },
       ],
-      selectedPerson: this.profile,
+      selectedPerson: this.userInfo,
       perfValues: [],
       perfDetails: {},
       listScore: [],
@@ -414,6 +364,7 @@ export default {
   },
   mounted() {
     this.isLogin()
+    this.fetchTeamMates()
   },
   created() {
     // Khởi tạo perfValues dựa trên số lượng tiêu chí và câu hỏi
@@ -431,8 +382,11 @@ export default {
     };
   },
   computed: {
+    filteredTeamMates() {
+      return this.teamMates.filter((mate) => mate.project === this.userInfo.project);
+    },
     sortedTeamMates() {
-      return [...this.teamMates].sort((a, b) => {
+      return [...this.filteredTeamMates].sort((a, b) => {
         let comparison = 0;
         if (a[this.sortKey] > b[this.sortKey]) {
           comparison = 1;
@@ -444,10 +398,35 @@ export default {
     },
   },
   methods: {
+    async fetchTeamMates() {
+      try {
+        const response = await axios.get(this.apiUrl + '/employees');
+        this.teamMates = response.data;
+        console.log(this.teamMates);
+
+        const loggedInUserId = this.userInfo.id;
+
+        this.teamMates = response.data.map(mate => ({
+          ...mate,
+          isProcessing: mate.id === loggedInUserId,
+          isSubmitted: mate.isSubmitted || false
+        }));
+
+        this.selectedPerson = this.teamMates.find(mate => mate.id === loggedInUserId);
+        console.log(this.teamMates);
+      } catch (error) {
+        console.error('Error fetching projetcs:', error);
+      }
+    },
+
     isLogin() {
       const userInfo = JSON.parse(localStorage.getItem('userInfo'))
       if (!userInfo) {
         this.$router.push('/login');
+      }
+      else {
+        this.userInfo = userInfo;
+        this.profile = userInfo;
       }
     },
     isShowDescription(criteriaIndex, questionIndex) {
@@ -471,8 +450,8 @@ export default {
         }
       }
 
-      if (this.profile !== person) {
-        this.profile.isProcessing = false;
+      if (this.teamMates !== person) {
+        this.teamMates.isProcessing = false;
       }
 
       // Chọn người mới nếu khác người hiện tại
@@ -480,6 +459,8 @@ export default {
         if (this.selectedPerson) this.selectedPerson.isProcessing = false; // Bỏ chọn người trước đó
         this.selectedPerson = person;
         person.isProcessing = true;
+
+        this.profile = person;
       }
     },
     selectPerformanceValue(criteriaIndex, questionIndex, value) {
@@ -622,21 +603,22 @@ export default {
       }
 
       // Validate perfDetails
-      if (this.profile.role === "Manager") {
-        const shouldCheckcommentManager = this.selectedPerson === this.profile;
+      const shouldCheckCommentManager = this.selectedPerson === this.profile;
 
-        for (const key in this.perfDetails) {
-          if (shouldCheckcommentManager && key === "commentManager") {
+      for (const key in this.perfDetails) {
+        if (key === "commentManager") {
+          if (shouldCheckCommentManager && this.userInfo.position === "Manager") {
             continue;
           }
-          if (!this.perfDetails[key] || this.perfDetails[key].trim() === "") {
-            toast.error("Vui lòng không để trống phần đánh giá chi tiết", {
-              autoClose: 2000,
-            });
-            return;
-          }
+        } else if (!this.perfDetails[key]?.trim()) {
+          toast.error("Vui lòng không để trống phần đánh giá chi tiết", {
+            autoClose: 2000,
+          });
+          return;
         }
       }
+
+
 
       // Lưu dữ liệu và thông báo thành công
       localStorage.setItem(
@@ -652,6 +634,42 @@ export default {
       toast.success("Gửi đánh giá thành công!", { autoClose: 2000 });
       this.selectedPerson.isSubmitted = true;
       this.clearForm();
+    },
+    calculateWorkTime() {
+      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      if (userInfo && userInfo.dateJoinCompany) {
+        const joinDate = new Date(userInfo.dateJoinCompany);
+        const currentDate = new Date();
+
+        let years = currentDate.getFullYear() - joinDate.getFullYear();
+        let months = currentDate.getMonth() - joinDate.getMonth();
+        let days = currentDate.getDate() - joinDate.getDate();
+
+        if (days < 0) {
+          months--;
+          days += new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+        }
+
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        let result = [];
+
+        if (years > 0) {
+          result.push(`${years} năm`);
+        }
+        if (months > 0) {
+          result.push(`${months} tháng`);
+        }
+        if (days > 0) {
+          result.push(`${days} ngày`);
+        }
+
+        return result.length > 0 ? result.join(' ') : 'Chưa xác định';
+      }
+      return "Chưa xác định";
     },
     clearForm() {
       this.perfValues = this.performanceEvaluation.map((criteria) =>
@@ -719,11 +737,13 @@ tbody>tr>td {
 }
 
 .profile {
-  background-color: #f9f9f9;
+  background-color: #f7f7f7;
+  /* backdrop-filter: blur(10px);*/
+  border: 3px solid rgba(44, 113, 241, 0.1);
   border-radius: 10px;
   padding: 15px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
+  box-shadow: 0 16px 16px rgba(1, 41, 116, 0.1);
+  max-width: 450px;
   margin: 0 auto;
 }
 

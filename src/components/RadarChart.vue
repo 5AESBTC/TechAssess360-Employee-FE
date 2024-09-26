@@ -79,13 +79,10 @@ export default {
 <style scoped>
 .chart-container {
   position: relative;
-  width: 680px;
-  height: 600px;
-  margin: 0 auto; /* Centers the chart horizontally */
   display: flex;
+  width: 600px;
   flex-direction: column;
   justify-content: center; /* Centers the chart vertically */
-  align-items: center; /* Ensures the chart is aligned properly */
 }
 
 .chart-legend {

@@ -84,7 +84,8 @@ export default {
       userInfo: null,
       menuItems: [
         { text: "Trang chủ", link: "/" },
-        { text: "Đánh giá", link: "/assess-page" },
+        { text: "Đánh giá cá nhân", link: "/personal-assess" },
+        { text: "Đánh giá chéo", link: "/teammates-assess" },
         { text: "Kết quả đánh giá", link: "/assess-result" },
       ],
     };
@@ -92,10 +93,6 @@ export default {
   computed: {
     filteredMenuItems() {
       const items = [...this.menuItems];
-      // Kiểm tra vai trò của người dùng để thêm mục Quản lý thành viên
-      if (this.userInfo && this.userInfo.position === 'Manager') {
-        items.push({ text: "Quản lý thành viên", link: "/team-manage" });
-      }
       return items;
     },
   },

@@ -1,17 +1,17 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '@/components/HomePage.vue';
-import AssessPage from '@/components/AssessPage.vue';
+import TeamMatesAssess from '@/components/TeamMatesAssess.vue';
 import ProfilePage from '@/components/ProfilePage.vue';
 import AssessResult from '@/components/AssessResult.vue';
-import TeamManage from '@/components/TeamManage.vue';
+import Personal from '@/components/PersonalAssess.vue';
 import Login from '@/components/Login.vue';
 
 const routes = [
     { path: '/', component: HomePage },
-    { path: '/assess-page', component: AssessPage },
+    { path: '/personal-assess', component: Personal },
+    { path: '/teammates-assess', component: TeamMatesAssess },
     { path: '/profile', component: ProfilePage },
     { path: '/assess-result', component: AssessResult },
-    { path: '/team-manage', component: TeamManage },
     { path: '/login', component: Login, meta: { hideHeader: true } }
 ];
 

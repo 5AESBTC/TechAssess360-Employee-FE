@@ -8,7 +8,7 @@
     <!-- <span style="color: red; font-size: 24px;">Tổng điểm: {{ calculateGrandTotalScore() }}</span> -->
   </div>
 
-  <!-- <form v-if="selectedPerson" class="evaluation-form">
+  <form v-if="selectedPerson" class="evaluation-form">
     <div v-for="(section, sectionIndex) in evaluationSections" :key="sectionIndex" class="section mb-4">
       <div class="section-header">
         <h5>{{ sectionIndex + 1 }}. {{ section.title }}</h5>
@@ -53,7 +53,7 @@
         </div>
       </div>
     </div>
-  </form> -->
+  </form>
 </template>
 
 
@@ -66,25 +66,7 @@ export default {
   },
   data() {
     return {
-      profile: {
-        name: "Trịnh Thái Quân",
-        position: "Tester",
-        avatarUrl: require("@/assets/avata.png"),
-        department: "Phát triển",
-        project: "StudyArt",
-        level: "1",
-        time: "2 năm 3 tháng",
-      },
-      sortKey: "name",
-      sortOrder: "asc",
     };
-  },
-  computed: {
-    getMaxScore() {
-      return (category) => {
-        return this.maxScore[category] || 0; // Giá trị mặc định nếu không tìm thấy
-      };
-    }
   },
   methods: {
     calculateMaxScore(questions) {

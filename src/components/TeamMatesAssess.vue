@@ -1,8 +1,13 @@
 <template>
-  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
+  <div
+    class="container-fluid row justify-content-md-center align-items-center"
+    v-if="profile"
+  >
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-3 d-flex align-items-center justify-content-around">
+      <div
+        class="profile mb-3 d-flex align-items-center justify-content-around"
+      >
         <div class="avatar">
           <img :src="profile.avatar" alt="avatar" />
         </div>
@@ -30,7 +35,13 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">Tên</th>
+              <th
+                @click="sortBy('name')"
+                class="text-start"
+                style="cursor: pointer"
+              >
+                Tên
+              </th>
               <th>Vị Trí</th>
               <th>Tác Vụ</th>
             </tr>
@@ -41,22 +52,42 @@
               <td class="text-start">{{ mate.name }}</td>
               <td>{{ mate.position }}</td>
               <td class="d-flex">
-                <div class="ms-5 ">
-                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2 " :disabled="true">
+                <div class="ms-5">
+                  <button
+                    v-if="mate.isSubmitted"
+                    class="btn btn-sm btn-success btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đã đánh giá
                   </button>
-                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
+                  <button
+                    v-else-if="mate.isProcessing"
+                    class="btn btn-sm btn-warning btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đang đánh giá
                   </button>
-                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-primary btn-custom me-2"
+                    @click="selectPerson(mate)"
+                  >
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="userInfo.position == 'Manager'">
-                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
+                  <button
+                    v-if="mate.isViewing"
+                    class="btn btn-sm btn-warning btn-custom"
+                    :disabled="true"
+                  >
                     Đang xem
                   </button>
-                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-info btn-custom"
+                    @click="viewPerson(mate)"
+                  >
                     Xem chi tiết
                   </button>
                 </div>
@@ -69,14 +100,18 @@
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
-        :evaluationSections="evaluationSections" :maxScore="maxScore" :userInfo="userInfo" />
+      <component
+        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
+        :selectedPerson="selectedPerson"
+        :userInfo="userInfo"
+        @update-selected-person="handleUpdateSelectedPerson"
+      />
     </div>
   </div>
 </template>
 <script>
 import "vue3-toastify/dist/index.css";
-import axios from 'axios';
+import axios from "axios";
 import TeamAssessDetailsForm from "./TeamAssessDetailsForm.vue";
 import TeamAssessForm from "./TeamAssessForm.vue";
 
@@ -84,7 +119,7 @@ export default {
   name: "TeamMatesAssess",
   components: {
     TeamAssessForm,
-    TeamAssessDetailsForm
+    TeamAssessDetailsForm,
   },
   data() {
     return {
@@ -92,7 +127,7 @@ export default {
       userInfo: null,
       profile: null,
       teamMates: [],
-      selectedPerson: this.userInfo,
+      selectedPerson: null,
       sortKey: "name",
       sortOrder: "asc",
       isViewing: false,
@@ -100,13 +135,15 @@ export default {
     };
   },
   mounted() {
-    this.isLogin()
-    this.fetchTeamMates()
+    this.isLogin();
+    this.fetchTeamMates();
   },
 
   computed: {
     filteredTeamMates() {
-      return this.teamMates.filter((mate) => mate.project === this.userInfo.project);
+      return this.teamMates.filter(
+        (mate) => mate.project === this.userInfo.project
+      );
     },
     sortedTeamMates() {
       return [...this.filteredTeamMates].sort((a, b) => {
@@ -123,18 +160,18 @@ export default {
   methods: {
     async fetchTeamMates() {
       try {
-        const response = await axios.get(this.apiUrl + '/employees');
+        const response = await axios.get(this.apiUrl + "/employees");
         console.log("DANH SÁCH NHÂN VIÊN:: ", response);
 
         const loggedInUserId = this.userInfo.id;
 
         this.teamMates = response.data
-          .filter(mate => mate.id !== loggedInUserId)
-          .map(mate => ({
+          .filter((mate) => mate.id !== loggedInUserId)
+          .map((mate) => ({
             ...mate,
             isProcessing: mate.id === loggedInUserId,
             isSubmitted: mate.isSubmitted || false,
-            isViewing: false
+            isViewing: false,
           }));
 
         if (this.teamMates.length > 0) {
@@ -145,10 +182,11 @@ export default {
 
         console.log(this.teamMates);
       } catch (error) {
-        console.error('Error fetching projetcs:', error);
+        console.error("Error fetching projetcs:", error);
       }
     },
     viewPerson(person) {
+
       if (this.selectedPerson && this.selectedPerson.isProcessing) {
         this.selectedPerson.isProcessing = false;
       }
@@ -156,16 +194,13 @@ export default {
       if (this.selectedPerson !== person) {
         if (this.selectedPerson) {
           this.selectedPerson.isViewing = false;
-
         }
         this.selectedPerson = person;
         person.isViewing = true;
         person.isProcessing = false;
         this.profile = person;
         console.log(this.isViewing);
-
       } else {
-        // Nếu người được nhấn là cùng một người, chuyển đổi trạng thái
         person.isViewing = !person.isViewing;
       }
       this.isViewing = true;
@@ -197,16 +232,14 @@ export default {
         person.isProcessing = !person.isProcessing;
       }
       this.isViewing = false;
-
     },
     isLogin() {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'))
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
       console.log("THÔNG TIN ĐĂNG NHẬP:: ", userInfo);
 
       if (!userInfo) {
-        this.$router.push('/login');
-      }
-      else {
+        this.$router.push("/login");
+      } else {
         this.userInfo = userInfo;
         this.profile = userInfo;
       }
@@ -220,7 +253,7 @@ export default {
       }
     },
     calculateWorkTime() {
-      const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
       if (userInfo && userInfo.dateJoinCompany) {
         const joinDate = new Date(userInfo.dateJoinCompany);
         const currentDate = new Date();
@@ -231,7 +264,11 @@ export default {
 
         if (days < 0) {
           months--;
-          days += new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+          days += new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            0
+          ).getDate();
         }
 
         if (months < 0) {
@@ -251,11 +288,20 @@ export default {
           result.push(`${days} ngày`);
         }
 
-        return result.length > 0 ? result.join(' ') : 'Chưa xác định';
+        return result.length > 0 ? result.join(" ") : "Chưa xác định";
       }
       return "Chưa xác định";
     },
-
+    handleUpdateSelectedPerson(updatedPerson) {
+      this.selectedPerson = null;
+      //update selectedPerson vào teamMates
+      const index = this.teamMates.findIndex(
+        (person) => person.id === updatedPerson.id
+      );
+      if (index !== -1) {
+        this.teamMates[index] = updatedPerson;
+      }
+    },
   },
 };
 </script>
@@ -266,7 +312,7 @@ export default {
   width: 130px;
 }
 
-tbody>tr>td {
+tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -375,7 +421,7 @@ tbody>tr>td {
   margin-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 </style>

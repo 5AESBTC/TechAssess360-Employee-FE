@@ -80,7 +80,7 @@ export default {
 .chart-container {
   position: relative;
   display: flex;
-  width: 600px;
+  width: 450px;
   flex-direction: column;
   justify-content: center; /* Centers the chart vertically */
 }

@@ -28,10 +28,10 @@ export default {
   data() {
     return {
       steps: [
-        { title: 'Bộ phận phát triển đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#90EE90' },
-        { title: 'Bộ phận tổng vụ đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#87CEEB' },
+        { title: 'Bộ phận tổng vụ đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#90EE90' },
+        { title: 'Bộ phận phát triển đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#87CEEB' },
         { title: 'Quản lý đánh giá', text: 'Quản lý sẽ đánh giá các thành viên trong team dự án', color: '#FFD700' },
-        { title: 'Xem kết quả', text: 'Xem những đánh giá từ quản lý, team, cá nhân', color: '#FF6347' }
+        { title: 'Xem kết quả', text: 'Xem tổng điểm, bậc hiện tại và đánh giá từ quản lý ', color: '#FF6347' }
       ],
       titles: [
         { text: '15/09 - 20/09', class: 'before' },

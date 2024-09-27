@@ -96,6 +96,7 @@ export default {
       sortKey: "name",
       sortOrder: "asc",
       isViewing: false,
+      listScore: [],
     };
   },
   mounted() {

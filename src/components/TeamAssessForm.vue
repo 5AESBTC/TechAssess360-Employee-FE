@@ -39,21 +39,16 @@
                             </label>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Nếu không có questions nhưng có answer thì hiển thị radio cho answer -->
-            <div v-else-if="criteria.answer && criteria.answer.length > 0">
-                <div class="options d-flex justify-content-around my-3">
-                    <div v-for="(answer, answerIndex) in criteria.answer" :key="answerIndex" class="form-check">
-                        <input type="radio" :id="'performanceOption' + criteriaIndex + answerIndex"
-                            :name="'performance' + criteriaIndex" class="form-check-input"
-                            @change="selectPerformanceValue(criteriaIndex, null, answer.value)" :value="answer.value" />
-                        <label :for="'performanceOption' + criteriaIndex + answerIndex" class="form-check-label">{{
-                            answer.label }}
-                        </label>
+                    <div class="description">
+                        <textarea v-if="isShowDescription(criteriaIndex, questionIndex)" class="form-control" :class="{
+                            'error-textarea':
+                                perfValues[criteriaIndex][questionIndex]?.hasError,
+                        }" rows="3" placeholder="Nhận xét thêm"
+                            v-model="perfValues[criteriaIndex][questionIndex].description"
+                            :ref="'description_' + criteriaIndex + '_' + questionIndex"></textarea>
                     </div>
                 </div>
+
             </div>
 
             <div v-if="criteria.id == 6">
@@ -68,6 +63,27 @@
                         <textarea v-model="opinion.answer" class="form-control" rows="4"></textarea>
                     </div>
                 </div>
+            </div>
+        </div>
+
+        <!-- Personal contribution and Results -->
+        <div class="section mb-4">
+            <h5>
+                Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
+            </h5>
+            <div class="form-group">
+                <textarea class="form-control" :class="{
+                    'error-textarea': perfValues.contributionHasError,
+                }" rows="5" v-model="perfDetails.contribution"
+                    placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
+            </div>
+        </div>
+
+        <div class="section mb-4">
+            <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
+            <div class="form-group">
+                <textarea class="form-control" rows="5" v-model="perfDetails.nextTarget"
+                    placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"></textarea>
             </div>
         </div>
 
@@ -139,7 +155,7 @@ export default {
         },
 
         isShowDescription(criteriaIndex, questionIndex) {
-            return this.perfValues[criteriaIndex][questionIndex]?.value >= 3;
+            return this.perfValues[criteriaIndex] && this.perfValues[criteriaIndex][questionIndex] && this.perfValues[criteriaIndex][questionIndex].value >= 3;
         },
         selectPerformanceValue(criteriaIndex, questionIndex, value) {
             if (!this.selectedPerson) {
@@ -187,6 +203,8 @@ export default {
                 );
                 this.criterias[criteriaIndex].total = percentage;
             }
+            console.log(this.perfValues)
+            console.log(this.listScore)
         },
         calculateScoreSelected(criteriaIndex, questionIndex, value) {
             // Tính điểm cho giá trị đã chọn
@@ -219,45 +237,51 @@ export default {
             return total;
         },
         submitForm() {
-            if (!this.selectedPerson) {
-                toast.error("Vui lòng chọn một người để đánh giá!", {
-                    autoClose: 2000,
-                });
-                document.querySelectorAll("input[type=radio]").forEach((input) => {
-                    input.checked = false;
-                });
-                document.querySelectorAll("textarea").forEach((input) => {
-                    input.value = "";
-                });
-                return; // Dừng lại nếu chưa chọn selectedPerson
-            }
+            // if (!this.selectedPerson) {
+            //     toast.error("Vui lòng chọn một người để đánh giá!", {
+            //         autoClose: 2000,
+            //     });
+            //     document.querySelectorAll("input[type=radio]").forEach((input) => {
+            //         input.checked = false;
+            //     });
+            //     document.querySelectorAll("textarea").forEach((input) => {
+            //         input.value = "";
+            //     });
+            //     return; // Dừng lại nếu chưa chọn selectedPerson
+            // }
+            console.log(this.perfDetails)
             let allDescriptionsFilled = true;
             let allValuesSelected = true;
             let firstErrorRef = null;
 
-            this.perfValues.forEach((selectedCriteria, index) => {
-                selectedCriteria.forEach((question, qIndex) => {
-                    if (question.value === undefined || question.value === null) {
-                        allValuesSelected = false;
-                    }
+            this.perfValues.forEach((criteria, index) => {
+                if (Array.isArray(criteria)) {  // Kiểm tra nếu criteria là một mảng
+                    criteria.forEach((question, qIndex) => {
+                        if (question.value === undefined || question.value === null) {
+                            allValuesSelected = false;
+                        }
 
-                    if (question.value >= 3) {
-                        if (!question.description || question.description.trim() === "") {
-                            allDescriptionsFilled = false;
-                            question.hasError = true;
-                            // Kiểm tra ref có tồn tại trước khi truy cập
-                            if (!firstErrorRef) {
-                                const refKey = `description_${index}_${qIndex}`;
-                                firstErrorRef = this.$refs[refKey][0]; // Lưu ref ô lỗi đầu tiên
+                        if (question.value >= 3) {
+                            if (!question.description || question.description.trim() === "") {
+                                allDescriptionsFilled = false;
+                                question.hasError = true;
+                                // Kiểm tra ref có tồn tại trước khi truy cập
+                                if (!firstErrorRef) {
+                                    const refKey = `description_${index}_${qIndex}`;
+                                    firstErrorRef = this.$refs[refKey][0]; // Lưu ref ô lỗi đầu tiên
+                                }
+                            } else {
+                                question.hasError = false;
                             }
                         } else {
                             question.hasError = false;
                         }
-                    } else {
-                        question.hasError = false;
-                    }
-                });
+                    });
+                } else {
+                    console.error(`criteria tại index ${index} không phải là một mảng:`, criteria);
+                }
             });
+
 
             // Kiểm tra và thông báo lỗi
             if (!allValuesSelected) {
@@ -295,12 +319,12 @@ export default {
 
             // Lưu dữ liệu và thông báo thành công
             localStorage.setItem(
-                this.profile.id + "assessTo" + this.selectedPerson.id,
+                this.userInfo.id + "assessTo" + this.selectedPerson.id,
                 JSON.stringify(this.perfValues)
             );
 
             localStorage.setItem(
-                this.profile.id + "assessDetailsTo" + this.selectedPerson.id,
+                this.userInfo.id + "assessDetailsTo" + this.selectedPerson.id,
                 JSON.stringify(this.perfDetails)
             );
 

@@ -162,7 +162,7 @@ export default {
     userInfo: Object,
     selectedPerson: Object,
   },
-  emits: ["update-selected-person"],
+  emits: ["updateSelectedPerson"],
   data() {
     return {
       apiUrl: process.env.VUE_APP_DB_URL,
@@ -381,7 +381,7 @@ export default {
       toast.success("Gửi đánh giá thành công!", { autoClose: 2000 });
       const updatedPerson = { ...this.selectedPerson, isSubmitted: true };
       // Phát sự kiện lên component cha
-      this.$emit("update-selected-person", updatedPerson);
+      this.$emit("updateSelectedPerson", updatedPerson);
       this.clearForm();
     },
     clearForm() {

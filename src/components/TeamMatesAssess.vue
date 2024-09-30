@@ -104,7 +104,7 @@
         :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
         :selectedPerson="selectedPerson"
         :userInfo="userInfo"
-        @update-selected-person="handleUpdateSelectedPerson"
+        @updateSelectedPerson="handleUpdateSelectedPerson"
       />
     </div>
   </div>

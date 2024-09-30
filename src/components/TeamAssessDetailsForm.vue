@@ -1,6 +1,8 @@
 <template>
-
-  <div class="evaluation-header mb-2" style="display: flex; justify-content: space-between; align-items: center;">
+  <div
+    class="evaluation-header mb-2"
+    style="display: flex; justify-content: space-between; align-items: center"
+  >
     <label class="fw-bold fs-4">
       Chi tiết đánh giá quý III năm 2024 của:
       {{ selectedPerson ? selectedPerson.name : "" }}
@@ -9,33 +11,79 @@
   </div>
 
   <form v-if="selectedPerson" class="evaluation-form">
-    <div v-for="(section, sectionIndex) in evaluationSections" :key="sectionIndex" class="section mb-4">
-      <div class="section-header">
-        <h5>{{ sectionIndex + 1 }}. {{ section.title }}</h5>
-        <span v-if="section.questions" class="score-display" style="color: red; text-align: right;">
-          (<strong>{{ calculateTotalScore(selectedPerson.evaluation[section.key]) }}</strong> / <strong>{{
-            maxScore[section.key] }}</strong>)
-        </span>
+    <div
+      v-for="(criteria, criteriaIndex) in criterias"
+      :key="criteriaIndex"
+      class="section mb-4"
+    >
+      <div class="d-flex justify-content-between">
+        <label class="d-flex gap-2">
+          <h4>{{ criteria.title }}</h4>
+          <span class="text-danger fw-bold">*</span>
+        </label>
+        <div class="point">
+          <!-- ({{
+            listScores[criteriaIndex].total
+              ? istScores[criteriaIndex].total
+              : "?"
+          }}
+          / {{ criteria.point }}) -->
+        </div>
       </div>
 
       <div>
-        <div v-if="section.questions">
-          <div v-for="(question, index) in selectedPerson?.evaluation[section.key] ?? []" :key="index"
-            class="question mb-3">
-            <div v-if="question.label" class="d-flex justify-content-between title">
-              <label>{{ index + 1 }}. {{ question.label }}<span class="text-danger"> *</span></label>
+        <div v-if="criteria.questions">
+          <div
+            v-for="(question, questionIndex) in criteria.questions"
+            :key="questionIndex"
+            class="question mb-3"
+          >
+            <div
+              v-if="question.label"
+              class="d-flex justify-content-between title"
+            >
+              <label>
+                {{ questionIndex + 1 }}. {{ question.label }}
+                >
+              </label>
             </div>
             <div class="options d-flex justify-content-around my-3">
-              <div v-for="(option, optIndex) in question.options" :key="optIndex"
-                class="form-check d-flex flex-column align-items-center">
-                <span class="answer-label me-2">{{ option.label }}</span>
-                <div class="avatar-group mt-2" style="display: flex;">
-                  <div v-for="(avatar, avatarIndex) in option.avatarUrls" :key="avatarIndex"
-                    style="position: relative; margin-right: 10px;" class="avatar-container">
-                    <img :src="avatar" alt="Avatar" class="avatar-img" style="cursor: pointer;" />
-                    <span v-if="option.avatarDescriptions && option.avatarDescriptions[avatarIndex]" class="tooltiptext"
-                      style="background-color: rgba(0, 0, 0, 0.7); color: #fff; padding: 5px; border-radius: 5px;">
-                      {{ option.avatarDescriptions[avatarIndex] }}
+              <div
+                v-for="(answer, answerIndex) in question.answer"
+                :key="answerIndex"
+                class="form-check"
+              >
+                <span class="answer-label me-2">{{ answer.label }}</span>
+                <div
+                  v-if="
+                    this.perfValues &&
+                    isShowAvatar(criteriaIndex, questionIndex, answer.value)
+                  "
+                  class="avatar-group mt-2 d-flex justify-content-center"
+                >
+                  <div
+                    style="position: relative; margin-right: 10px"
+                    class="avatar-container"
+                  >
+                    <img
+                      :src="userInfo?.avatar"
+                      alt="Avatar"
+                      class="avatar-img"
+                      style="cursor: pointer"
+                    />
+                    <span
+                      v-if="
+                        perfValues[criteriaIndex][questionIndex].description
+                      "
+                      class="tooltiptext"
+                      style="
+                        background-color: rgba(0, 0, 0, 0.7);
+                        color: #fff;
+                        padding: 5px;
+                        border-radius: 5px;
+                      "
+                    >
+                      {{ perfValues[criteriaIndex][questionIndex].description }}
                     </span>
                   </div>
                 </div>
@@ -44,13 +92,17 @@
           </div>
         </div>
 
-        <div v-else>
+        <!-- <div v-else>
           <div class="question mb-3">
-            <label class="d-flex title">{{ selectedPerson.evaluation[section.key]?.label }}<span class="text-danger">
-                *</span></label>
-            <div class="form-control text-start">{{ selectedPerson.evaluation[section.key]?.answer }}</div>
+            <label class="d-flex title"
+              >{{ selectedPerson.evaluation[section.key]?.label
+              }}<span class="text-danger"> *</span></label
+            >
+            <div class="form-control text-start">
+              {{ selectedPerson.evaluation[section.key]?.answer }}
+            </div>
           </div>
-        </div>
+        </div> -->
       </div>
     </div>
   </form>
@@ -58,69 +110,56 @@
 
 
 <script>
+import axios from "axios";
+
 export default {
   name: "TeamAssessDetailsForm",
   props: {
     userInfo: Object,
-    selectedPerson: Object
+    selectedPerson: Object,
   },
   data() {
     return {
+      apiUrl: process.env.VUE_APP_DB_URL,
+      criterias: [],
+      perfValues: null,
     };
   },
+  mounted() {
+    this.fetchCriterias();
+    this.loadData();
+  },
   methods: {
-    calculateMaxScore(questions) {
-      return questions.reduce((sum, question) => sum + (question.score || 0), 0);
+    isShowAvatar(criteriaIndex, questionIndex, value) {
+      console.log(this.perfValues[criteriaIndex][questionIndex]?.value);
+      console.log(value);
+      return (
+        this.perfValues[criteriaIndex][questionIndex]?.value === value
+      );
     },
-    calculateTotalScore(questions) {
-      if (!questions || !Array.isArray(questions)) return 0;
-
-      let totalScore = 0;
-
-      questions.forEach(question => {
-        totalScore += this.calculateQuestionAverage(question, this.getMutilForQuestion(question));
-      });
-
-      return parseFloat(((totalScore * 20) / 100).toFixed(0));
+    async fetchCriterias() {
+      try {
+        const response = await axios.get(this.apiUrl + "/criterias");
+        this.criterias = response.data;
+      } catch (error) {
+        console.error("Error fetching criterias:", error);
+      }
     },
+    loadData() {
+      try {
+        const key = this.userInfo.id + "assessTo" + this.selectedPerson.id;
+        const dataString = localStorage.getItem(key);
+        console.log(key);
+        console.log("Dữ liệu từ localStorage:", dataString); // Kiểm tra giá trị lấy từ localStorage
 
-    getMutilForQuestion(question) {
-      return question.mutil || 1;
-    },
-    calculateQuestionAverage(question, mutil) {
-      if (!question || !question.options || question.options.length === 0) return 0;
-
-      let totalScore = 0;
-      let totalAvatars = 0;
-
-      question.options.forEach(option => {
-        const numberOfPeople = option.avatarUrls ? option.avatarUrls.length : 0;
-        const value = option.value || 0;
-
-        totalScore += value * numberOfPeople;
-        totalAvatars += numberOfPeople;
-      });
-
-      // Tính điểm trung bình cho câu hỏi
-      const average = totalAvatars > 0 ? (totalScore / totalAvatars) : 0;
-
-      // Trả về điểm trung bình đã điều chỉnh theo tỷ lệ (score / mutil)
-      const adjustedScore = (average * (question.score || 0)) / mutil;
-
-      return parseFloat(adjustedScore.toFixed(2));
-    }
-    ,
-    calculateGrandTotalScore() {
-      if (!this.selectedPerson) return 0;
-
-      let grandTotalScore = 0;
-
-      this.evaluationSections.forEach(section => {
-        const sectionScore = this.calculateTotalScore(this.selectedPerson.evaluation[section.key]);
-        grandTotalScore += sectionScore;
-      });
-
-      return parseFloat(grandTotalScore.toFixed(2));
+        if (dataString) {
+          this.perfValues = JSON.parse(dataString); // Phân tích dữ liệu JSON
+        } else {
+          this.loadedData = "Không có dữ liệu nào trong localStorage.";
+        }
+      } catch (error) {
+        console.error("Lỗi khi lấy dữ liệu từ localStorage:", error);
+      }
     },
   },
 };
@@ -193,10 +232,10 @@ export default {
   width: 100%;
   overflow-x: auto;
   /* Cho phép cuộn ngang */
-  -webkit-overflow-scrolling: touch
+  -webkit-overflow-scrolling: touch;
 }
 
-.table>table {
+.table > table {
   width: 100%;
   margin-bottom: 1rem;
   border-collapse: collapse;
@@ -249,7 +288,7 @@ export default {
   padding-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 
@@ -449,7 +488,6 @@ export default {
 
 /* Đối với màn hình trung bình (máy tính bảng) */
 @media (min-width: 576px) and (max-width: 768px) {
-
   .left-menu,
   .right-menu {
     height: auto;

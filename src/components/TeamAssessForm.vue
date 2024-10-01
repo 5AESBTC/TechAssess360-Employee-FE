@@ -1,16 +1,27 @@
 <template>
   <!-- Evaluation Header -->
-  <div class="evaluation-header text-start mb-2 d-flex justify-content-between align-items-center fw-bold fs-4">
-    <label class="">Đánh giá quý III năm 2024 cho:
-      {{ selectedPerson ? selectedPerson.name : "" }}</label>
-    <div class=" d-flex align-items-center">Tổng điểm:
-      <label class="text-danger fw-bold fs-1 ms-2"> {{ calculateOverallTotal() }}</label>
+  <div
+    class="evaluation-header text-start mb-2 d-flex justify-content-between align-items-center fw-bold fs-4"
+  >
+    <label class=""
+      >Đánh giá quý III năm 2024 cho:
+      {{ selectedPerson ? selectedPerson.name : "" }}</label
+    >
+    <div class="d-flex">
+      <label class="fw-bold fs-4"
+        >Tổng điểm:
+        <span class="text-danger">{{ calculateOverallTotal() }}</span></label
+      >
     </div>
   </div>
 
   <form class="evaluation-form" @submit.prevent="submitForm">
     <!-- Performance Evaluation -->
-    <div v-for="(criteria, criteriaIndex) in criterias" :key="criteriaIndex" class="section mb-4">
+    <div
+      v-for="(criteria, criteriaIndex) in listCriteria"
+      :key="criteriaIndex"
+      class="section mb-4"
+    >
       <div class="d-flex justify-content-between">
         <label class="d-flex gap-2">
           <h4>{{ criteria.title }}</h4>
@@ -23,40 +34,70 @@
 
       <!-- Kiểm tra nếu có questions thì hiển thị -->
       <div v-if="criteria.questions && criteria.questions.length > 0">
-        <div v-for="(question, questionIndex) in criteria.questions" :key="questionIndex" class="question mb-3">
-          <div class="d-flex justify-content-between title" v-if="question.label">
+        <div
+          v-for="(question, questionIndex) in criteria.questions"
+          :key="questionIndex"
+          class="question mb-3"
+        >
+          <div
+            class="d-flex justify-content-between title"
+            v-if="question.label"
+          >
             <label>
               {{ questionIndex + 1 }}. {{ question.label }}
               <span class="text-danger"> *</span>
             </label>
           </div>
           <div class="options d-flex justify-content-around my-3">
-            <div v-for="(answer, answerIndex) in question.answer" :key="answerIndex" class="form-check">
-              <input type="radio" :id="'performanceOption' +
-                criteriaIndex +
-                questionIndex +
-                answerIndex
-                " :name="'performance' + criteriaIndex + questionIndex" class="form-check-input" @change="
+            <div
+              v-for="(answer, answerIndex) in question.answer"
+              :key="answerIndex"
+              class="form-check"
+            >
+              <input
+                type="radio"
+                :id="
+                  'performanceOption' +
+                  criteriaIndex +
+                  questionIndex +
+                  answerIndex
+                "
+                :name="'performance' + criteriaIndex + questionIndex"
+                class="form-check-input"
+                @change="
                   selectPerformanceValue(
                     criteriaIndex,
                     questionIndex,
                     answer.value
                   )
-                  " :value="answer.value" />
-              <label :for="'performanceOption' +
-                criteriaIndex +
-                questionIndex +
-                answerIndex
-                " class="form-check-label">{{ answer.label }}
+                "
+                :value="answer.value"
+              />
+              <label
+                :for="
+                  'performanceOption' +
+                  criteriaIndex +
+                  questionIndex +
+                  answerIndex
+                "
+                class="form-check-label"
+                >{{ answer.label }}
               </label>
             </div>
           </div>
           <div class="description">
-            <textarea v-if="isShowDescription(criteriaIndex, questionIndex)" class="form-control" :class="{
-              'error-textarea':
-                perfValues[criteriaIndex][questionIndex]?.hasError,
-            }" rows="3" placeholder="Nhận xét thêm" v-model="perfValues[criteriaIndex][questionIndex].description"
-              :ref="'description_' + criteriaIndex + '_' + questionIndex"></textarea>
+            <textarea
+              v-if="isShowDescription(criteriaIndex, questionIndex)"
+              class="form-control"
+              :class="{
+                'error-textarea':
+                  perfValues[criteriaIndex][questionIndex]?.hasError,
+              }"
+              rows="3"
+              placeholder="Nhận xét thêm"
+              v-model="perfValues[criteriaIndex][questionIndex].description"
+              :ref="'description_' + criteriaIndex + '_' + questionIndex"
+            ></textarea>
           </div>
         </div>
       </div>
@@ -81,17 +122,24 @@
         </div>
       </div> -->
 
-      <div v-if="
-        userInfo.position === 'Manager' &&
-        this.selectedPerson?.id !== userInfo.id
-      " class="section mb-4">
+      <div
+        v-if="
+          userInfo.position === 'Manager' &&
+          this.selectedPerson?.id !== userInfo.id
+        "
+        class="section mb-4"
+      >
         <h4>
           Đánh giá của quản lý
           <span class="text-danger"> *</span>
         </h4>
         <div class="form-group">
-          <textarea class="form-control" rows="5" v-model="perfDetails.commentManager"
-            placeholder="Ghi rõ ý kiến của bạn"></textarea>
+          <textarea
+            class="form-control"
+            rows="5"
+            v-model="perfDetails.commentManager"
+            placeholder="Ghi rõ ý kiến của bạn"
+          ></textarea>
         </div>
       </div>
     </div>
@@ -117,7 +165,7 @@ export default {
   data() {
     return {
       apiUrl: process.env.VUE_APP_DB_URL,
-      criterias: [],
+      listCriteria: [],
       perfValues: [],
       perfDetails: {},
       listScore: [],
@@ -127,7 +175,7 @@ export default {
     this.fetchCriterias();
   },
   created() {
-    this.perfValues = this.criterias.map((criteria) =>
+    this.perfValues = this.listCriteria.map((criteria) =>
       criteria.questions.map(() => ({
         value: null,
         description: "",
@@ -142,16 +190,16 @@ export default {
   },
   methods: {
     calculateOverallTotal() {
-      return this.criterias.reduce((sum, criteria) => {
+      return this.listCriteria.reduce((sum, criteria) => {
         return sum + (criteria.total || 0);
       }, 0);
     },
     async fetchCriterias() {
       try {
         const response = await axios.get(this.apiUrl + "/criterias");
-        this.criterias = response.data;
+        this.listCriteria = response.data;
       } catch (error) {
-        console.error("Error fetching criterias:", error);
+        console.error("Error fetching listCriteria:", error);
       }
     },
     isShowDescription(criteriaIndex, questionIndex) {
@@ -193,7 +241,7 @@ export default {
 
       // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
       const questionsCount =
-        this.criterias[criteriaIndex]?.questions?.length || 0;
+        this.listCriteria[criteriaIndex]?.questions?.length || 0;
       const answeredQuestionsCount = Object.keys(
         this.listScore[criteriaIndex] || {}
       ).length;
@@ -203,16 +251,16 @@ export default {
         const totalScore = this.calculateTotalScore(criteriaIndex);
         const percentage = Math.round(
           ((totalScore * 20) / 100) *
-          (this.criterias[criteriaIndex]?.point || 1)
+            (this.listCriteria[criteriaIndex]?.point || 1)
         );
-        this.criterias[criteriaIndex].total = percentage;
+        this.listCriteria[criteriaIndex].total = percentage;
       }
     },
     calculateScoreSelected(criteriaIndex, questionIndex, value) {
       // Tính điểm cho giá trị đã chọn
-      const question = this.criterias[criteriaIndex]?.questions[questionIndex];
+      const question = this.listCriteria[criteriaIndex]?.questions[questionIndex];
       const pointCriteriaIndex =
-        parseFloat(this.criterias[criteriaIndex]?.point) || 1;
+        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
       const questionScore = parseFloat(question?.score) || 0;
       const selectedValue = parseFloat(value) || 0;
 
@@ -352,7 +400,7 @@ export default {
       document.querySelectorAll("textarea").forEach((input) => {
         input.value = "";
       });
-      this.criterias.forEach((criteria) => {
+      this.listCriteria.forEach((criteria) => {
         criteria.total = 0;
       });
       //this.selectedPerson = null;
@@ -420,7 +468,7 @@ export default {
   padding-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 

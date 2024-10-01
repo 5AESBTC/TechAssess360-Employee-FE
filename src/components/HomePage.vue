@@ -2,8 +2,13 @@
   <div class="background-container d-flex align-items-center">
     <div class="container">
       <div class="step-container">
-        <div v-for="(step, index) in steps" :key="index" class="step" :style="{ backgroundColor: step.color }"
-          :class="{ active: isActiveStep(index) }">
+        <div
+          v-for="(step, index) in steps"
+          :key="index"
+          class="step"
+          :style="{ backgroundColor: step.color }"
+          :class="{ active: isActiveStep(index) }"
+        >
           <div class="step-title">{{ step.title }}</div>
           <div class="step-text">{{ step.text }}</div>
         </div>
@@ -11,8 +16,12 @@
 
       <div class="title-container">
         <div class="title-box">
-          <div v-for="(title, index) in titles" :key="index" class="title"
-            :class="[title.class, { active: isActiveTitle(index) }]">
+          <div
+            v-for="(title, index) in titles"
+            :key="index"
+            class="title"
+            :class="[title.class, { active: isActiveTitle(index) }]"
+          >
             {{ title.text }}
           </div>
         </div>
@@ -24,44 +33,65 @@
 
 <script>
 export default {
-  name: 'HomePage',
+  name: "HomePage",
   data() {
     return {
       steps: [
-        { title: 'Bộ phận tổng vụ đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#90EE90' },
-        { title: 'Bộ phận phát triển đánh giá', text: 'Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.', color: '#87CEEB' },
-        { title: 'Quản lý đánh giá', text: 'Quản lý sẽ đánh giá các thành viên trong team dự án', color: '#FFD700' },
-        { title: 'Xem kết quả', text: 'Xem tổng điểm, bậc hiện tại và đánh giá từ quản lý ', color: '#FF6347' }
+        {
+          title: "Bộ phận Tổng vụ đánh giá",
+          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
+          color: "#90EE90",
+        },
+        {
+          title: "Bộ phận Phát triển đánh giá",
+          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
+          color: "#87CEEB",
+        },
+        {
+          title: "Quản lý đánh giá",
+          text: "Quản lý sẽ đánh giá các thành viên trong team dự án",
+          color: "#FFD700",
+        },
+        {
+          title: "Xem kết quả",
+          text: "Xem những đánh giá từ quản lý, team, cá nhân",
+          color: "#FF6347",
+        },
       ],
       titles: [
-        { text: '15/09 - 20/09', class: 'before' },
-        { text: '21/09 - 30/09', class: 'now' },
-        { text: '01/10 - 10/10', class: 'new' },
-        { text: '11/10 - 20/10', class: 'after' }
+        { text: "15/09 - 20/09", class: "before" },
+        { text: "21/09 - 30/09", class: "now" },
+        { text: "01/10 - 10/10", class: "new" },
+        { text: "11/10 - 20/10", class: "after" },
       ],
-      currentDate: new Date() // Cập nhật giá trị này tùy thuộc vào nhu cầu
+      currentDate: new Date(), // Cập nhật giá trị này tùy thuộc vào nhu cầu
     };
   },
   methods: {
     isActiveTitle(index) {
       // Logic để xác định tiêu đề nào là hiện tại
       const titleDates = [
-
-        { start: new Date('2024-09-09'), end: new Date('2024-09-20') },
-        { start: new Date('2024-09-21'), end: new Date('2024-09-30') },
-        { start: new Date('2024-10-01'), end: new Date('2024-10-10') },
-        { start: new Date('2024-10-11'), end: new Date('2024-10-20') }
-
+        { start: new Date("2024-09-09"), end: new Date("2024-09-20") },
+        { start: new Date("2024-09-21"), end: new Date("2024-09-30") },
+        { start: new Date("2024-10-01"), end: new Date("2024-10-10") },
+        { start: new Date("2024-10-11"), end: new Date("2024-10-20") },
       ];
 
+      // Chuyển đổi ngày hiện tại thành chỉ phần ngày (00:00:00)
+      const currentDate = new Date(this.currentDate.toDateString());
+
+      // Lấy start và end của tiêu đề tương ứng và cũng chuyển về phần ngày
       const { start, end } = titleDates[index];
-      return this.currentDate >= start && this.currentDate <= end;
+      const startDate = new Date(start.toDateString());
+      const endDate = new Date(end.toDateString());
+
+      return currentDate >= startDate && currentDate <= endDate;
     },
     isActiveStep(index) {
       return this.isActiveTitle(index); // Bước và tiêu đề đồng bộ
-    }
-  }
-}
+    },
+  },
+};
 </script>
 <style scoped>
 .background-container {
@@ -109,13 +139,11 @@ export default {
   margin-bottom: 30px;
 }
 
-
 .step.active {
   transform: scale(1.1) translateY(-25px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   background-color: #3498db;
   color: #fff;
-
 }
 
 .step:last-child {
@@ -220,7 +248,6 @@ export default {
 
 /* Adjust styles for smaller screens */
 @media (max-width: 768px) {
-
   .step-container,
   .title-container {
     flex-direction: column;

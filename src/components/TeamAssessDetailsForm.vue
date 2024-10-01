@@ -42,10 +42,7 @@
               v-if="question.label"
               class="d-flex justify-content-between title"
             >
-              <label>
-                {{ questionIndex + 1 }}. {{ question.label }}
-                >
-              </label>
+              <label> {{ questionIndex + 1 }}. {{ question.label }} </label>
             </div>
             <div class="options d-flex justify-content-around my-3">
               <div
@@ -133,9 +130,7 @@ export default {
     isShowAvatar(criteriaIndex, questionIndex, value) {
       console.log(this.perfValues[criteriaIndex][questionIndex]?.value);
       console.log(value);
-      return (
-        this.perfValues[criteriaIndex][questionIndex]?.value === value
-      );
+      return this.perfValues[criteriaIndex][questionIndex]?.value === value;
     },
     async fetchCriterias() {
       try {

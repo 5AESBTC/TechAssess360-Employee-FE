@@ -231,7 +231,13 @@ export default {
         };
       }
       this.perfValues[criteriaIndex][questionIndex].value = value;
-
+      // clear textarea description
+      if (
+        this.perfValues[criteriaIndex][questionIndex].description &&
+        value < 3
+      ) {
+        this.perfValues[criteriaIndex][questionIndex].description = "";
+      }
       // Cập nhật vào list để hiển thị
       if (!this.listScore[criteriaIndex]) {
         this.listScore[criteriaIndex] = {};
@@ -258,7 +264,8 @@ export default {
     },
     calculateScoreSelected(criteriaIndex, questionIndex, value) {
       // Tính điểm cho giá trị đã chọn
-      const question = this.listCriteria[criteriaIndex]?.questions[questionIndex];
+      const question =
+        this.listCriteria[criteriaIndex]?.questions[questionIndex];
       const pointCriteriaIndex =
         parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
       const questionScore = parseFloat(question?.score) || 0;

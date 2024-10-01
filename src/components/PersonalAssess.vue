@@ -237,7 +237,7 @@ export default {
         this.perfValues[criteriaIndex][questionIndex].value >= 3
       );
     },
-    selectPerformanceValue(criteriaIndex, questionIndex, value) {
+    selectPerformanceValue(criteriaIndex, questionIndex, value) {      
       // Đảm bảo perfValues[criteriaIndex] đã được khởi tạo
       if (!this.perfValues[criteriaIndex]) {
         this.perfValues[criteriaIndex] = [];
@@ -253,6 +253,10 @@ export default {
       }
       this.perfValues[criteriaIndex][questionIndex].value = value;
 
+      // clear textarea description
+      if(this.perfValues[criteriaIndex][questionIndex].description && value < 3) {
+        this.perfValues[criteriaIndex][questionIndex].description = "";        
+      }
       // Cập nhật vào list để hiển thị
       if (!this.listScore[criteriaIndex]) {
         this.listScore[criteriaIndex] = {};
@@ -276,6 +280,7 @@ export default {
         );
         this.listCriteria[criteriaIndex].total = percentage;
       }
+      console.log(this.perfValues);
     },
     calculateScoreSelected(criteriaIndex, questionIndex, value) {
       // Tính điểm cho giá trị đã chọn

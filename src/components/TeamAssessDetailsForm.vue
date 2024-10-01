@@ -53,6 +53,7 @@
                 <span class="answer-label me-2">{{ answer.label }}</span>
                 <div
                   v-if="
+                    selectedPerson.isSubmitted &&
                     this.perfValues &&
                     isShowAvatar(criteriaIndex, questionIndex, answer.value)
                   "

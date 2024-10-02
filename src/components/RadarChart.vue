@@ -1,7 +1,9 @@
 <template>
   <div class="chart-container">
-    <Radar :data="chartData" :options="chartOptions" />
-    <div class="chart-legend">
+    <Radar v-if="hasData" :data="chartData" :options="chartOptions" />
+    <div v-else class="no-data-message">Chưa có đánh giá</div>
+
+    <div class="chart-legend" v-if="hasData">
       <div v-for="(item, index) in chartData.datasets" :key="index" class="legend-item">
         <span class="legend-color" :style="{ backgroundColor: item.backgroundColor }"></span>
         <span class="legend-label">{{ item.label }}</span>
@@ -26,6 +28,11 @@ export default {
     data: {
       type: Object,
       required: true
+    }
+  },
+  computed: {
+    hasData() {
+      return this.data.selfAssessment.length > 0 || this.data.manager.length > 0 || this.data.team.length > 0;
     }
   },
   data() {
@@ -114,6 +121,30 @@ export default {
 
 .legend-label {
   display: inline;
+}
+.no-data-message {
+  text-align: center;
+  font-size: 18px;
+  color: #666;
+  padding: 30px;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin: 20px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+  margin-bottom: 100px;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 </style>

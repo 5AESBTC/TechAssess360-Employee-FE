@@ -63,7 +63,7 @@ export default {
     name: "LoginPage",
     data() {
         return {
-            apiUrl: process.env.VUE_APP_DB_URL,
+            apiUrl: process.env.VUE_APP_URL,
             username: '',
             password: ''
         };
@@ -75,13 +75,18 @@ export default {
                     toast.error('Vui lòng nhập tài khoản và mật khẩu!');
                     return;
                 }
-                const response = await axios.get(this.apiUrl + '/employees');
-                const users = await response.data;
 
-                const user = users.find(user => user.username === this.username && user.password === this.password);
+                const loginData = {
+                    username: this.username,
+                    password: this.password
+                };
 
-                if (user) {
-                    localStorage.setItem('userInfo', JSON.stringify(user));
+                const response = await axios.post(this.apiUrl + '/api/auths/login', loginData);
+                console.log("THÔNG TIN LOGIN:: ", loginData);
+                const token = await response.data.data;
+
+                if (token) {
+                    localStorage.setItem('userToken', token);
                     this.$router.push('/');
                     toast.success("Đăng nhập thành công", {
                         autoClose: 2000,
@@ -92,10 +97,15 @@ export default {
                     });
                 }
             } catch (error) {
-                console.error('Lỗi khi đăng nhập:', error);
-                toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau", {
-                    autoClose: 2000,
-                });
+                if (error.response.status === 400) {
+                    toast.error("Sai tài khoản hoặc mật khẩu, vui lòng nhập lại!", {
+                        autoClose: 2000,
+                    });
+                } else {
+                    toast.error("Đã có lỗi xảy ra. Vui lòng thử lại sau", {
+                        autoClose: 2000,
+                    });
+                }
             }
         }
     }

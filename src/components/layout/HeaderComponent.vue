@@ -37,9 +37,9 @@
               </li> -->
               <li v-if="userInfo">
                 <div class="user-info d-flex align-items-center">
-                  <img :src="userInfo.avatar" alt="Avatar" class="avatar" />
+                  <img :src="profileImage" alt="Avatar" class="avatar" />
                   <span class="ml-2" data-bs-toggle="dropdown">
-                    {{ userInfo.name }}
+                    {{ userInfo.fullName }}
                     <i class="ms-2 bi bi-caret-down-square-fill dropdown"></i>
                   </span>
                   <ul class="dropdown-menu">
@@ -72,6 +72,7 @@
 
 <script>
 import { toast } from "vue3-toastify";
+import { jwtDecode } from "jwt-decode";
 
 export default {
   name: "HeaderComponent",
@@ -88,6 +89,7 @@ export default {
         { text: "Đánh giá chéo", link: "/teammates-assess" },
         { text: "Kết quả đánh giá", link: "/assess-result" },
       ],
+      profileImage: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
     };
   },
   computed: {
@@ -110,7 +112,8 @@ export default {
   },
   methods: {
     handleLogout() {
-      localStorage.removeItem("userInfo");
+      console.log("handleLogout was called");
+      localStorage.removeItem("userToken");
       this.userInfo = null;
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,
@@ -118,9 +121,14 @@ export default {
       this.$router.push('/');
     },
     checkUserLogin() {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      if (userInfo) {
-        this.userInfo = userInfo;
+      const token = localStorage.getItem("userToken");
+      if (token) {
+        const decodedToken = jwtDecode(token)
+        console.log("DECODED::", decodedToken);
+
+        this.userInfo = {
+          fullName: decodedToken.fullName,
+        }
       }
     },
     checkActivePath(path = window.location.pathname) {

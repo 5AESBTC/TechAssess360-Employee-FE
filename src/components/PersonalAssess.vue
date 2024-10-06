@@ -14,10 +14,10 @@
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ userInfo.name }}</h3>
           <div class="line">
-            <strong>Vị trí:</strong> {{ userInfo.position }}
+            <strong>Vị trí:</strong> {{ userInfo.rank.position.name }}
           </div>
           <div class="line">
-            <strong>Bậc hiện tại:</strong> {{ userInfo.level }}
+            <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
           </div>
           <div class="line">
             <strong>Dự án hiện tại:</strong> {{ userInfo.project }}
@@ -41,7 +41,9 @@
         <div class="d-flex">
           <label class="fw-bold fs-4"
             >Tổng điểm:
-            <span class="text-danger">{{calculateTotalScore()}}</span></label
+            <span class="text-danger">{{
+              totalPoint ? totalPoint : "0"
+            }}</span></label
           >
         </div>
       </div>
@@ -61,8 +63,12 @@
               <span class="text-danger fw-bold">*</span>
             </label>
             <div class="multi">
-              ({{ criteria.total ? criteria.total : "?" }} /
-              {{ criteria.point }})
+              {{
+                listScore[criteriaIndex]?.totalOfCriteria !== undefined
+                  ? listScore[criteriaIndex].totalOfCriteria
+                  : "?"
+              }}
+              / {{ criteria.point }}
             </div>
           </div>
           <div
@@ -72,16 +78,16 @@
           >
             <div
               class="d-flex justify-content-between title"
-              v-if="question.label"
+              v-if="question.title"
             >
               <label>
-                {{ questionIndex + 1 }}. {{ question.label }}
+                {{ questionIndex + 1 }}. {{ question.title }}
                 <span class="text-danger"> *</span>
               </label>
             </div>
             <div class="options d-flex justify-content-around my-3">
               <div
-                v-for="(answer, answerIndex) in question.answer"
+                v-for="(answer, answerIndex) in question.answers"
                 :key="answerIndex"
                 class="form-check"
               >
@@ -112,7 +118,7 @@
                     answerIndex
                   "
                   class="form-check-label"
-                  >{{ answer.label }}
+                  >{{ answer.title }}
                 </label>
               </div>
             </div>
@@ -121,12 +127,21 @@
                 v-if="isShowDescription(criteriaIndex, questionIndex)"
                 class="form-control"
                 :class="{
-                  'error-textarea':
-                    perfValues[criteriaIndex][questionIndex]?.hasError,
+                  'error-textarea': perfValues.assessDetails?.find(
+                    (detail) =>
+                      detail.criteriaId === criteriaIndex &&
+                      detail.questionId === questionIndex
+                  )?.hasError,
                 }"
                 rows="3"
                 placeholder="Nhận xét thêm"
-                v-model="perfValues[criteriaIndex][questionIndex].description"
+                v-model="
+                  perfValues.assessDetails.find(
+                    (detail) =>
+                      detail.criteriaId === criteriaIndex &&
+                      detail.questionId === questionIndex
+                  ).description
+                "
                 :ref="'description_' + criteriaIndex + '_' + questionIndex"
               ></textarea>
             </div>
@@ -174,218 +189,127 @@
 <script>
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
-import axios from "axios";
-
+import AssessService from "@/services/AssessService";
 export default {
   name: "TeamMatesAssess",
   data() {
     return {
-      apiUrl: process.env.VUE_APP_DB_URL,
       userInfo: null,
-      teamMates: [],
       listCriteria: [],
-      selectedPerson: null,
-      perfValues: [],
+      perfValues: {},
       perfDetails: {},
       listScore: [],
       sortKey: "name",
       sortOrder: "asc",
+      totalPoint: 0,
     };
   },
   mounted() {
-    this.isLogin();
-    this.fetchListCriteria();
+    const user = localStorage.getItem("user");
+    if (user) {
+      this.userInfo = JSON.parse(user);
+    }
+    this.loadCriteria();
   },
-  created() {
-    // Khởi tạo perfValues dựa trên số lượng tiêu chí và câu hỏi
-    this.perfValues = this.listCriteria.map((criteria) =>
-      criteria.question.map(() => ({
-        value: null, // Giá trị ban đầu là null (chưa chọn)
-        description: "", // Mô tả ban đầu là chuỗi rỗng
-        hasError: false,
-      }))
-    );
-    this.perfDetails = {
-      contribution: "",
-      nextTarget: "",
-    };
+  watch: {
+    // xem description của từng ô nếu thay đổi thì cập nhật lên localStorage
+    perfValues: {
+      handler() {
+        localStorage.setItem("assessDetails", JSON.stringify(this.perfValues));
+      },
+      deep: true,
+    },
+    perfDetails: {
+      handler() {
+        this.perfValues.userId = this.userInfo?.id;
+        this.perfValues.toUserId = this.userInfo?.id;
+        this.perfValues.totalPoint = this.totalPoint;
+        this.perfValues.assessDetails = this.perfValues.assessDetails.map(
+          (detail) => {
+            return {
+              ...detail,
+              criteriaId: detail.criteriaId ?? null,
+              questionId: detail.questionId ?? null,
+              value: detail.value ?? null, // Sử dụng ?? để thiết lập mặc định là null nếu không có giá trị
+              description: detail.description?.trim() || null, // Trim và thiết lập mặc định là null nếu mô tả rỗng
+              hasError: false, // Reset trạng thái lỗi
+            };
+          }
+        );
+      },
+      deep: true,
+    },
   },
   methods: {
-    async fetchListCriteria() {
+    async loadCriteria() {
       try {
-        const response = await axios.get(this.apiUrl + "/criterias");
-        this.listCriteria = response.data;
+        this.listCriteria = await AssessService.fetchListData();
       } catch (error) {
-        console.error("Error fetching criterias:", error);
+        console.error("Error fetching criteria list:", error);
       }
     },
-    isLogin() {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      console.log("THÔNG TIN ĐĂNG NHẬP:: ", userInfo);
 
-      if (!userInfo) {
-        this.$router.push("/login");
-      } else {
-        this.userInfo = userInfo;
-        this.selectedPerson = userInfo;
-      }
-    },
-    isShowDescription(criteriaIndex, questionIndex) {
-      return (
-        this.perfValues[criteriaIndex] &&
-        this.perfValues[criteriaIndex][questionIndex] &&
-        this.perfValues[criteriaIndex][questionIndex].value >= 3
-      );
-    },
-    selectPerformanceValue(criteriaIndex, questionIndex, value) {      
-      // Đảm bảo perfValues[criteriaIndex] đã được khởi tạo
-      if (!this.perfValues[criteriaIndex]) {
-        this.perfValues[criteriaIndex] = [];
-      }
-
-      // Đảm bảo perfValues[criteriaIndex][questionIndex] là đối tượng
-      if (!this.perfValues[criteriaIndex][questionIndex]) {
-        this.perfValues[criteriaIndex][questionIndex] = {
-          value: null,
-          description: "",
-          hasError: false,
-        };
-      }
-      this.perfValues[criteriaIndex][questionIndex].value = value;
-
-      // clear textarea description
-      if(this.perfValues[criteriaIndex][questionIndex].description && value < 3) {
-        this.perfValues[criteriaIndex][questionIndex].description = "";        
-      }
-      // Cập nhật vào list để hiển thị
-      if (!this.listScore[criteriaIndex]) {
-        this.listScore[criteriaIndex] = {};
-      }
-      this.listScore[criteriaIndex][questionIndex] =
-        this.calculateScoreSelected(criteriaIndex, questionIndex, value);
-
-      // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
-      const questionsCount =
-        this.listCriteria[criteriaIndex]?.questions?.length || 0;
-      const answeredQuestionsCount = Object.keys(
-        this.listScore[criteriaIndex] || {}
-      ).length;
-
-      if (answeredQuestionsCount === questionsCount) {
-        // Tính tổng điểm cho criteriaIndex này
-        const totalOfCriteria = this.calculateTotalOfCriteria(criteriaIndex);
-        const percentage = Math.round(
-          ((totalOfCriteria * 20) / 100) *
-            (this.listCriteria[criteriaIndex]?.point || 1)
-        );
-        this.listCriteria[criteriaIndex].total = percentage;
-      }
-      console.log(this.perfValues);
-    },
-    calculateScoreSelected(criteriaIndex, questionIndex, value) {
-      // Tính điểm cho giá trị đã chọn
-      const question =
-        this.listCriteria[criteriaIndex]?.questions[questionIndex];
-      const pointCriteriaIndex =
-        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
-      const questionScore = parseFloat(question?.score) || 0;
-      const selectedValue = parseFloat(value) || 0;
-
-      // Tính toán điểm cho câu hỏi này
-      const score = (questionScore / pointCriteriaIndex) * selectedValue;
-      return Math.round(score * 100) / 100;
-    },
-    calculateTotalOfCriteria(criteriaIndex) {
-      const listScoreForCriteria = this.listScore[criteriaIndex] || {};
-      let total = 0;
-
-      for (const questionIndex in listScoreForCriteria) {
-        if (
-          Object.prototype.hasOwnProperty.call(
-            listScoreForCriteria,
-            questionIndex
-          )
-        ) {
-          total += listScoreForCriteria[questionIndex];
-        }
-      }
-      total = Math.round(total * 100) / 100;
-      return total;
-    },
-    calculateTotalScore() {
-      return this.listCriteria.reduce((total, criteria) => {
-        return (total += criteria.total);
-      }, 0)
-    },
     submitForm() {
       let allDescriptionsFilled = true;
       let allValuesSelected = true;
       let firstErrorRef = null;
 
-      this.perfValues.forEach((selectedCriteria, index) => {
-        selectedCriteria.forEach((question, qIndex) => {
-          if (question.value === undefined || question.value === null) {
-            allValuesSelected = false;
-          }
+      this.perfValues.assessDetails.forEach((detail) => {
+        // Kiểm tra xem giá trị đã được chọn hay chưa
+        if (detail.value === undefined || detail.value === null) {
+          allValuesSelected = false; // Đánh dấu là chưa chọn hết
+        } else {
+          // Nếu giá trị >= 3, kiểm tra mô tả
+          if (detail.value >= 3) {
+            // Kiểm tra xem mô tả đã được điền chưa
+            if (!detail.description || detail.description.trim() === "") {
+              allDescriptionsFilled = false; // Đánh dấu mô tả chưa điền
+              detail.hasError = true; // Đánh dấu có lỗi
 
-          if (question.value >= 3) {
-            if (!question.description || question.description.trim() === "") {
-              allDescriptionsFilled = false;
-              question.hasError = true;
-              // Kiểm tra ref có tồn tại trước khi truy cập
+              // Lưu ref của ô nhập có lỗi đầu tiên
               if (!firstErrorRef) {
-                const refKey = `description_${index}_${qIndex}`;
-                firstErrorRef = this.$refs[refKey][0]; // Lưu ref ô lỗi đầu tiên
+                const refKey = `description_${detail.criteriaId}_${detail.questionId}`; // Sửa đổi refKey nếu cần
+                firstErrorRef = this.$refs[refKey]?.[0]; // Thêm kiểm tra an toàn với optional chaining
               }
             } else {
-              question.hasError = false;
+              detail.hasError = false; // Nếu đã điền mô tả, không có lỗi
             }
           } else {
-            question.hasError = false;
+            detail.hasError = false; // Nếu giá trị < 3, không cần mô tả, không có lỗi
           }
-        });
+        }
       });
 
-      // Kiểm tra và thông báo lỗi
+      // Kiểm tra và hiển thị thông báo lỗi
       if (!allValuesSelected) {
-        toast.error("Vui lòng chọn cho tất cả các câu hỏi!", {
+        toast.error("Vui lòng chọn giá trị cho tất cả các câu hỏi!", {
           autoClose: 2000,
         });
         return;
       }
 
       if (!allDescriptionsFilled) {
-        toast.error("Vui lòng nhập đầy đủ nhận xét cho các câu hỏi!", {
+        toast.error("Vui lòng nhập nhận xét đầy đủ cho các câu hỏi!", {
           autoClose: 2000,
         });
         if (firstErrorRef) {
-          firstErrorRef.scrollIntoView({ behavior: "smooth", block: "center" }); // Cuộn tới ô lỗi đầu tiên
+          firstErrorRef.scrollIntoView({ behavior: "smooth", block: "center" });
         }
         return;
       }
-
-      for (const key in this.perfDetails) {
-        if (!this.perfDetails[key]?.trim()) {
-          toast.error("Vui lòng không để trống phần đánh giá chi tiết", {
-            autoClose: 2000,
-          });
-          return;
+      
+      // nếu tất cả hasError đều false thì xóa field hasError
+      this.perfValues.assessDetails.forEach((detail) => {
+        if (!detail.hasError) {
+          delete detail.hasError;
         }
+      });
+
+      try {
+        AssessService.submitForm(this.perfValues);
+      } catch (error) {
+        console.error("Error submitting form:", error);
       }
-
-      // Lưu dữ liệu và thông báo thành công
-      localStorage.setItem(
-        this.userInfo.id + "assessTo" + this.selectedPerson.id,
-        JSON.stringify(this.perfValues)
-      );
-
-      localStorage.setItem(
-        this.userInfo.id + "assessDetailsTo" + this.selectedPerson.id,
-        JSON.stringify(this.perfDetails)
-      );
-
-      toast.success("Gửi đánh giá thành công!", { autoClose: 2000 });
-      this.clearForm();
     },
     calculateWorkTime() {
       const userInfo = JSON.parse(localStorage.getItem("userInfo"));
@@ -427,26 +351,137 @@ export default {
       }
       return "Chưa xác định";
     },
-    clearForm() {
-      this.perfValues = [];
-      this.perfDetails = {
-        contribution: "",
-        nextTarget: "",
-      };
-      this.listScore = [];
-      // clear input radio
-      document.querySelectorAll("input[type=radio]").forEach((input) => {
-        input.checked = false;
-      });
+    isShowDescription(criteriaIndex, questionIndex) {
+      // Kiểm tra xem assessDetails có tồn tại và lấy câu hỏi tương ứng
+      const question = this.perfValues.assessDetails?.find(
+        (detail) =>
+          detail.criteriaId === criteriaIndex &&
+          detail.questionId === questionIndex
+      );
 
-      // clear textarea
-      document.querySelectorAll("textarea").forEach((input) => {
-        input.value = "";
-      });
-      this.listCriteria.forEach((criteria) => {
-        criteria.total = 0;
-      });
-      this.selectedPerson = null;
+      // Kiểm tra điều kiện để hiển thị mô tả
+      return question && question.value >= 3;
+    },
+    selectPerformanceValue(criteriaIndex, questionIndex, value) {
+      // Giả sử bạn đã khởi tạo perfValues.assessDetails trước đó
+      if (!this.perfValues.assessDetails) {
+        this.perfValues.assessDetails = [];
+
+        // Khởi tạo assessDetails dựa trên số lượng tiêu chí và câu hỏi
+        const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
+
+        for (let i = 0; i < criteriaCount; i++) {
+          const questionsCount = this.listCriteria[i]?.questions.length || 0; // Số lượng câu hỏi cho tiêu chí này
+
+          for (let j = 0; j < questionsCount; j++) {
+            this.perfValues.assessDetails.push({
+              criteriaId: i,
+              questionId: j,
+              value: null, // Giá trị của câu hỏi
+              description: null, // Mô tả của câu hỏi
+              hasError: false, // Trạng thái lỗi
+            });
+          }
+        }
+      }
+
+      // Tìm đối tượng assessDetail tương ứng
+      const assessDetail = this.perfValues.assessDetails.find(
+        (detail) =>
+          detail.criteriaId === criteriaIndex &&
+          detail.questionId === questionIndex
+      );
+
+      // Cập nhật giá trị đã chọn cho câu hỏi
+      if (assessDetail) {
+        assessDetail.value = value;
+
+        // Xóa ô nhập "description" nếu giá trị < 3
+        if (value < 3) {
+          assessDetail.description = null; // Hoặc "" tùy thuộc vào yêu cầu
+        }
+      }
+
+      // Cập nhật listScore để hiển thị
+      if (!this.listScore[criteriaIndex]) {
+        this.listScore[criteriaIndex] = {};
+      }
+
+      // Tính toán điểm mới cho câu hỏi
+      const newScore = this.calculateScoreSelected(
+        criteriaIndex,
+        questionIndex,
+        value
+      );
+
+      // Cập nhật điểm cho câu hỏi (thay vì cộng dồn)
+      this.listScore[criteriaIndex][questionIndex] = newScore;
+
+      // Kiểm tra xem tất cả câu hỏi của tiêu chí này đã được trả lời chưa
+      const questionsCount =
+        this.listCriteria[criteriaIndex]?.questions?.length || 0;
+      const answeredQuestionsCount = Object.keys(
+        this.listScore[criteriaIndex] || {}
+      ).filter((key) => key !== "totalOfCriteria").length;
+
+      // Tính lại totalOfCriteria khi có sự thay đổi
+      if (answeredQuestionsCount === questionsCount) {
+        const totalOfCriteria = this.calculateTotalOfCriteria(criteriaIndex);
+        const percentage = Math.round(
+          ((totalOfCriteria * 20) / 100) *
+            (this.listCriteria[criteriaIndex]?.point || 1)
+        );
+
+        // Cập nhật tổng điểm tiêu chí
+        this.listScore[criteriaIndex].totalOfCriteria = percentage;
+      }
+
+      // Cập nhật tổng điểm cho tất cả các tiêu chí
+      this.updateTotalPoint();
+
+      // Lưu assessDetails vào localStorage
+      localStorage.setItem("assessDetails", JSON.stringify(this.perfValues));
+    },
+    calculateScoreSelected(criteriaIndex, questionIndex, value) {
+      // Tính điểm cho giá trị đã chọn
+      const question =
+        this.listCriteria[criteriaIndex]?.questions[questionIndex];
+      const pointCriteriaIndex =
+        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
+      const questionScore = parseFloat(question?.point) || 0;
+      const selectedValue = parseFloat(value) || 0;
+
+      // Tính toán điểm cho câu hỏi này
+      const score = (questionScore / pointCriteriaIndex) * selectedValue;
+      return Math.round(score * 100) / 100;
+    },
+    calculateTotalOfCriteria(criteriaIndex) {
+      const listScoreForCriteria = this.listScore[criteriaIndex] || {};
+      let total = 0;
+
+      for (const questionIndex in listScoreForCriteria) {
+        if (
+          Object.prototype.hasOwnProperty.call(
+            listScoreForCriteria,
+            questionIndex
+          ) &&
+          questionIndex !== "totalOfCriteria"
+        ) {
+          total += listScoreForCriteria[questionIndex];
+        }
+      }
+      total = Math.round(total * 100) / 100;
+      return total;
+    },
+    updateTotalPoint() {
+      this.totalPoint = 0;
+      for (const criteriaIndex in this.listScore) {
+        if (
+          Object.prototype.hasOwnProperty.call(this.listScore, criteriaIndex)
+        ) {
+          this.totalPoint += this.listScore[criteriaIndex].totalOfCriteria;
+        }
+      }
     },
   },
 };

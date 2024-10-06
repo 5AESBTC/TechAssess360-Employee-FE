@@ -1,13 +1,8 @@
 <template>
-  <div
-    class="container-fluid row justify-content-md-center align-items-center"
-    v-if="userInfo"
-  >
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="userInfo">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div
-        class="profile mb-3 d-flex align-items-center justify-content-around"
-      >
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
           <img :src="userInfo.avatar" alt="avatar" />
         </div>
@@ -32,12 +27,8 @@
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
-      <div
-        class="evaluation-header text-start mb-2 d-flex justify-content-between"
-      >
-        <label class="fw-bold fs-4"
-          >Đánh giá quý III năm 2024 cho bản thân</label
-        >
+      <div class="evaluation-header text-start mb-2 d-flex justify-content-between">
+        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho bản thân</label>
         <div class="d-flex">
           <label class="fw-bold fs-4"
             >Tổng điểm:
@@ -52,11 +43,7 @@
       <!-- @submit.prevent="submit" -->
       <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
-        <div
-          v-for="(criteria, criteriaIndex) in listCriteria"
-          :key="criteriaIndex"
-          class="section mb-4"
-        >
+        <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteriaIndex" class="section mb-4">
           <div class="d-flex justify-content-between">
             <label class="d-flex gap-2">
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
@@ -154,27 +141,18 @@
             Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
           </h5>
           <div class="form-group">
-            <textarea
-              class="form-control"
-              :class="{
-                'error-textarea': perfValues.contributionHasError,
-              }"
-              rows="5"
-              v-model="perfDetails.contribution"
-              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
-            ></textarea>
+            <textarea class="form-control" :class="{
+              'error-textarea': perfValues.contributionHasError,
+            }" rows="5" v-model="perfDetails.contribution"
+              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
           </div>
         </div>
 
         <div class="section mb-4">
           <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
           <div class="form-group">
-            <textarea
-              class="form-control"
-              rows="5"
-              v-model="perfDetails.nextTarget"
-              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
-            ></textarea>
+            <textarea class="form-control" rows="5" v-model="perfDetails.nextTarget"
+              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"></textarea>
           </div>
         </div>
 
@@ -248,7 +226,6 @@ export default {
         console.error("Error fetching criteria list:", error);
       }
     },
-
     submitForm() {
       let allDescriptionsFilled = true;
       let allValuesSelected = true;
@@ -312,7 +289,7 @@ export default {
       }
     },
     calculateWorkTime() {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+      const userInfo = localStorage.getItem("userInfo");
       if (userInfo && userInfo.dateJoinCompany) {
         const joinDate = new Date(userInfo.dateJoinCompany);
         const currentDate = new Date();
@@ -488,7 +465,7 @@ export default {
 </script>
 
 <style scoped>
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -619,7 +596,7 @@ tbody > tr > td {
   padding-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 

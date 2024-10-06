@@ -1,8 +1,13 @@
 <template>
-  <div class="container-fluid row justify-content-md-center align-items-center" v-if="userInfo">
+  <div
+    class="container-fluid row justify-content-md-center align-items-center"
+    v-if="userInfo"
+  >
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-3 d-flex align-items-center justify-content-around">
+      <div
+        class="profile mb-3 d-flex align-items-center justify-content-around"
+      >
         <div class="avatar">
           <img :src="userInfo.avatar" alt="avatar" />
         </div>
@@ -27,8 +32,12 @@
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
-      <div class="evaluation-header text-start mb-2 d-flex justify-content-between">
-        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho bản thân</label>
+      <div
+        class="evaluation-header text-start mb-2 d-flex justify-content-between"
+      >
+        <label class="fw-bold fs-4"
+          >Đánh giá quý III năm 2024 cho bản thân</label
+        >
         <div class="d-flex">
           <label class="fw-bold fs-4"
             >Tổng điểm:
@@ -43,7 +52,11 @@
       <!-- @submit.prevent="submit" -->
       <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
-        <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteriaIndex" class="section mb-4">
+        <div
+          v-for="(criteria, criteriaIndex) in listCriteria"
+          :key="criteria.id"
+          class="section mb-4"
+        >
           <div class="d-flex justify-content-between">
             <label class="d-flex gap-2">
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
@@ -60,7 +73,7 @@
           </div>
           <div
             v-for="(question, questionIndex) in criteria.questions"
-            :key="questionIndex"
+            :key="question.id"
             class="question mb-3"
           >
             <div
@@ -75,7 +88,7 @@
             <div class="options d-flex justify-content-around my-3">
               <div
                 v-for="(answer, answerIndex) in question.answers"
-                :key="answerIndex"
+                :key="answer.id"
                 class="form-check"
               >
                 <input
@@ -90,7 +103,9 @@
                   class="form-check-input"
                   @change="
                     selectPerformanceValue(
+                      criteria.id,
                       criteriaIndex,
+                      question.id,
                       questionIndex,
                       answer.value
                     )
@@ -111,25 +126,25 @@
             </div>
             <div class="description">
               <textarea
-                v-if="isShowDescription(criteriaIndex, questionIndex)"
+                v-if="isShowDescription(criteria.id, question.id)"
                 class="form-control"
                 :class="{
-                  'error-textarea': perfValues.assessDetails?.find(
+                  'error-textarea': perfValues.assessDetails.find(
                     (detail) =>
-                      detail.criteriaId === criteriaIndex &&
-                      detail.questionId === questionIndex
-                  )?.hasError,
+                      detail.criteriaId === criteria.id &&
+                      detail.questionId === question.id
+                  ).hasError,
                 }"
                 rows="3"
-                placeholder="Nhận xét thêm"
+                placeholder="Nhận xết thêm"
                 v-model="
                   perfValues.assessDetails.find(
                     (detail) =>
-                      detail.criteriaId === criteriaIndex &&
-                      detail.questionId === questionIndex
+                      detail.criteriaId === criteria.id &&
+                      detail.questionId === question.id
                   ).description
                 "
-                :ref="'description_' + criteriaIndex + '_' + questionIndex"
+                :ref="'description_' + criteria.id + '_' + question.id"
               ></textarea>
             </div>
           </div>
@@ -141,18 +156,27 @@
             Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
           </h5>
           <div class="form-group">
-            <textarea class="form-control" :class="{
-              'error-textarea': perfValues.contributionHasError,
-            }" rows="5" v-model="perfDetails.contribution"
-              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
+            <textarea
+              class="form-control"
+              :class="{
+                'error-textarea': perfValues.contributionHasError,
+              }"
+              rows="5"
+              v-model="perfDetails.contribution"
+              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
+            ></textarea>
           </div>
         </div>
 
         <div class="section mb-4">
           <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
           <div class="form-group">
-            <textarea class="form-control" rows="5" v-model="perfDetails.nextTarget"
-              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"></textarea>
+            <textarea
+              class="form-control"
+              rows="5"
+              v-model="perfDetails.nextTarget"
+              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
+            ></textarea>
           </div>
         </div>
 
@@ -252,6 +276,7 @@ export default {
               detail.hasError = false; // Nếu đã điền mô tả, không có lỗi
             }
           } else {
+            detail.description = null;
             detail.hasError = false; // Nếu giá trị < 3, không cần mô tả, không có lỗi
           }
         }
@@ -274,7 +299,7 @@ export default {
         }
         return;
       }
-      
+
       // nếu tất cả hasError đều false thì xóa field hasError
       this.perfValues.assessDetails.forEach((detail) => {
         if (!detail.hasError) {
@@ -328,18 +353,17 @@ export default {
       }
       return "Chưa xác định";
     },
-    isShowDescription(criteriaIndex, questionIndex) {
+    isShowDescription(criteriaId, questionId) {
       // Kiểm tra xem assessDetails có tồn tại và lấy câu hỏi tương ứng
       const question = this.perfValues.assessDetails?.find(
         (detail) =>
-          detail.criteriaId === criteriaIndex &&
-          detail.questionId === questionIndex
+          detail.criteriaId === criteriaId && detail.questionId === questionId
       );
 
       // Kiểm tra điều kiện để hiển thị mô tả
       return question && question.value >= 3;
     },
-    selectPerformanceValue(criteriaIndex, questionIndex, value) {
+    selectPerformanceValue(criteriaId,criteriaIndex, questionId, questionIndex, value) {
       // Giả sử bạn đã khởi tạo perfValues.assessDetails trước đó
       if (!this.perfValues.assessDetails) {
         this.perfValues.assessDetails = [];
@@ -348,12 +372,13 @@ export default {
         const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
 
         for (let i = 0; i < criteriaCount; i++) {
-          const questionsCount = this.listCriteria[i]?.questions.length || 0; // Số lượng câu hỏi cho tiêu chí này
+          const questions = this.listCriteria[i]?.questions; // Lấy danh sách câu hỏi cho tiêu chí này
+          const questionsCount = questions ? questions.length : 0; // Số lượng câu hỏi cho tiêu chí này
 
           for (let j = 0; j < questionsCount; j++) {
             this.perfValues.assessDetails.push({
-              criteriaId: i,
-              questionId: j,
+              criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+              questionId: questions[j].id, // Lưu ID của câu hỏi
               value: null, // Giá trị của câu hỏi
               description: null, // Mô tả của câu hỏi
               hasError: false, // Trạng thái lỗi
@@ -365,8 +390,7 @@ export default {
       // Tìm đối tượng assessDetail tương ứng
       const assessDetail = this.perfValues.assessDetails.find(
         (detail) =>
-          detail.criteriaId === criteriaIndex &&
-          detail.questionId === questionIndex
+          detail.criteriaId === criteriaId && detail.questionId === questionId
       );
 
       // Cập nhật giá trị đã chọn cho câu hỏi
@@ -391,14 +415,14 @@ export default {
         value
       );
 
-      // Cập nhật điểm cho câu hỏi (thay vì cộng dồn)
+      // Cập nhật điểm cho câu hỏi
       this.listScore[criteriaIndex][questionIndex] = newScore;
 
       // Kiểm tra xem tất cả câu hỏi của tiêu chí này đã được trả lời chưa
       const questionsCount =
         this.listCriteria[criteriaIndex]?.questions?.length || 0;
       const answeredQuestionsCount = Object.keys(
-        this.listScore[criteriaIndex] || {}
+        this.listScore[criteriaIndex]
       ).filter((key) => key !== "totalOfCriteria").length;
 
       // Tính lại totalOfCriteria khi có sự thay đổi
@@ -420,16 +444,18 @@ export default {
       localStorage.setItem("assessDetails", JSON.stringify(this.perfValues));
     },
     calculateScoreSelected(criteriaIndex, questionIndex, value) {
-      // Tính điểm cho giá trị đã chọn
+      // Lấy thông tin câu hỏi tương ứng từ listCriteria
       const question =
         this.listCriteria[criteriaIndex]?.questions[questionIndex];
-      const pointCriteriaIndex =
-        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
-      const questionScore = parseFloat(question?.point) || 0;
-      const selectedValue = parseFloat(value) || 0;
+      const pointCriteria =
+        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1; // Điểm tiêu chí
+      const questionScore = parseFloat(question?.point) || 0; // Điểm của câu hỏi
+      const selectedValue = parseFloat(value) || 0; // Giá trị được chọn
 
       // Tính toán điểm cho câu hỏi này
-      const score = (questionScore / pointCriteriaIndex) * selectedValue;
+      const score = (questionScore / pointCriteria) * selectedValue;
+
+      // Làm tròn điểm đến 2 chữ số sau dấu phẩy
       return Math.round(score * 100) / 100;
     },
     calculateTotalOfCriteria(criteriaIndex) {
@@ -447,25 +473,24 @@ export default {
           total += listScoreForCriteria[questionIndex];
         }
       }
-      total = Math.round(total * 100) / 100;
-      return total;
+
+      return Math.round(total * 100) / 100; // Trả về tổng điểm đã làm tròn
     },
     updateTotalPoint() {
-      this.totalPoint = 0;
-      for (const criteriaIndex in this.listScore) {
-        if (
-          Object.prototype.hasOwnProperty.call(this.listScore, criteriaIndex)
-        ) {
-          this.totalPoint += this.listScore[criteriaIndex].totalOfCriteria;
-        }
-      }
+      this.totalPoint = Object.keys(this.listScore).reduce(
+        (total, criteriaId) => {
+          const criteriaScore = this.listScore[criteriaId].totalOfCriteria || 0; // Đảm bảo giá trị là số
+          return total + criteriaScore; // Cộng dồn tổng điểm
+        },
+        0
+      );
     },
   },
 };
 </script>
 
 <style scoped>
-tbody>tr>td {
+tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -596,7 +621,7 @@ tbody>tr>td {
   padding-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 

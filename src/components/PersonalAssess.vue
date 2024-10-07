@@ -140,7 +140,7 @@
                     ).hasError,
                   }"
                   rows="3"
-                  placeholder="Nhận xết thêm"
+                  placeholder="Nhận xét thêm"
                   v-model="
                     perfValues.assessDetails.find(
                       (detail) =>
@@ -175,36 +175,6 @@
           </div>
         </div>
 
-        <!-- Personal contribution and Results -->
-        <!-- <div class="section mb-4">
-          <h5>
-            Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
-          </h5>
-          <div class="form-group">
-            <textarea
-              class="form-control"
-              :class="{
-                'error-textarea': perfValues.contributionHasError,
-              }"
-              rows="5"
-              v-model="perfDetails.contribution"
-              placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."
-            ></textarea>
-          </div>
-        </div>
-
-        <div class="section mb-4">
-          <h5>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h5>
-          <div class="form-group">
-            <textarea
-              class="form-control"
-              rows="5"
-              v-model="perfDetails.nextTarget"
-              placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
-            ></textarea>
-          </div>
-        </div> -->
-
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
           <button class="btn btn-primary" type="submit" :disabled="!isSubmit">Gửi Đánh Giá</button>
@@ -224,7 +194,6 @@ export default {
       userInfo: null,
       listCriteria: [],
       perfValues: {},
-      perfDetails: {},
       listScore: [],
       sortKey: "name",
       sortOrder: "asc",
@@ -238,7 +207,7 @@ export default {
       this.userInfo = JSON.parse(user);
     }
     this.loadCriteria();
-    this.isSubmitForm();
+    // this.isSubmitForm();
   },
   watch: {
     // xem description của từng ô nếu thay đổi thì cập nhật lên localStorage
@@ -248,29 +217,8 @@ export default {
       },
       deep: true,
     },
-    perfDetails: {
-      handler() {
-        this.perfValues.assessDetails = this.perfValues.assessDetails.map(
-          (detail) => ({
-            ...detail,
-            criteriaId: detail.criteriaId ?? null,
-            questionId: detail.questionId ?? null,
-            value: detail.value ?? null, // Sử dụng ?? để thiết lập mặc định là null nếu không có giá trị
-            description: detail.description?.trim() || null, // Trim và thiết lập mặc định là null nếu mô tả rỗng
-            hasError: false, // Reset trạng thái lỗi
-          })
-        );
-      },
-      deep: true,
-    },
   },
   methods: {
-    isSubmitForm() {
-      const res = AssessService.isSubmitForm(this.userInfo.id, this.userInfo.id);
-      if (res) {
-        this.isSubmit = true;
-      }
-    },
     initPerfValues() {
       this.perfValues.assessDetails = [];
 
@@ -325,6 +273,10 @@ export default {
       }
     },
     submitForm() {
+      if(this.perfValues.length === 0) {
+        toast.error("Vui lòng nhập các đánh giá");
+        return;
+      }
       let allDescriptionsFilled = true;
       let allValuesSelected = true;
       let firstErrorRef = null;

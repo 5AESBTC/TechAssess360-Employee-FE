@@ -10,7 +10,7 @@ const AuthService = {
                 password: password,
             });
             localStorage.setItem("accessToken", response.data.data);
-            return response.data.data;
+            return response.data;
         } catch (error) {
             if (error.response) {
                 return error.response.data; // Trả về lỗi từ máy chủ
@@ -19,7 +19,6 @@ const AuthService = {
             }
         }
     },
-
     // Hàm đăng ký tài khoản mới
     register: async (username, password) => {
         try {
@@ -50,7 +49,11 @@ const AuthService = {
                 return { message: "Lỗi kết nối đến máy chủ" };
             }
         }
-    }
+    },
+    isLogin: () => {
+        const accessToken = localStorage.getItem("accessToken");
+        return !!accessToken;
+    },
 };
 
 export default AuthService;

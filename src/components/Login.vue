@@ -100,7 +100,8 @@ export default {
         return;
       }
       const res = await AuthService.login(this.username, this.password);  // Đợi Promise hoàn tất
-      if (res) {
+      console.log(res);
+      if (res.code === 1011) {
         AuthService.fetchUserByUserName(this.username);
         toast.success("Đăng nhận thành công!");
         this.$router.push('/');

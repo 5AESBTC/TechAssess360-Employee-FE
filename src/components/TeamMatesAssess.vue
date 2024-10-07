@@ -1,8 +1,13 @@
 <template>
-  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
+  <div
+    class="container-fluid row justify-content-md-center align-items-center"
+    v-if="profile"
+  >
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-3 d-flex align-items-center justify-content-around">
+      <div
+        class="profile mb-3 d-flex align-items-center justify-content-around"
+      >
         <div class="avatar">
           <img :src="profile.avatar" alt="avatar" />
         </div>
@@ -30,7 +35,11 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">
+              <th
+                @click="sortBy('name')"
+                class="text-start"
+                style="cursor: pointer"
+              >
                 Tên
               </th>
               <th>Vị Trí</th>
@@ -44,21 +53,41 @@
               <td>{{ mate.position }}</td>
               <td class="d-flex">
                 <div class="ms-5">
-                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2" :disabled="true">
+                  <button
+                    v-if="mate.isSubmitted"
+                    class="btn btn-sm btn-success btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đã đánh giá
                   </button>
-                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
+                  <button
+                    v-else-if="mate.isProcessing"
+                    class="btn btn-sm btn-warning btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đang đánh giá
                   </button>
-                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-primary btn-custom me-2"
+                    @click="selectPerson(mate)"
+                  >
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="userInfo.position == 'Manager'">
-                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
+                  <button
+                    v-if="mate.isViewing"
+                    class="btn btn-sm btn-warning btn-custom"
+                    :disabled="true"
+                  >
                     Đang xem
                   </button>
-                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-info btn-custom"
+                    @click="viewPerson(mate)"
+                  >
                     Xem chi tiết
                   </button>
                 </div>
@@ -71,8 +100,12 @@
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
-        :userInfo="userInfo" @updateSelectedPerson="handleUpdateSelectedPerson" />
+      <component
+        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
+        :selectedPerson="selectedPerson"
+        :userInfo="userInfo"
+        @updateSelectedPerson="handleUpdateSelectedPerson"
+      />
     </div>
   </div>
 </template>
@@ -102,7 +135,6 @@ export default {
     };
   },
   mounted() {
-    this.isLogin();
     this.fetchTeamMates();
   },
 
@@ -153,7 +185,6 @@ export default {
       }
     },
     viewPerson(person) {
-
       if (this.selectedPerson && this.selectedPerson.isProcessing) {
         this.selectedPerson.isProcessing = false;
       }
@@ -200,17 +231,7 @@ export default {
       }
       this.isViewing = false;
     },
-    isLogin() {
-      const userToken = localStorage.getItem("userToken");
-      console.log("THÔNG TIN ĐĂNG NHẬP:: ", userToken);
 
-      if (!userToken) {
-        this.$router.push("/login");
-      } else {
-        this.userInfo = userToken;
-        this.profile = userToken;
-      }
-    },
     sortBy(key) {
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";
@@ -279,7 +300,7 @@ export default {
   width: 130px;
 }
 
-tbody>tr>td {
+tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -388,7 +409,7 @@ tbody>tr>td {
   margin-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 </style>

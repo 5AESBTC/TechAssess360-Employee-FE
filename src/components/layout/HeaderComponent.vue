@@ -11,7 +11,9 @@
   <header class="site-navbar">
     <div class="container-fluid">
       <div class="row align-items-center">
-        <div class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar">
+        <div
+          class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar"
+        >
           <h1 class="mb-0 site-logo">
             <img src="../../assets/Techzenlogo.png" alt="logo" />
           </h1>
@@ -25,10 +27,21 @@
           </div>
         </div>
         <div class="col-6 d-none d-xl-block right-navbar">
-          <nav class="site-navigation position-relative text-right" role="navigation">
-            <ul class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto">
-              <li v-for="(item, index) in filteredMenuItems" :key="index" :class="{ active: activeIndex === index }">
-                <a :href="item.link"><span>{{ item.text }}</span></a>
+          <nav
+            class="site-navigation position-relative text-right"
+            role="navigation"
+          >
+            <ul
+              class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto"
+            >
+              <li
+                v-for="(item, index) in filteredMenuItems"
+                :key="index"
+                :class="{ active: activeIndex === index }"
+              >
+                <a :href="item.link"
+                  ><span>{{ item.text }}</span></a
+                >
               </li>
               <!-- <li v-if="userInfo?.position === 'Manager'">
                 <router-link to="/team-manage" class="user-info d-flex align-items-center">
@@ -39,12 +52,14 @@
                 <div class="user-info d-flex align-items-center">
                   <img :src="profileImage" alt="Avatar" class="avatar" />
                   <span class="ml-2" data-bs-toggle="dropdown">
-                    {{ userInfo.fullName }}
+                    {{ userInfo.name }}
                     <i class="ms-2 bi bi-caret-down-square-fill dropdown"></i>
                   </span>
                   <ul class="dropdown-menu">
                     <li>
-                      <router-link to="/profile" class="dropdown-item" href="#">Thông tin cá nhân</router-link>
+                      <router-link to="/profile" class="dropdown-item" href="#"
+                        >Thông tin cá nhân</router-link
+                      >
                     </li>
                     <li @click.prevent="handleLogout">
                       <a class="dropdown-item" href="#">
@@ -55,8 +70,13 @@
                 </div>
               </li>
               <li v-else>
-                <router-link to="/login" class="user-info d-flex align-items-center">
-                  <button type="button" class="btn btn-primary ml-2">Đăng nhập</button>
+                <router-link
+                  to="/login"
+                  class="user-info d-flex align-items-center"
+                >
+                  <button type="button" class="btn btn-primary ml-2">
+                    Đăng nhập
+                  </button>
                 </router-link>
               </li>
             </ul>
@@ -64,7 +84,9 @@
         </div>
       </div>
       <div class="d-xl-none ml-md-0 mr-auto py-3">
-        <a href="#" class="site-menu-toggle js-menu-toggle text-white"><span class="icon-menu h3"></span></a>
+        <a href="#" class="site-menu-toggle js-menu-toggle text-white"
+          ><span class="icon-menu h3"></span
+        ></a>
       </div>
     </div>
   </header>
@@ -89,7 +111,8 @@ export default {
         { text: "Đánh giá chéo", link: "/teammates-assess" },
         { text: "Kết quả đánh giá", link: "/assess-result" },
       ],
-      profileImage: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
+      profileImage:
+        "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
     };
   },
   computed: {
@@ -99,10 +122,11 @@ export default {
     },
   },
   mounted() {
+    if (localStorage.getItem("accessToken")) {
+      this.userInfo = JSON.parse(localStorage.getItem("user"));
+    }
     this.startCountdown();
-    // so sánh active với path
     this.checkActivePath();
-
     window.addEventListener("resize", this.handleResize);
     this.$router.beforeEach((to, from, next) => {
       this.checkActivePath(to.path);
@@ -117,18 +141,8 @@ export default {
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,
       });
-      this.$router.push('/');
+      this.$router.push("/");
     },
-    //   const token = localStorage.getItem("userToken");
-    //   if (token) {
-    //     const decodedToken = jwtDecode(token)
-    //     console.log("DECODED::", decodedToken);
-
-    //     this.userInfo = {
-    //       fullName: decodedToken.fullName,
-    //     }
-    //   }
-    // },
     checkActivePath(path = window.location.pathname) {
       const items = this.filteredMenuItems;
       items.forEach((item, index) => {

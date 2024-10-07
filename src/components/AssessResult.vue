@@ -92,18 +92,10 @@ export default {
     };
   },
   mounted() {
-    this.isLogin();
     this.fetchData();
   },
   methods: {
-    isLogin() {
-      const userInfo = JSON.parse(localStorage.getItem("userInfo"));
-      if (!userInfo) {
-        this.$router.push("/login");
-      } else {
-        this.userInfo = userInfo;
-      }
-    },
+    
     async fetchData() {
       try {
         const response = await axios.get('/api/assessment', {

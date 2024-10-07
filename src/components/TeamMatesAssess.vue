@@ -13,11 +13,11 @@
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ profile.name }}</h3>
-          <div class="line">
+          <div class="line" >
             <strong>Vị trí:</strong> {{ profile.rank.position.name }}
           </div>
-          <div class="line" v-if="checkRole('MANAGER')">
-            <strong>Bậc hiện tại:</strong> {{ profile.rank.level }}
+          <div class="line" v-if="userInfo.position == 'Manager'">
+            <strong>Bậc hiện tại:</strong> {{ profile.level }}
           </div>
           <div class="line">
             <strong>Dự án hiện tại:</strong> {{ profile.project }}
@@ -47,53 +47,54 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(mate, index) in teamMates" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td class="text-start">{{ mate.name }}</td>
-              <td>{{ mate.rank.position.name }}</td>
-              <td class="d-flex justify-content-center">
-                <div class="d-flex">
-                  <button
-                    v-if="mate.isSubmitted"
-                    class="btn btn-sm btn-success btn-custom me-2"
-                    :disabled="true"
-                  >
-                    Đã đánh giá
-                  </button>
-                  <button
-                    v-else-if="mate.isProcessing"
-                    class="btn btn-sm btn-warning btn-custom me-2"
-                    :disabled="true"
-                  >
-                    Đang đánh giá
-                  </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-primary btn-custom me-2"
-                    @click="selectPerson(mate)"
-                  >
-                    Đánh giá
-                  </button>
-                </div>
-                <div v-if="checkRole('MANAGER')" class="ms-3">
-                  <button
-                    v-if="mate.isViewing"
-                    class="btn btn-sm btn-warning btn-custom"
-                    :disabled="true"
-                  >
-                    Đang xem
-                  </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-info btn-custom"
-                    @click="viewPerson(mate)"
-                  >
-                    Xem chi tiết
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
+  <tr v-for="(mate, index) in filteredTeamMates" :key="index">
+    <td>{{ index + 1 }}</td>
+    <td class="text-start">{{ mate.name }}</td>
+    <td>{{ mate.rank.position.name }}</td>
+    <td class="d-flex justify-content-center">
+      <div class="d-flex">
+        <button
+          v-if="mate.isSubmitted"
+          class="btn btn-sm btn-success btn-custom me-2"
+          :disabled="true"
+        >
+          Đã đánh giá
+        </button>
+        <button
+          v-else-if="mate.isProcessing"
+          class="btn btn-sm btn-warning btn-custom me-2"
+          :disabled="true"
+        >
+          Đang đánh giá
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-primary btn-custom me-2"
+          @click="selectPerson(mate)"
+        >
+          Đánh giá
+        </button>
+      </div>
+      <div v-if="userInfo.position == 'Manager'" class="ms-3">
+        <button
+          v-if="mate.isViewing"
+          class="btn btn-sm btn-warning btn-custom"
+          :disabled="true"
+        >
+          Đang xem
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-info btn-custom"
+          @click="viewPerson(mate)"
+        >
+          Xem chi tiết
+        </button>
+      </div>
+    </td>
+  </tr>
+</tbody>
+
         </table>
       </div>
     </div>
@@ -111,10 +112,10 @@
 </template>
 <script>
 import "vue3-toastify/dist/index.css";
+import axios from "axios";
 import TeamAssessDetailsForm from "./TeamAssessDetailsForm.vue";
 import TeamAssessForm from "./TeamAssessForm.vue";
-import UserService from "@/services/UserService.js";
-import { toast } from "vue3-toastify";
+
 export default {
   name: "TeamMatesAssess",
   components: {
@@ -123,6 +124,7 @@ export default {
   },
   data() {
     return {
+      apiUrl: process.env.VUE_APP_URL,
       userInfo: null,
       profile: null,
       teamMates: [],
@@ -133,10 +135,19 @@ export default {
       listScore: [],
     };
   },
-  mounted() {
+  created() {
     this.initializeUserInfo();
   },
+  mounted() {
+    this.fetchTeamMates();
+  },
+
   computed: {
+    filteredTeamMates() {
+      return this.teamMates.filter(
+        (mate) => mate.project === this.userInfo.project
+      );
+    },
     sortedTeamMates() {
       return [...this.filteredTeamMates].sort((a, b) => {
         let comparison = 0;
@@ -150,47 +161,49 @@ export default {
     },
   },
   methods: {
-    checkRole(role) {
-      return this.userInfo.userRoles.some(
-        (usRole) => usRole.role.name === role
-      );
-    },
     initializeUserInfo() {
-      const user = localStorage.getItem("user");
-      if (user) {
-        this.userInfo = JSON.parse(user);
-        this.fetchTeamMates();
-      }
-    },
+  const storedUserInfo = localStorage.getItem('user');
+  if (storedUserInfo) {
+    this.userInfo = JSON.parse(storedUserInfo);
+    this.fetchTeamMates();
+  }
+},
     async fetchTeamMates() {
-      try {
-        const loggedInUserId = this.userInfo.id;
+      console.log("Current user ID:", this.userInfo.id);
+  try {
+    if (!this.userInfo) {
+      await this.getUserInfo();
+    }
 
-        const res = await UserService.fetchTeamsByUserId(loggedInUserId);
+    // If still no userInfo, throw an error
+    if (!this.userInfo || !this.userInfo.id) {
+      throw new Error('User information is not available');
+    }
 
-        if (!res) {
-          toast.error("Bạn không đang trong dự án nào");
-          return;
-        }
+    const loggedInUserId = this.userInfo.id;
+    const response = await axios.get(`${this.apiUrl}/api/users/${loggedInUserId}/same-project`);
+    console.log("DANH SÁCH NHÂN VIÊN CÙNG DỰ ÁN:: ", response.data);
 
-        this.teamMates = res.data;
-        this.teamMates.forEach((person) => {
-          person.isViewing = false;
-          person.isProcessing = false;
-          person.isSubmitted = false;
-        });
-        // Set the first team member as selected (if any)
-        if (this.teamMates.length > 0) {
-          this.teamMates[0].isProcessing = true;
-          this.selectedPerson = this.teamMates[0];
-          this.profile = this.teamMates[0];
-        }
+    // Process the response data
+    this.teamMates = response.data.data.map((mate) => ({
+      ...mate,
+      isProcessing: mate.id === loggedInUserId,
+      isSubmitted: mate.isSubmitted || false,
+      isViewing: false,
+    }));
 
-        console.log(this.teamMates);
-      } catch (error) {
-        console.error("Error fetching team members:", error);
-      }
-    },
+    // Set the first team member as selected (if any)
+    if (this.teamMates.length > 0) {
+      this.teamMates[0].isProcessing = true;
+      this.selectedPerson = this.teamMates[0];
+      this.profile = this.teamMates[0];
+    }
+
+    console.log(this.teamMates);
+  } catch (error) {
+    console.error("Error fetching team members:", error);
+  }
+},
     viewPerson(person) {
       if (this.selectedPerson && this.selectedPerson.isProcessing) {
         this.selectedPerson.isProcessing = false;
@@ -238,6 +251,7 @@ export default {
       }
       this.isViewing = false;
     },
+
     sortBy(key) {
       if (this.sortKey === key) {
         this.sortOrder = this.sortOrder === "asc" ? "desc" : "asc";

@@ -62,7 +62,7 @@
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
               <span class="text-danger fw-bold">*</span>
             </label>
-            <div class="multi">
+            <div v-if="criteria.point" class="multi">
               {{
                 listScore[criteriaIndex]?.totalOfCriteria !== undefined
                   ? listScore[criteriaIndex].totalOfCriteria
@@ -71,87 +71,112 @@
               / {{ criteria.point }}
             </div>
           </div>
-          <div
-            v-for="(question, questionIndex) in criteria.questions"
-            :key="question.id"
-            class="question mb-3"
-          >
+          <div v-if="criteria.questions && criteria.questions.length > 0">
             <div
-              class="d-flex justify-content-between title"
-              v-if="question.title"
+              v-for="(question, questionIndex) in criteria.questions"
+              :key="question.id"
+              class="question mb-3"
             >
-              <label>
-                {{ questionIndex + 1 }}. {{ question.title }}
-                <span class="text-danger"> *</span>
-              </label>
-            </div>
-            <div class="options d-flex justify-content-around my-3">
               <div
-                v-for="(answer, answerIndex) in question.answers"
-                :key="answer.id"
-                class="form-check"
+                class="d-flex justify-content-between title"
+                v-if="question.title"
               >
-                <input
-                  type="radio"
-                  :id="
-                    'performanceOption' +
-                    criteriaIndex +
-                    questionIndex +
-                    answerIndex
-                  "
-                  :name="'performance' + criteriaIndex + questionIndex"
-                  class="form-check-input"
-                  @change="
-                    selectPerformanceValue(
-                      criteria.id,
-                      criteriaIndex,
-                      question.id,
-                      questionIndex,
-                      answer.value
-                    )
-                  "
-                  :value="answer.value"
-                />
-                <label
-                  :for="
-                    'performanceOption' +
-                    criteriaIndex +
-                    questionIndex +
-                    answerIndex
-                  "
-                  class="form-check-label"
-                  >{{ answer.title }}
+                <label>
+                  {{ questionIndex + 1 }}. {{ question.title }}
+                  <span class="text-danger"> *</span>
                 </label>
               </div>
+              <div
+                v-if="question.answers"
+                class="options d-flex justify-content-around my-3"
+              >
+                <div
+                  v-for="(answer, answerIndex) in question.answers"
+                  :key="answer.id"
+                  class="form-check"
+                >
+                  <input
+                    type="radio"
+                    :id="
+                      'performanceOption' +
+                      criteriaIndex +
+                      questionIndex +
+                      answerIndex
+                    "
+                    :name="'performance' + criteriaIndex + questionIndex"
+                    class="form-check-input"
+                    @change="
+                      selectPerformanceValue(
+                        criteria.id,
+                        criteriaIndex,
+                        question.id,
+                        questionIndex,
+                        answer.value
+                      )
+                    "
+                    :value="answer.value"
+                  />
+                  <label
+                    :for="
+                      'performanceOption' +
+                      criteriaIndex +
+                      questionIndex +
+                      answerIndex
+                    "
+                    class="form-check-label"
+                    >{{ answer.title }}
+                  </label>
+                </div>
+              </div>
+              <div class="description">
+                <textarea
+                  v-if="isShowDescription(criteria.id, question.id)"
+                  class="form-control"
+                  :class="{
+                    'error-textarea': perfValues.assessDetails.find(
+                      (detail) =>
+                        detail.criteriaId === criteria.id &&
+                        detail.questionId === question.id
+                    ).hasError,
+                  }"
+                  rows="3"
+                  placeholder="Nhận xết thêm"
+                  v-model="
+                    perfValues.assessDetails.find(
+                      (detail) =>
+                        detail.criteriaId === criteria.id &&
+                        detail.questionId === question.id
+                    ).description
+                  "
+                  :ref="'description_' + criteria.id + '_' + question.id"
+                ></textarea>
+              </div>
             </div>
-            <div class="description">
+          </div>
+          <div v-else>
+            <div class="form-group">
               <textarea
-                v-if="isShowDescription(criteria.id, question.id)"
                 class="form-control"
                 :class="{
-                  'error-textarea': perfValues.assessDetails.find(
-                    (detail) =>
-                      detail.criteriaId === criteria.id &&
-                      detail.questionId === question.id
-                  ).hasError,
+                  'error-textarea': perfValues.assessDetails?.find(
+                    (detail) => detail.criteriaId === criteria.id
+                  )?.hasError,
                 }"
-                rows="3"
-                placeholder="Nhận xết thêm"
-                v-model="
-                  perfValues.assessDetails.find(
-                    (detail) =>
-                      detail.criteriaId === criteria.id &&
-                      detail.questionId === question.id
-                  ).description
+                rows="5"
+                :value="
+                  perfValues.assessDetails?.find(
+                    (detail) => detail.criteriaId === criteria.id
+                  )?.description || ''
                 "
-                :ref="'description_' + criteria.id + '_' + question.id"
+                @input="updateDescription(criteria.id, $event.target.value)"
+                placeholder="Nhập nội dung..."
               ></textarea>
             </div>
           </div>
         </div>
 
         <!-- Personal contribution and Results -->
-        <div class="section mb-4">
+        <!-- <div class="section mb-4">
           <h5>
             Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span>
           </h5>
@@ -178,11 +203,11 @@
               placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"
             ></textarea>
           </div>
-        </div>
+        </div> -->
 
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
+          <button class="btn btn-primary" type="submit" :disabled="!isSubmit">Gửi Đánh Giá</button>
         </div>
       </form>
     </div>
@@ -204,6 +229,7 @@ export default {
       sortKey: "name",
       sortOrder: "asc",
       totalPoint: 0,
+      isSubmit: false,
     };
   },
   mounted() {
@@ -212,6 +238,7 @@ export default {
       this.userInfo = JSON.parse(user);
     }
     this.loadCriteria();
+    this.isSubmitForm();
   },
   watch: {
     // xem description của từng ô nếu thay đổi thì cập nhật lên localStorage
@@ -223,29 +250,76 @@ export default {
     },
     perfDetails: {
       handler() {
-        this.perfValues.userId = this.userInfo?.id;
-        this.perfValues.toUserId = this.userInfo?.id;
-        this.perfValues.totalPoint = this.totalPoint;
         this.perfValues.assessDetails = this.perfValues.assessDetails.map(
-          (detail) => {
-            return {
-              ...detail,
-              criteriaId: detail.criteriaId ?? null,
-              questionId: detail.questionId ?? null,
-              value: detail.value ?? null, // Sử dụng ?? để thiết lập mặc định là null nếu không có giá trị
-              description: detail.description?.trim() || null, // Trim và thiết lập mặc định là null nếu mô tả rỗng
-              hasError: false, // Reset trạng thái lỗi
-            };
-          }
+          (detail) => ({
+            ...detail,
+            criteriaId: detail.criteriaId ?? null,
+            questionId: detail.questionId ?? null,
+            value: detail.value ?? null, // Sử dụng ?? để thiết lập mặc định là null nếu không có giá trị
+            description: detail.description?.trim() || null, // Trim và thiết lập mặc định là null nếu mô tả rỗng
+            hasError: false, // Reset trạng thái lỗi
+          })
         );
       },
       deep: true,
     },
   },
   methods: {
+    isSubmitForm() {
+      const res = AssessService.isSubmitForm(this.userInfo.id, this.userInfo.id);
+      if (res) {
+        this.isSubmit = true;
+      }
+    },
+    initPerfValues() {
+      this.perfValues.assessDetails = [];
+
+      // Khởi tạo assessDetails dựa trên số lượng tiêu chí và câu hỏi
+      const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
+
+      for (let i = 0; i < criteriaCount; i++) {
+        const questions = this.listCriteria[i]?.questions;
+        const questionsCount = questions ? questions.length : 0;
+
+        if (questionsCount === 0) {
+          this.perfValues.assessDetails.push({
+            criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+            questionId: null, // Lưu ID của câu hỏi
+            value: null, // Giá trị của câu hỏi
+            description: null, // Mô tả của câu hỏi
+            hasError: false, // Trạng thái lỗi
+          });
+        } else {
+          for (let j = 0; j < questionsCount; j++) {
+            this.perfValues.assessDetails.push({
+              criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+              questionId: questions[j].id, // Lưu ID của câu hỏi
+              value: null, // Giá trị của câu hỏi
+              description: null, // Mô tả của câu hỏi
+              hasError: false, // Trạng thái lỗi
+            });
+          }
+        }
+      }
+    },
+    updateDescription(criteriaId, value) {
+      if (!this.perfValues.assessDetails) {
+        this.initPerfValues();
+      }
+      const assessDetail = this.perfValues.assessDetails.find(
+        (detail) => detail.criteriaId === criteriaId
+      );
+      if (assessDetail) {
+        assessDetail.description = value;
+      }
+    },
     async loadCriteria() {
       try {
         this.listCriteria = await AssessService.fetchListData();
+        // bỏ tiêu chí Đánh giá của quản lí ra khỏi list
+        this.listCriteria = this.listCriteria.filter(
+          (c) => c.title !== "Đánh giá của quản lý"
+        )
       } catch (error) {
         console.error("Error fetching criteria list:", error);
       }
@@ -256,29 +330,38 @@ export default {
       let firstErrorRef = null;
 
       this.perfValues.assessDetails.forEach((detail) => {
-        // Kiểm tra xem giá trị đã được chọn hay chưa
-        if (detail.value === undefined || detail.value === null) {
-          allValuesSelected = false; // Đánh dấu là chưa chọn hết
-        } else {
-          // Nếu giá trị >= 3, kiểm tra mô tả
-          if (detail.value >= 3) {
-            // Kiểm tra xem mô tả đã được điền chưa
-            if (!detail.description || detail.description.trim() === "") {
-              allDescriptionsFilled = false; // Đánh dấu mô tả chưa điền
-              detail.hasError = true; // Đánh dấu có lỗi
+        const isCriteriaToCheck =
+          detail.criteriaId !== 6 &&
+          detail.criteriaId !== 7 
 
-              // Lưu ref của ô nhập có lỗi đầu tiên
-              if (!firstErrorRef) {
-                const refKey = `description_${detail.criteriaId}_${detail.questionId}`; // Sửa đổi refKey nếu cần
-                firstErrorRef = this.$refs[refKey]?.[0]; // Thêm kiểm tra an toàn với optional chaining
-              }
-            } else {
-              detail.hasError = false; // Nếu đã điền mô tả, không có lỗi
+        // Kiểm tra xem giá trị đã được chọn hay chưa
+        if (!detail.value && isCriteriaToCheck) {
+          allValuesSelected = false;
+        }
+
+        // Nếu giá trị >= 3, kiểm tra mô tả
+        if (detail.value >= 3 && isCriteriaToCheck) {
+          const isDescriptionFilled =
+            detail.description && detail.description.trim() !== "";
+
+          if (!isDescriptionFilled) {
+            allDescriptionsFilled = false; // Đánh dấu mô tả chưa điền
+            detail.hasError = true; // Đánh dấu có lỗi
+
+            // Lưu ref của ô nhập có lỗi đầu tiên
+            if (!firstErrorRef) {
+              const refKey = `description_${detail.criteriaId}_${detail.questionId}`; // Sửa đổi refKey nếu cần
+              firstErrorRef = this.$refs[refKey]?.[0]; // Thêm kiểm tra an toàn với optional chaining
             }
           } else {
-            detail.description = null;
-            detail.hasError = false; // Nếu giá trị < 3, không cần mô tả, không có lỗi
+            detail.hasError = false; // Nếu đã điền mô tả, không có lỗi
           }
+        } else {
+          detail.hasError = false; // Nếu giá trị < 3, không cần mô tả, không có lỗi
+        }
+        if (!isCriteriaToCheck && !detail.description && detail.description.trim() === "") {
+          allDescriptionsFilled = false;
+          detail.hasError = true;
         }
       });
 
@@ -300,15 +383,23 @@ export default {
         return;
       }
 
-      // nếu tất cả hasError đều false thì xóa field hasError
+      // Nếu tất cả hasError đều false thì xóa field hasError
       this.perfValues.assessDetails.forEach((detail) => {
         if (!detail.hasError) {
           delete detail.hasError;
         }
       });
-
+      console.log(this.perfValues);
+      // Thử gửi dữ liệu
       try {
-        AssessService.submitForm(this.perfValues);
+        AssessService.submitForm(this.userInfo.id, this.userInfo.id, this.totalPoints, this.perfValues);
+        this.isSubmit = true;
+        toast.success("Đánh giá thành cấp nhật!", {
+          autoClose: 2000,
+        });
+        setTimeout(() => {
+          window.location.reload();
+        })
       } catch (error) {
         console.error("Error submitting form:", error);
       }
@@ -363,30 +454,17 @@ export default {
       // Kiểm tra điều kiện để hiển thị mô tả
       return question && question.value >= 3;
     },
-    selectPerformanceValue(criteriaId,criteriaIndex, questionId, questionIndex, value) {
+    selectPerformanceValue(
+      criteriaId,
+      criteriaIndex,
+      questionId,
+      questionIndex,
+      value
+    ) {
       // Giả sử bạn đã khởi tạo perfValues.assessDetails trước đó
       if (!this.perfValues.assessDetails) {
-        this.perfValues.assessDetails = [];
-
-        // Khởi tạo assessDetails dựa trên số lượng tiêu chí và câu hỏi
-        const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
-
-        for (let i = 0; i < criteriaCount; i++) {
-          const questions = this.listCriteria[i]?.questions; // Lấy danh sách câu hỏi cho tiêu chí này
-          const questionsCount = questions ? questions.length : 0; // Số lượng câu hỏi cho tiêu chí này
-
-          for (let j = 0; j < questionsCount; j++) {
-            this.perfValues.assessDetails.push({
-              criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
-              questionId: questions[j].id, // Lưu ID của câu hỏi
-              value: null, // Giá trị của câu hỏi
-              description: null, // Mô tả của câu hỏi
-              hasError: false, // Trạng thái lỗi
-            });
-          }
-        }
+        this.initPerfValues();
       }
-
       // Tìm đối tượng assessDetail tương ứng
       const assessDetail = this.perfValues.assessDetails.find(
         (detail) =>

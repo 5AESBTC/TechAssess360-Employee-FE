@@ -136,7 +136,8 @@ export default {
   methods: {
     handleLogout() {
       console.log("handleLogout was called");
-      localStorage.removeItem("userToken");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
       this.userInfo = null;
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,

@@ -177,7 +177,7 @@
 
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit" :disabled="!isSubmit">Gửi Đánh Giá</button>
+          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
         </div>
       </form>
     </div>
@@ -198,10 +198,12 @@ export default {
       sortKey: "name",
       sortOrder: "asc",
       totalPoint: 0,
-      isSubmit: false,
     };
   },
   mounted() {
+    window.onload = () => {
+      localStorage.removeItem("assessDetails");
+    }
     const user = localStorage.getItem("user");
     if (user) {
       this.userInfo = JSON.parse(user);
@@ -267,27 +269,25 @@ export default {
         // bỏ tiêu chí Đánh giá của quản lí ra khỏi list
         this.listCriteria = this.listCriteria.filter(
           (c) => c.title !== "Đánh giá của quản lý"
-        )
+        );
       } catch (error) {
         console.error("Error fetching criteria list:", error);
       }
     },
     submitForm() {
-      if(this.perfValues.length === 0) {
-        toast.error("Vui lòng nhập các đánh giá");
+      if (!localStorage.getItem("assessDetails")) {
+        toast.error("Vui lòng điền đánh giá của bạn!", { autoClose: 3000 });
         return;
       }
       let allDescriptionsFilled = true;
       let allValuesSelected = true;
       let firstErrorRef = null;
-
+      
+      
       this.perfValues.assessDetails.forEach((detail) => {
-        const isCriteriaToCheck =
-          detail.criteriaId !== 6 &&
-          detail.criteriaId !== 7 
-
+        const isCriteriaToCheck = detail.criteriaId !== 6 && detail.criteriaId !== 7;
         // Kiểm tra xem giá trị đã được chọn hay chưa
-        if (!detail.value && isCriteriaToCheck) {
+        if (isCriteriaToCheck && (!detail.value || detail.value === 0)) {
           allValuesSelected = false;
         }
 
@@ -311,7 +311,10 @@ export default {
         } else {
           detail.hasError = false; // Nếu giá trị < 3, không cần mô tả, không có lỗi
         }
-        if (!isCriteriaToCheck && !detail.description && detail.description.trim() === "") {
+        if (
+          !isCriteriaToCheck &&
+          (!detail.description || detail.description.trim() === "")
+        ) {
           allDescriptionsFilled = false;
           detail.hasError = true;
         }
@@ -344,14 +347,18 @@ export default {
       console.log(this.perfValues);
       // Thử gửi dữ liệu
       try {
-        AssessService.submitForm(this.userInfo.id, this.userInfo.id, this.totalPoints, this.perfValues);
-        this.isSubmit = true;
-        toast.success("Đánh giá thành cấp nhật!", {
+        AssessService.submitForm(
+          this.userInfo.id,
+          this.userInfo.id,
+          this.totalPoints,
+          this.perfValues
+        );
+        toast.success("Đánh giá thành công!", {
           autoClose: 2000,
         });
         setTimeout(() => {
           window.location.reload();
-        })
+        }, 2000);
       } catch (error) {
         console.error("Error submitting form:", error);
       }

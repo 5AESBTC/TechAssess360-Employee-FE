@@ -165,7 +165,6 @@ export default {
       userInfo: null,
       listCriteria: [],
       perfValues: {},
-      perfDetails: {},
       listScore: [],
       sortKey: "name",
       sortOrder: "asc",
@@ -175,6 +174,9 @@ export default {
   },
 
   mounted() {
+    window.onload = () => {
+      localStorage.removeItem("assessDetails");
+    };
     const user = localStorage.getItem("user");
     if (user) {
       this.userInfo = JSON.parse(user);
@@ -194,14 +196,23 @@ export default {
     async loadCriteria() {
       try {
         this.listCriteria = await AssessService.fetchListData();
-        if(this.userInfo.userRoles.some((usRole) => usRole.role.name === "MANAGER")) {
-          this.listCriteria = this.listCriteria.filter(
-            (c) => c.title !== "Đóng góp cá nhân và kết quả" && c.title !== "Mục tiêu quý tiếp theo"
+        if (
+          this.userInfo.userRoles.some(
+            (usRole) => usRole.role.name === "MANAGER"
           )
-        }else {
+        ) {
           this.listCriteria = this.listCriteria.filter(
-            (c) => c.title !== "Đóng góp cá nhân và kết quả" && c.title !== "Đánh giá của quản lý" && c.title !== "Mục tiêu quý tiếp theo"
-          )
+            (c) =>
+              c.title !== "Đóng góp cá nhân và kết quả" &&
+              c.title !== "Mục tiêu quý tiếp theo"
+          );
+        } else {
+          this.listCriteria = this.listCriteria.filter(
+            (c) =>
+              c.title !== "Đóng góp cá nhân và kết quả" &&
+              c.title !== "Đánh giá của quản lý" &&
+              c.title !== "Mục tiêu quý tiếp theo"
+          );
         }
         this.initPerfValues();
       } catch (error) {
@@ -256,13 +267,9 @@ export default {
       let firstErrorRef = null;
 
       this.perfValues.assessDetails.forEach((detail) => {
-        const isCriteriaToCheck =
-          detail.criteriaId !== 6 &&
-          detail.criteriaId !== 7 &&
-          detail.criteriaId !== 8;
-
+        const isCriteriaToCheck = detail.criteriaId !== 8;
         // Kiểm tra xem giá trị đã được chọn hay chưa
-        if (!detail.value && isCriteriaToCheck) {
+        if (isCriteriaToCheck && (!detail.value || detail.value === 0)) {
           allValuesSelected = false;
         }
 
@@ -283,6 +290,13 @@ export default {
             detail.hasError = false; // Đặt lại trạng thái lỗi nếu có mô tả
           }
         }
+        if (
+            !isCriteriaToCheck &&
+            (!detail.description || detail.description.trim() === "")
+          ) {
+            allDescriptionsFilled = false;
+            detail.hasError = true;
+          }
       });
 
       if (!allValuesSelected) {

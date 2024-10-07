@@ -31,9 +31,14 @@ const AssessService = {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            return response.data;
+            if (response.data.success) {
+                console.log("Lưu dữ liệu thành công!", response.data.data);
+                return response.data; // Trả về dữ liệu nếu cần
+            } else {
+                console.error("Lưu dữ liệu không thành công:", response.data.message);
+            }
         } catch (error) {
-            console.error("Error fetching saveData:", error);
+            console.error("Lỗi khi gửi yêu cầu:", error);
         }
     },
     fetchListData: async() => {

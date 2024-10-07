@@ -13,8 +13,8 @@
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ profile.name }}</h3>
-          <div class="line" v-if="userInfo.position == 'Manager'">
-            <strong>Vị trí:</strong> {{ profile.position }}
+          <div class="line" >
+            <strong>Vị trí:</strong> {{ profile.rank.position.name }}
           </div>
           <div class="line" v-if="userInfo.position == 'Manager'">
             <strong>Bậc hiện tại:</strong> {{ profile.level }}
@@ -47,53 +47,54 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="(mate, index) in filteredTeamMates" :key="index">
-              <td>{{ index + 1 }}</td>
-              <td class="text-start">{{ mate.name }}</td>
-              <td>{{ mate.position }}</td>
-              <td class="d-flex">
-                <div class="ms-5">
-                  <button
-                    v-if="mate.isSubmitted"
-                    class="btn btn-sm btn-success btn-custom me-2"
-                    :disabled="true"
-                  >
-                    Đã đánh giá
-                  </button>
-                  <button
-                    v-else-if="mate.isProcessing"
-                    class="btn btn-sm btn-warning btn-custom me-2"
-                    :disabled="true"
-                  >
-                    Đang đánh giá
-                  </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-primary btn-custom me-2"
-                    @click="selectPerson(mate)"
-                  >
-                    Đánh giá
-                  </button>
-                </div>
-                <div v-if="userInfo.position == 'Manager'">
-                  <button
-                    v-if="mate.isViewing"
-                    class="btn btn-sm btn-warning btn-custom"
-                    :disabled="true"
-                  >
-                    Đang xem
-                  </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-info btn-custom"
-                    @click="viewPerson(mate)"
-                  >
-                    Xem chi tiết
-                  </button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
+  <tr v-for="(mate, index) in filteredTeamMates" :key="index">
+    <td>{{ index + 1 }}</td>
+    <td class="text-start">{{ mate.name }}</td>
+    <td>{{ mate.rank.position.name }}</td>
+    <td class="d-flex justify-content-center">
+      <div class="d-flex">
+        <button
+          v-if="mate.isSubmitted"
+          class="btn btn-sm btn-success btn-custom me-2"
+          :disabled="true"
+        >
+          Đã đánh giá
+        </button>
+        <button
+          v-else-if="mate.isProcessing"
+          class="btn btn-sm btn-warning btn-custom me-2"
+          :disabled="true"
+        >
+          Đang đánh giá
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-primary btn-custom me-2"
+          @click="selectPerson(mate)"
+        >
+          Đánh giá
+        </button>
+      </div>
+      <div v-if="userInfo.position == 'Manager'" class="ms-3">
+        <button
+          v-if="mate.isViewing"
+          class="btn btn-sm btn-warning btn-custom"
+          :disabled="true"
+        >
+          Đang xem
+        </button>
+        <button
+          v-else
+          class="btn btn-sm btn-info btn-custom"
+          @click="viewPerson(mate)"
+        >
+          Xem chi tiết
+        </button>
+      </div>
+    </td>
+  </tr>
+</tbody>
+
         </table>
       </div>
     </div>
@@ -123,7 +124,7 @@ export default {
   },
   data() {
     return {
-      apiUrl: process.env.VUE_APP_DB_URL,
+      apiUrl: process.env.VUE_APP_URL,
       userInfo: null,
       profile: null,
       teamMates: [],
@@ -133,6 +134,9 @@ export default {
       isViewing: false,
       listScore: [],
     };
+  },
+  created() {
+    this.initializeUserInfo();
   },
   mounted() {
     this.fetchTeamMates();
@@ -157,33 +161,49 @@ export default {
     },
   },
   methods: {
+    initializeUserInfo() {
+  const storedUserInfo = localStorage.getItem('user');
+  if (storedUserInfo) {
+    this.userInfo = JSON.parse(storedUserInfo);
+    this.fetchTeamMates();
+  }
+},
     async fetchTeamMates() {
-      try {
-        const response = await axios.get(this.apiUrl + "/employees");
-        console.log("DANH SÁCH NHÂN VIÊN:: ", response);
+      console.log("Current user ID:", this.userInfo.id);
+  try {
+    if (!this.userInfo) {
+      await this.getUserInfo();
+    }
 
-        const loggedInUserId = this.userInfo.id;
+    // If still no userInfo, throw an error
+    if (!this.userInfo || !this.userInfo.id) {
+      throw new Error('User information is not available');
+    }
 
-        this.teamMates = response.data
-          .filter((mate) => mate.id !== loggedInUserId)
-          .map((mate) => ({
-            ...mate,
-            isProcessing: mate.id === loggedInUserId,
-            isSubmitted: mate.isSubmitted || false,
-            isViewing: false,
-          }));
+    const loggedInUserId = this.userInfo.id;
+    const response = await axios.get(`${this.apiUrl}/api/users/${loggedInUserId}/same-project`);
+    console.log("DANH SÁCH NHÂN VIÊN CÙNG DỰ ÁN:: ", response.data);
 
-        if (this.teamMates.length > 0) {
-          this.teamMates[0].isProcessing = true;
-          this.selectedPerson = this.teamMates[0];
-          this.profile = this.teamMates[0];
-        }
+    // Process the response data
+    this.teamMates = response.data.data.map((mate) => ({
+      ...mate,
+      isProcessing: mate.id === loggedInUserId,
+      isSubmitted: mate.isSubmitted || false,
+      isViewing: false,
+    }));
 
-        console.log(this.teamMates);
-      } catch (error) {
-        console.error("Error fetching projetcs:", error);
-      }
-    },
+    // Set the first team member as selected (if any)
+    if (this.teamMates.length > 0) {
+      this.teamMates[0].isProcessing = true;
+      this.selectedPerson = this.teamMates[0];
+      this.profile = this.teamMates[0];
+    }
+
+    console.log(this.teamMates);
+  } catch (error) {
+    console.error("Error fetching team members:", error);
+  }
+},
     viewPerson(person) {
       if (this.selectedPerson && this.selectedPerson.isProcessing) {
         this.selectedPerson.isProcessing = false;

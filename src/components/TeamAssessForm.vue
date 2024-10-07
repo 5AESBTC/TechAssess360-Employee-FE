@@ -1,281 +1,423 @@
 <template>
   <!-- Evaluation Header -->
-  <div
-    class="evaluation-header text-start mb-2 d-flex justify-content-between align-items-center fw-bold fs-4"
-  >
-    <label class=""
-      >Đánh giá quý III năm 2024 cho:
-      {{ selectedPerson ? selectedPerson.name : "" }}</label
-    >
+  <div class="evaluation-header text-start mb-2 d-flex justify-content-between">
+    <label class="fw-bold fs-4">
+        Đánh giá {{ selectedPerson ? selectedPerson.name : 'một người' }} năm 2024:
+      </label>
     <div class="d-flex">
-      <label class="fw-bold fs-4"
-        >Tổng điểm:
-        <span class="text-danger">{{ calculateOverallTotal() }}</span></label
-      >
+      <label class="fw-bold fs-4">Tổng điểm: <span class="text-danger">{{ totalPoint ? totalPoint : "0" }}</span></label>
     </div>
   </div>
 
+  <!-- Evaluation Form -->
   <form class="evaluation-form" @submit.prevent="submitForm">
     <!-- Performance Evaluation -->
-    <div
-      v-for="(criteria, criteriaIndex) in listCriteria"
-      :key="criteriaIndex"
-      class="section mb-4"
-    >
-      <div class="d-flex justify-content-between">
+    <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteria.id" class="section mb-4">
+      
+      <div class="d-flex justify-content-between" v-if="(userRole === 'manager' && criteria.title !== 'Mục tiêu quý tiếp theo' &&
+                    criteria.title !== 'Đóng góp cá nhân và kết quả') || 
+                   (userRole === 'employee' && 
+                    criteria.title !== 'Đánh giá của quản lý' &&
+                    criteria.title !== 'Đóng góp cá nhân và kết quả' &&
+                    criteria.title !== 'Mục tiêu quý tiếp theo')">
         <label class="d-flex gap-2">
-          <h4>{{ criteria.title }}</h4>
+          <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
           <span class="text-danger fw-bold">*</span>
         </label>
-        <div class="point">
-          ({{ criteria.total ? criteria.total : "?" }} / {{ criteria.point }})
+        <div v-if="criteria.point" class="multi">
+          {{ listScore[criteriaIndex]?.totalOfCriteria !== undefined ? listScore[criteriaIndex].totalOfCriteria : "?" }} / {{ criteria.point }}
         </div>
       </div>
 
-      <!-- Kiểm tra nếu có questions thì hiển thị -->
-      <div v-if="criteria.questions && criteria.questions.length > 0">
-        <div
-          v-for="(question, questionIndex) in criteria.questions"
-          :key="questionIndex"
-          class="question mb-3"
-        >
-          <div
-            class="d-flex justify-content-between title"
-            v-if="question.label"
-          >
-            <label>
-              {{ questionIndex + 1 }}. {{ question.label }}
-              <span class="text-danger"> *</span>
-            </label>
-          </div>
-          <div class="options d-flex justify-content-around my-3">
-            <div
-              v-for="(answer, answerIndex) in question.answer"
-              :key="answerIndex"
-              class="form-check"
-            >
-              <input
-                type="radio"
-                :id="
-                  'performanceOption' +
-                  criteriaIndex +
-                  questionIndex +
-                  answerIndex
-                "
-                :name="'performance' + criteriaIndex + questionIndex"
-                class="form-check-input"
-                @change="
-                  selectPerformanceValue(
-                    criteriaIndex,
-                    questionIndex,
-                    answer.value
-                  )
-                "
-                :value="answer.value"
-              />
-              <label
-                :for="
-                  'performanceOption' +
-                  criteriaIndex +
-                  questionIndex +
-                  answerIndex
-                "
-                class="form-check-label"
-                >{{ answer.label }}
+     <div v-if="(userRole === 'manager' && criteria.title !== 'Mục tiêu quý tiếp theo' &&
+                    criteria.title !== 'Đóng góp cá nhân và kết quả') || 
+                   (userRole === 'employee' && 
+                    criteria.title !== 'Đánh giá của quản lý' &&
+                    criteria.title !== 'Đóng góp cá nhân và kết quả' &&
+                    criteria.title !== 'Mục tiêu quý tiếp theo')">
+        <div v-if="criteria.questions && criteria.questions.length > 0">
+          <div v-for="(question, questionIndex) in criteria.questions" :key="question.id" class="question mb-3">
+            <div class="d-flex justify-content-between title" v-if="question.title">
+              <label>
+                {{ questionIndex + 1 }}. {{ question.title }}
+                <span class="text-danger"> *</span>
               </label>
             </div>
+            
+            <div v-if="question.answers" class="options d-flex justify-content-around my-3">
+              <div v-for="(answer, answerIndex) in question.answers" :key="answer.id" class="form-check">
+                <input type="radio" :id="'performanceOption' + criteriaIndex + questionIndex + answerIndex"
+                  :name="'performance' + criteriaIndex + questionIndex" class="form-check-input"
+                  @change="selectPerformanceValue(criteria.id, criteriaIndex, question.id, questionIndex, answer.value)"
+                  :value="answer.value" />
+                <label :for="'performanceOption' + criteriaIndex + questionIndex + answerIndex" class="form-check-label">{{ answer.title }}</label>
+              </div>
+            </div>
+            <div class="description">
+              <textarea v-if="isShowDescription(criteria.id, question.id)"
+                class="form-control"
+                :class="{
+                  'error-textarea': perfValues.assessDetails.find(detail => detail.criteriaId === criteria.id && detail.questionId === question.id)?.hasError,
+                }"
+                rows="3"
+                placeholder="Nhận xết thêm"
+                v-model="perfValues.assessDetails.find(detail => detail.criteriaId === criteria.id && detail.questionId === question.id).description"
+                :ref="'description_' + criteria.id + '_' + question.id"></textarea>
+            </div>
           </div>
-          <div class="description">
-            <textarea
-              v-if="isShowDescription(criteriaIndex, questionIndex)"
-              class="form-control"
+        </div>
+        <div v-else>
+          <div class="form-group">
+            <textarea class="form-control"
               :class="{
-                'error-textarea':
-                  perfValues[criteriaIndex][questionIndex]?.hasError,
+                'error-textarea': perfValues.assessDetails?.find(detail => detail.criteriaId === criteria.id)?.hasError,
               }"
-              rows="3"
-              placeholder="Nhận xét thêm"
-              v-model="perfValues[criteriaIndex][questionIndex].description"
-              :ref="'description_' + criteriaIndex + '_' + questionIndex"
-            ></textarea>
+              rows="5"
+              :value="perfValues.assessDetails?.find(detail => detail.criteriaId === criteria.id)?.description || ''"
+              @input="updateDescription(criteria.id, $event.target.value)"
+              placeholder="Nhập nội dung..."></textarea>
           </div>
-        </div>
-      </div>
-    </div>
-    <div class="comment-details text-start">
-      <!-- Personal contribution and Results -->
-      <!-- <div class="section mb-4">
-        <h4>Đóng góp Cá nhân và Kết quả <span class="text-danger"> *</span></h4>
-        <div class="form-group">
-          <textarea class="form-control" :class="{
-            'error-textarea': perfValues.contributionHasError,
-          }" rows="5" v-model="perfDetails.contribution"
-            placeholder="Ghi rõ những đóng góp và kết quả cá nhân của bạn..."></textarea>
-        </div>
-      </div>
-
-      <div class="section mb-4">
-        <h4>Mục tiêu quý tiếp theo <span class="text-danger"> *</span></h4>
-        <div class="form-group">
-          <textarea class="form-control" rows="5" v-model="perfDetails.nextTarget"
-            placeholder="Ghi rõ những mục tiêu tiếp theo mong muốn đạt được"></textarea>
-        </div>
-      </div> -->
-
-      <div
-        v-if="
-          userInfo.position === 'Manager' &&
-          this.selectedPerson?.id !== userInfo.id
-        "
-        class="section mb-4"
-      >
-        <h4>
-          Đánh giá của quản lý
-          <span class="text-danger"> *</span>
-        </h4>
-        <div class="form-group">
-          <textarea
-            class="form-control"
-            rows="5"
-            v-model="perfDetails.commentManager"
-            placeholder="Ghi rõ ý kiến của bạn"
-          ></textarea>
         </div>
       </div>
     </div>
 
     <!-- Submit Button -->
     <div class="d-flex justify-content-end">
-      <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
+      <button class="btn btn-primary" type="submit" :disabled="!isSubmit">Gửi Đánh Giá</button>
     </div>
   </form>
 </template>
 
 <script>
-import axios from "axios";
 import { toast } from "vue3-toastify";
-
+import "vue3-toastify/dist/index.css";
+import AssessService from "@/services/AssessService";
 export default {
   name: "TeamAssessForm",
   props: {
-    userInfo: Object,
     selectedPerson: Object,
   },
   emits: ["updateSelectedPerson"],
   data() {
     return {
-      apiUrl: process.env.VUE_APP_DB_URL,
+      userInfo: null,
       listCriteria: [],
-      perfValues: [],
+      perfValues: {},
       perfDetails: {},
       listScore: [],
+      sortKey: "name",
+      sortOrder: "asc",
+      totalPoint: 0,
+      isSubmit: false,
+      userRole:'manager'
     };
   },
+
   mounted() {
-    this.fetchCriterias();
+    const user = localStorage.getItem("user");
+    if (user) {
+      this.userInfo = JSON.parse(user);
+      // this.userRole = userInfo.role.name;
+    }
+    this.loadCriteria();
+    this.isSubmitForm();
+
+
   },
-  created() {
-    this.perfValues = this.listCriteria.map((criteria) =>
-      criteria.questions.map(() => ({
-        value: null,
-        description: "",
-        hasError: false,
-      }))
-    );
-    this.perfDetails = {
-      contribution: "",
-      nextTarget: "",
-      commentManager: "",
-    };
+  watch: {
+    // xem description của từng ô nếu thay đổi thì cập nhật lên localStorage
+    perfValues: {
+      handler() {
+        localStorage.setItem("assessDetails", JSON.stringify(this.perfValues));
+      },
+      deep: true,
+    },
+    perfDetails: {
+      handler() {
+        this.perfValues.assessDetails = this.perfValues.assessDetails.map(
+          (detail) => ({
+            ...detail,
+            criteriaId: detail.criteriaId ?? null,
+            questionId: detail.questionId ?? null,
+            value: detail.value ?? null, // Sử dụng ?? để thiết lập mặc định là null nếu không có giá trị
+            description: detail.description?.trim() || null, // Trim và thiết lập mặc định là null nếu mô tả rỗng
+            hasError: false, // Reset trạng thái lỗi
+          })
+        );
+      },
+      deep: true,
+    },
+    username: 'resetForm',
   },
   methods: {
-    calculateOverallTotal() {
-      return this.listCriteria.reduce((sum, criteria) => {
-        return sum + (criteria.total || 0);
-      }, 0);
-    },
-    async fetchCriterias() {
-      try {
-        const response = await axios.get(this.apiUrl + "/criterias");
-        this.listCriteria = response.data;
-      } catch (error) {
-        console.error("Error fetching listCriteria:", error);
+    isSubmitForm() {
+      const res = AssessService.isSubmitForm(this.userInfo.id, this.userInfo.id);
+      if (res) {
+        this.isSubmit = true;
       }
     },
-    isShowDescription(criteriaIndex, questionIndex) {
-      return (
-        this.perfValues[criteriaIndex] &&
-        this.perfValues[criteriaIndex][questionIndex] &&
-        this.perfValues[criteriaIndex][questionIndex].value >= 3
-      );
+    async loadCriteria() {
+  try {
+    this.listCriteria = await AssessService.fetchListData();
+    this.initPerfValues();
+  } catch (error) {
+    console.error("Error fetching criteria list:", error);
+  }
+}
+,
+initPerfValues() {
+      this.perfValues.assessDetails = [];
+
+      // Khởi tạo assessDetails dựa trên số lượng tiêu chí và câu hỏi
+      const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
+
+      for (let i = 0; i < criteriaCount; i++) {
+        const questions = this.listCriteria[i]?.questions;
+        const questionsCount = questions ? questions.length : 0;
+
+        if (questionsCount === 0) {
+          this.perfValues.assessDetails.push({
+            criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+            questionId: null, // Lưu ID của câu hỏi
+            value: null, // Giá trị của câu hỏi
+            description: null, // Mô tả của câu hỏi
+            hasError: false, // Trạng thái lỗi
+          });
+        } else {
+          for (let j = 0; j < questionsCount; j++) {
+            this.perfValues.assessDetails.push({
+              criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+              questionId: questions[j].id, // Lưu ID của câu hỏi
+              value: null, // Giá trị của câu hỏi
+              description: null, // Mô tả của câu hỏi
+              hasError: false, // Trạng thái lỗi
+            });
+          }
+        }
+      }
     },
-    selectPerformanceValue(criteriaIndex, questionIndex, value) {
-      if (!this.selectedPerson) {
-        toast.error("Vui lòng chọn một người để đánh giá!", {
-          autoClose: 2000,
-        });
-        document.querySelectorAll("input[type=radio]").forEach((input) => {
-          input.checked = false;
-        });
+    updateDescription(criteriaId, value) {
+      if (!this.perfValues.assessDetails) {
+        this.initPerfValues();
+      }
+      const assessDetail = this.perfValues.assessDetails.find(
+        (detail) => detail.criteriaId === criteriaId
+      );
+      if (assessDetail) {
+        assessDetail.description = value;
+      }
+    },
+       submitForm() {
+      let allDescriptionsFilled = true;
+      let allValuesSelected = true;
+      let firstErrorRef = null;
+
+      this.perfValues.assessDetails.forEach((detail) => {
+        const isCriteriaToCheck =
+          detail.criteriaId !== 6 &&
+          detail.criteriaId !== 7 &&
+          detail.criteriaId !== 8
+
+        // Kiểm tra xem giá trị đã được chọn hay chưa
+        if (!detail.value && isCriteriaToCheck) {
+          allValuesSelected = false;
+        }
+
+        // Kiểm tra mô tả nếu có giá trị
+        if (detail.value >= 3 && isCriteriaToCheck) {
+          const isDescriptionFilled = detail.description && detail.description.trim() !== "";
+          if (!isDescriptionFilled) {
+            allDescriptionsFilled = false;
+            detail.hasError = true; // Đánh dấu ô mô tả có lỗi
+            if (!firstErrorRef) {
+              firstErrorRef = this.$refs[`description_${detail.criteriaId}_${detail.questionId}`][0]; // Lưu lại phần mô tả đầu tiên có lỗi
+            }
+          } else {
+            detail.hasError = false; // Đặt lại trạng thái lỗi nếu có mô tả
+          }
+        }
+      });
+
+      if (!allValuesSelected) {
+        toast.error("Vui lòng chọn giá trị cho tất cả các câu hỏi!");
         return;
       }
-      if (!this.perfValues[criteriaIndex]) {
-        this.perfValues[criteriaIndex] = [];
+
+      if (!allDescriptionsFilled) {
+        toast.error("Vui lòng điền tất cả các mô tả!");
+        if (firstErrorRef) {
+          firstErrorRef.focus(); // Tập trung vào ô mô tả đầu tiên có lỗi
+        }
+        return;
       }
 
-      if (!this.perfValues[criteriaIndex][questionIndex]) {
-        this.perfValues[criteriaIndex][questionIndex] = {
-          value: null,
-          description: "",
-          hasError: false,
-        };
+      this.perfValues.assessDetails.forEach((detail) => {
+        if (!detail.hasError) {
+          delete detail.hasError;
+        }
+      });
+      console.log(this.perfValues);
+      // Thử gửi dữ liệu
+      try {
+        AssessService.submitForm(this.userInfo.id, this.userInfo.id, this.totalPoints, this.perfValues);
+        this.isSubmit = true;
+        toast.success("Đánh giá thành cấp nhật!", {
+          autoClose: 2000,
+        });
+        setTimeout(() => {
+          window.location.reload();
+        })
+      } catch (error) {
+        console.error("Error submitting form:", error);
       }
-      this.perfValues[criteriaIndex][questionIndex].value = value;
-      // clear textarea description
-      if (
-        this.perfValues[criteriaIndex][questionIndex].description &&
-        value < 3
-      ) {
-        this.perfValues[criteriaIndex][questionIndex].description = "";
+    },
+
+    calculateWorkTime() {
+      const userInfo = localStorage.getItem("userInfo");
+      if (userInfo && userInfo.dateJoinCompany) {
+        const joinDate = new Date(userInfo.dateJoinCompany);
+        const currentDate = new Date();
+
+        let years = currentDate.getFullYear() - joinDate.getFullYear();
+        let months = currentDate.getMonth() - joinDate.getMonth();
+        let days = currentDate.getDate() - joinDate.getDate();
+
+        if (days < 0) {
+          months--;
+          days += new Date(
+            currentDate.getFullYear(),
+            currentDate.getMonth(),
+            0
+          ).getDate();
+        }
+
+        if (months < 0) {
+          years--;
+          months += 12;
+        }
+
+        let result = [];
+
+        if (years > 0) {
+          result.push(`${years} năm`);
+        }
+        if (months > 0) {
+          result.push(`${months} tháng`);
+        }
+        if (days > 0) {
+          result.push(`${days} ngày`);
+        }
+
+        return result.length > 0 ? result.join(" ") : "Chưa xác định";
       }
-      // Cập nhật vào list để hiển thị
+      return "Chưa xác định";
+    },
+    isShowDescription(criteriaId, questionId) {
+      // Kiểm tra xem assessDetails có tồn tại và lấy câu hỏi tương ứng
+      const question = this.perfValues.assessDetails?.find(
+        (detail) =>
+          detail.criteriaId === criteriaId && detail.questionId === questionId
+      );
+
+      // Kiểm tra điều kiện để hiển thị mô tả
+      return question && question.value >= 3;
+    },
+    selectPerformanceValue(criteriaId,criteriaIndex, questionId, questionIndex, value) {
+      // Giả sử bạn đã khởi tạo perfValues.assessDetails trước đó
+      if (!this.perfValues.assessDetails) {
+        this.perfValues.assessDetails = [];
+
+        // Khởi tạo assessDetails dựa trên số lượng tiêu chí và câu hỏi
+        const criteriaCount = this.listCriteria.length; // Số lượng tiêu chí
+
+        for (let i = 0; i < criteriaCount; i++) {
+          const questions = this.listCriteria[i]?.questions; // Lấy danh sách câu hỏi cho tiêu chí này
+          const questionsCount = questions ? questions.length : 0; // Số lượng câu hỏi cho tiêu chí này
+
+          for (let j = 0; j < questionsCount; j++) {
+            this.perfValues.assessDetails.push({
+              criteriaId: this.listCriteria[i].id, // Lưu ID của tiêu chí
+              questionId: questions[j].id, // Lưu ID của câu hỏi
+              value: null, // Giá trị của câu hỏi
+              description: null, // Mô tả của câu hỏi
+              hasError: false, // Trạng thái lỗi
+            });
+          }
+        }
+      }
+
+      // Tìm đối tượng assessDetail tương ứng
+      const assessDetail = this.perfValues.assessDetails.find(
+        (detail) =>
+          detail.criteriaId === criteriaId && detail.questionId === questionId
+      );
+
+      // Cập nhật giá trị đã chọn cho câu hỏi
+      if (assessDetail) {
+        assessDetail.value = value;
+
+        // Xóa ô nhập "description" nếu giá trị < 3
+        if (value < 3) {
+          assessDetail.description = null; // Hoặc "" tùy thuộc vào yêu cầu
+        }
+      }
+
+      // Cập nhật listScore để hiển thị
       if (!this.listScore[criteriaIndex]) {
         this.listScore[criteriaIndex] = {};
       }
-      this.listScore[criteriaIndex][questionIndex] =
-        this.calculateScoreSelected(criteriaIndex, questionIndex, value);
 
-      // Kiểm tra xem tất cả câu hỏi cho criteriaIndex này đã được trả lời chưa
+      // Tính toán điểm mới cho câu hỏi
+      const newScore = this.calculateScoreSelected(
+        criteriaIndex,
+        questionIndex,
+        value
+      );
+
+      // Cập nhật điểm cho câu hỏi
+      this.listScore[criteriaIndex][questionIndex] = newScore;
+
+      // Kiểm tra xem tất cả câu hỏi của tiêu chí này đã được trả lời chưa
       const questionsCount =
         this.listCriteria[criteriaIndex]?.questions?.length || 0;
       const answeredQuestionsCount = Object.keys(
-        this.listScore[criteriaIndex] || {}
-      ).length;
+        this.listScore[criteriaIndex]
+      ).filter((key) => key !== "totalOfCriteria").length;
 
+      // Tính lại totalOfCriteria khi có sự thay đổi
       if (answeredQuestionsCount === questionsCount) {
-        // Tính tổng điểm cho criteriaIndex này
-        const totalScore = this.calculateTotalScore(criteriaIndex);
+        const totalOfCriteria = this.calculateTotalOfCriteria(criteriaIndex);
         const percentage = Math.round(
-          ((totalScore * 20) / 100) *
+          ((totalOfCriteria * 20) / 100) *
             (this.listCriteria[criteriaIndex]?.point || 1)
         );
-        this.listCriteria[criteriaIndex].total = percentage;
+
+        // Cập nhật tổng điểm tiêu chí
+        this.listScore[criteriaIndex].totalOfCriteria = percentage;
       }
+
+      // Cập nhật tổng điểm cho tất cả các tiêu chí
+      this.updateTotalPoint();
+
+      // Lưu assessDetails vào localStorage
+      localStorage.setItem("assessDetails", JSON.stringify(this.perfValues));
     },
     calculateScoreSelected(criteriaIndex, questionIndex, value) {
-      // Tính điểm cho giá trị đã chọn
+      // Lấy thông tin câu hỏi tương ứng từ listCriteria
       const question =
         this.listCriteria[criteriaIndex]?.questions[questionIndex];
-      const pointCriteriaIndex =
-        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1;
-      const questionScore = parseFloat(question?.score) || 0;
-      const selectedValue = parseFloat(value) || 0;
+      const pointCriteria =
+        parseFloat(this.listCriteria[criteriaIndex]?.point) || 1; // Điểm tiêu chí
+      const questionScore = parseFloat(question?.point) || 0; // Điểm của câu hỏi
+      const selectedValue = parseFloat(value) || 0; // Giá trị được chọn
 
       // Tính toán điểm cho câu hỏi này
-      const score = (questionScore / pointCriteriaIndex) * selectedValue;
+      const score = (questionScore / pointCriteria) * selectedValue;
+
+      // Làm tròn điểm đến 2 chữ số sau dấu phẩy
       return Math.round(score * 100) / 100;
     },
-    calculateTotalScore(criteriaIndex) {
+    calculateTotalOfCriteria(criteriaIndex) {
       const listScoreForCriteria = this.listScore[criteriaIndex] || {};
       let total = 0;
 
@@ -284,133 +426,23 @@ export default {
           Object.prototype.hasOwnProperty.call(
             listScoreForCriteria,
             questionIndex
-          )
+          ) &&
+          questionIndex !== "totalOfCriteria"
         ) {
           total += listScoreForCriteria[questionIndex];
         }
       }
-      total = Math.round(total * 100) / 100;
-      return total;
+
+      return Math.round(total * 100) / 100; // Trả về tổng điểm đã làm tròn
     },
-    submitForm() {
-      // if (!this.selectedPerson) {
-      //     toast.error("Vui lòng chọn một người để đánh giá!", {
-      //         autoClose: 2000,
-      //     });
-      //     document.querySelectorAll("input[type=radio]").forEach((input) => {
-      //         input.checked = false;
-      //     });
-      //     document.querySelectorAll("textarea").forEach((input) => {
-      //         input.value = "";
-      //     });
-      //     return; // Dừng lại nếu chưa chọn selectedPerson
-      // }
-      let allDescriptionsFilled = true;
-      let allValuesSelected = true;
-      let firstErrorRef = null;
-
-      this.perfValues.forEach((criteria, index) => {
-        if (Array.isArray(criteria)) {
-          // Kiểm tra nếu criteria là một mảng
-          criteria.forEach((question, qIndex) => {
-            if (question.value === undefined || question.value === null) {
-              allValuesSelected = false;
-            }
-
-            if (question.value >= 3) {
-              if (!question.description || question.description.trim() === "") {
-                allDescriptionsFilled = false;
-                question.hasError = true;
-                // Kiểm tra ref có tồn tại trước khi truy cập
-                if (!firstErrorRef) {
-                  const refKey = `description_${index}_${qIndex}`;
-                  firstErrorRef = this.$refs[refKey][0]; // Lưu ref ô lỗi đầu tiên
-                }
-              } else {
-                question.hasError = false;
-              }
-            } else {
-              question.hasError = false;
-            }
-          });
-        } else {
-          console.error(
-            `criteria tại index ${index} không phải là một mảng:`,
-            criteria
-          );
-        }
-      });
-
-      // Kiểm tra và thông báo lỗi
-      if (!allValuesSelected) {
-        toast.error("Vui lòng chọn cho tất cả các câu hỏi!", {
-          autoClose: 2000,
-        });
-        return; // Dừng lại nếu có lỗi
-      }
-
-      if (!allDescriptionsFilled) {
-        toast.error("Vui lòng nhập đầy đủ nhận xét cho các câu hỏi!", {
-          autoClose: 2000,
-        });
-        if (firstErrorRef) {
-          firstErrorRef.scrollIntoView({ behavior: "smooth", block: "center" }); // Cuộn tới ô lỗi đầu tiên
-        }
-        return; // Dừng lại nếu có lỗi
-      }
-
-      // Validate perfDetails
-      const shouldCheckCommentManager = this.selectedPerson === this.profile;
-
-      for (const key in this.perfDetails) {
-        if (key === "commentManager") {
-          if (
-            shouldCheckCommentManager &&
-            this.userInfo.position === "Manager"
-          ) {
-            continue;
-          }
-        }
-      }
-
-      // Lưu dữ liệu và thông báo thành công
-      localStorage.setItem(
-        this.userInfo.id + "assessTo" + this.selectedPerson.id,
-        JSON.stringify(this.perfValues)
+    updateTotalPoint() {
+      this.totalPoint = Object.keys(this.listScore).reduce(
+        (total, criteriaId) => {
+          const criteriaScore = this.listScore[criteriaId].totalOfCriteria || 0; // Đảm bảo giá trị là số
+          return total + criteriaScore; // Cộng dồn tổng điểm
+        },
+        0
       );
-
-      localStorage.setItem(
-        this.userInfo.id + "assessDetailsTo" + this.selectedPerson.id,
-        JSON.stringify(this.perfDetails)
-      );
-
-      toast.success("Gửi đánh giá thành công!", { autoClose: 2000 });
-      const updatedPerson = { ...this.selectedPerson, isSubmitted: true };
-      // Phát sự kiện lên component cha
-      this.$emit("updateSelectedPerson", updatedPerson);
-      this.clearForm();
-    },
-    clearForm() {
-      this.perfValues = [];
-      this.perfDetails = {
-        contribution: "",
-        nextTarget: "",
-        commentManager: "",
-      };
-      this.listScore = [];
-      // clear input radio
-      document.querySelectorAll("input[type=radio]").forEach((input) => {
-        input.checked = false;
-      });
-
-      // clear textarea
-      document.querySelectorAll("textarea").forEach((input) => {
-        input.value = "";
-      });
-      this.listCriteria.forEach((criteria) => {
-        criteria.total = 0;
-      });
-      //this.selectedPerson = null;
     },
   },
 };

@@ -56,7 +56,7 @@ const AssessService = {
                 },
             });
             localStorage.setItem("my-assess", JSON.stringify(response.data.data));
-            return response.data.data;
+            return response.data;
         } catch (error) {
             console.error("Error fetching assessSelf:", error);
         }

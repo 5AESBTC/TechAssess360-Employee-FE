@@ -52,9 +52,9 @@
                   </span>
                   <ul class="dropdown-menu">
                     <li>
-                      <router-link to="/profile" class="dropdown-item" href="#"
-                        >Thông tin cá nhân</router-link
-                      >
+                      <a :href="'/profile'" class="dropdown-item">
+                        <i class="bi bi-person me-3"></i> Cá nhân
+                      </a>
                     </li>
                     <li @click.prevent="handleLogout">
                       <a class="dropdown-item" href="#">
@@ -116,12 +116,12 @@ export default {
       return items;
     },
   },
+  created() {
+   if (localStorage.getItem("accessToken")) {
+     this.userInfo = JSON.parse(localStorage.getItem("user"));
+   } 
+  },
   mounted() {
-    window.onload = () => {
-      if (localStorage.getItem("accessToken")) {
-        this.userInfo = JSON.parse(localStorage.getItem("user"));
-      }
-    };
     this.startCountdown();
     this.checkActivePath();
     window.addEventListener("resize", this.handleResize);

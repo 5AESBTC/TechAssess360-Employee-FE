@@ -31,12 +31,7 @@ const AssessService = {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            if (response.data.success) {
-                console.log("Lưu dữ liệu thành công!", response.data.data);
-                return response.data; // Trả về dữ liệu nếu cần
-            } else {
-                console.error("Lưu dữ liệu không thành công:", response.data.message);
-            }
+            return response.data;
         } catch (error) {
             console.error("Lỗi khi gửi yêu cầu:", error);
         }
@@ -50,9 +45,23 @@ const AssessService = {
                 },
             });
             localStorage.setItem("listData", JSON.stringify(response.data.data));
-            return response.data.data;
+            return response.data;
         } catch (error) {
             console.error("Error fetching listData:", error);
+        }
+    },
+    fetchAssessSelf: async (userId) => {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            const response = await axios.get(`${InfoUrl}/api/assess/list-assess-of-user/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            localStorage.setItem("my-assess", JSON.stringify(response.data.data));
+            return response.data.data;
+        } catch (error) {
+            console.error("Error fetching assessSelf:", error);
         }
     }
 }

@@ -1,13 +1,8 @@
 <template>
-  <div
-    class="container-fluid row justify-content-md-center align-items-center"
-    v-if="userInfo"
-  >
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="userInfo">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div
-        class="profile mb-3 d-flex align-items-center justify-content-around"
-      >
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
           <img :src="userInfo.avatar" alt="avatar" />
         </div>
@@ -32,15 +27,10 @@
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
       <!-- Evaluation Header -->
-      <div
-        class="evaluation-header text-start mb-2 d-flex justify-content-between"
-      >
-        <label class="fw-bold fs-4"
-          >Đánh giá quý III năm 2024 cho bản thân</label
-        >
+      <div class="evaluation-header text-start mb-2 d-flex justify-content-between">
+        <label class="fw-bold fs-4">Đánh giá quý III năm 2024 cho bản thân</label>
         <div class="d-flex">
-          <label class="fw-bold fs-4"
-            >Tổng điểm:
+          <label class="fw-bold fs-4">Tổng điểm:
             <span v-if="isViewing == true" class="text-danger">{{
               this.personalAssess.totalPoint
                 ? this.personalAssess.totalPoint
@@ -57,11 +47,7 @@
       <!-- @submit.prevent="submit" -->
       <form class="evaluation-form" @submit.prevent="submitForm">
         <!-- Performance Evaluation -->
-        <div
-          v-for="(criteria, criteriaIndex) in listCriteria"
-          :key="criteria.id"
-          class="section mb-4"
-        >
+        <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteria.id" class="section mb-4">
           <div class="d-flex justify-content-between">
             <label class="d-flex gap-2">
               <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
@@ -77,42 +63,21 @@
             </div>
           </div>
           <div v-if="criteria.questions && criteria.questions.length > 0">
-            <div
-              v-for="(question, questionIndex) in criteria.questions"
-              :key="question.id"
-              class="question mb-3"
-            >
-              <div
-                class="d-flex justify-content-between title"
-                v-if="question.title"
-              >
+            <div v-for="(question, questionIndex) in criteria.questions" :key="question.id" class="question mb-3">
+              <div class="d-flex justify-content-between title" v-if="question.title">
                 <label>
                   {{ questionIndex + 1 }}. {{ question.title }}
                   <span class="text-danger"> *</span>
                 </label>
               </div>
 
-              <div
-                v-if="question.answers"
-                class="options d-flex justify-content-around my-3"
-              >
-                <div
-                  v-for="(answer, answerIndex) in question.answers"
-                  :key="answer.id"
-                  class="form-check"
-                >
-                  <input
-                    v-if="!isAssess"
-                    type="radio"
-                    :id="
-                      'performanceOption' +
-                      criteriaIndex +
-                      questionIndex +
-                      answerIndex
-                    "
-                    :name="'performance' + criteriaIndex + questionIndex"
-                    class="form-check-input"
-                    @change="
+              <div v-if="question.answers" class="options d-flex justify-content-around my-3">
+                <div v-for="(answer, answerIndex) in question.answers" :key="answer.id" class="form-check">
+                  <input v-if="!isAssess" type="radio" :id="'performanceOption' +
+                    criteriaIndex +
+                    questionIndex +
+                    answerIndex
+                    " :name="'performance' + criteriaIndex + questionIndex" class="form-check-input" @change="
                       selectPerformanceValue(
                         criteria.id,
                         criteriaIndex,
@@ -120,114 +85,69 @@
                         questionIndex,
                         answer.value
                       )
-                    "
-                    :value="answer.value"
-                  />
+                      " :value="answer.value" />
 
-                  <input
-                    v-else
-                    type="radio"
-                    :id="
-                      'performanceOption' +
-                      criteriaIndex +
-                      questionIndex +
-                      answerIndex
-                    "
-                    :name="'performance' + criteriaIndex + questionIndex"
-                    class="form-check-input"
+                  <input v-else type="radio" :id="'performanceOption' +
+                    criteriaIndex +
+                    questionIndex +
+                    answerIndex
+                    " :name="'performance' + criteriaIndex + questionIndex" class="form-check-input"
                     :checked="checkValue(question.id, answer.value)"
-                    :disabled="!checkValue(question.id, answer.value)"
-                  />
-                  <label
-                    :for="
-                      'performanceOption' +
-                      criteriaIndex +
-                      questionIndex +
-                      answerIndex
-                    "
-                    class="form-check-label"
-                  >
+                    :disabled="!checkValue(question.id, answer.value)" />
+                  <label :for="'performanceOption' +
+                    criteriaIndex +
+                    questionIndex +
+                    answerIndex
+                    " class="form-check-label">
                     {{ answer.title }}
                   </label>
                 </div>
               </div>
               <div v-if="isAssess" class="description">
-                <textarea
-                  class="form-control"
-                  :class="{
-                    'error-textarea': perfValues.assessDetails?.find(
-                      (detail) => detail.criteriaId === criteria.id
-                    )?.hasError,
-                  }"
-                  rows="5"
-                  :value="
-                    personalAssessDetails?.find(
-                      (detail) => detail.criteria.id === criteria.id
-                    )?.description || ''
-                  "
-                  readonly
-                ></textarea>
+                <textarea class="form-control" :class="{
+                  'error-textarea': perfValues.assessDetails?.find(
+                    (detail) => detail.criteriaId === criteria.id
+                  )?.hasError,
+                }" rows="5" :value="personalAssessDetails?.find(
+                    (detail) => detail.criteria.id === criteria.id
+                  )?.description || ''
+                    " readonly></textarea>
               </div>
               <div v-else class="description">
-                <textarea
-                  v-if="isShowDescription(criteria.id, question.id)"
-                  class="form-control"
-                  :class="{
-                    'error-textarea': perfValues.assessDetails.find(
-                      (detail) =>
-                        detail.criteriaId === criteria.id &&
-                        detail.questionId === question.id
-                    ).hasError,
-                  }"
-                  rows="3"
-                  placeholder="Nhận xét thêm"
-                  v-model="
-                    perfValues.assessDetails.find(
-                      (detail) =>
-                        detail.criteriaId === criteria.id &&
-                        detail.questionId === question.id
-                    ).description
-                  "
-                  :ref="'description_' + criteria.id + '_' + question.id"
-                ></textarea>
+                <textarea v-if="isShowDescription(criteria.id, question.id)" class="form-control" :class="{
+                  'error-textarea': perfValues.assessDetails.find(
+                    (detail) =>
+                      detail.criteriaId === criteria.id &&
+                      detail.questionId === question.id
+                  ).hasError,
+                }" rows="3" placeholder="Nhận xét thêm" v-model="perfValues.assessDetails.find(
+                    (detail) =>
+                      detail.criteriaId === criteria.id &&
+                      detail.questionId === question.id
+                  ).description
+                    " :ref="'description_' + criteria.id + '_' + question.id"></textarea>
               </div>
             </div>
           </div>
           <div v-else>
             <div class="form-group">
-              <textarea
-                v-if="!isAssess"
-                class="form-control"
-                :class="{
-                  'error-textarea': perfValues.assessDetails?.find(
-                    (detail) => detail.criteriaId === criteria.id
-                  )?.hasError,
-                }"
-                rows="5"
-                :value="
-                  perfValues.assessDetails?.find(
-                    (detail) => detail.criteriaId === criteria.id
-                  )?.description || ''
-                "
-                @input="updateDescription(criteria.id, $event.target.value)"
-                placeholder="Nhập nội dung..."
-              ></textarea>
-              <textarea
-                v-else
-                class="form-control"
-                :class="{
-                  'error-textarea': perfValues.assessDetails?.find(
-                    (detail) => detail.criteriaId === criteria.id
-                  )?.hasError,
-                }"
-                rows="5"
-                :value="
-                  personalAssessDetails?.find(
-                    (detail) => detail.criteria.id === criteria.id
-                  )?.description || ''
-                "
-                readonly
-              ></textarea>
+              <textarea v-if="!isAssess" class="form-control" :class="{
+                'error-textarea': perfValues.assessDetails?.find(
+                  (detail) => detail.criteriaId === criteria.id
+                )?.hasError,
+              }" rows="5" :value="perfValues.assessDetails?.find(
+                  (detail) => detail.criteriaId === criteria.id
+                )?.description || ''
+                  " @input="updateDescription(criteria.id, $event.target.value)"
+                placeholder="Nhập nội dung..."></textarea>
+              <textarea v-else class="form-control" :class="{
+                'error-textarea': perfValues.assessDetails?.find(
+                  (detail) => detail.criteriaId === criteria.id
+                )?.hasError,
+              }" rows="5" :value="personalAssessDetails?.find(
+                  (detail) => detail.criteria.id === criteria.id
+                )?.description || ''
+                  " readonly></textarea>
             </div>
           </div>
         </div>
@@ -577,7 +497,7 @@ export default {
         const totalOfCriteria = this.calculateTotalOfCriteria(criteriaIndex);
         const percentage = Math.round(
           ((totalOfCriteria * 20) / 100) *
-            (this.listCriteria[criteriaIndex]?.point || 1)
+          (this.listCriteria[criteriaIndex]?.point || 1)
         );
 
         // Cập nhật tổng điểm tiêu chí
@@ -637,7 +557,7 @@ export default {
 </script>
 
 <style scoped>
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -768,7 +688,7 @@ tbody > tr > td {
   padding-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 

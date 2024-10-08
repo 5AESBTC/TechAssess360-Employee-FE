@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="evaluation-header mb-2"
-    style="display: flex; justify-content: space-between; align-items: center"
-  >
+  <div class="evaluation-header mb-2" style="display: flex; justify-content: space-between; align-items: center">
     <label class="fw-bold fs-4">
       Chi tiết đánh giá quý III năm 2024 của:
       {{ selectedPerson ? selectedPerson.name : "" }}
@@ -10,97 +7,48 @@
     <!-- <span style="color: red; font-size: 24px;">Tổng điểm: {{ calculateGrandTotalScore() }}</span> -->
   </div>
 
-  <form v-if="selectedPerson" class="evaluation-form">
-    <div
-      v-for="(criteria, criteriaIndex) in criterias"
-      :key="criteriaIndex"
-      class="section mb-4"
-    >
+  <form class="evaluation-form">
+    <!-- Performance Evaluation -->
+    <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteria.id" class="section mb-4">
       <div class="d-flex justify-content-between">
         <label class="d-flex gap-2">
-          <h4>{{ criteria.title }}</h4>
-          <span class="text-danger fw-bold">*</span>
+          <h5>{{ criteria.title }}</h5>
         </label>
-        <div class="point">
-          <!-- ({{
-            listScores[criteriaIndex].total
-              ? istScores[criteriaIndex].total
-              : "?"
-          }}
-          / {{ criteria.point }}) -->
-        </div>
       </div>
+      <div v-if="criteria.questions && criteria.questions.length > 0">
+        <div v-for="(question, questionIndex) in criteria.questions" :key="question.id" class="question mb-3">
+          <div class="d-flex justify-content-between title" v-if="question.title">
+            <label>
+              {{ questionIndex + 1 }}. {{ question.title }}
+            </label>
+          </div>
 
-      <div>
-        <div v-if="criteria.questions">
-          <div
-            v-for="(question, questionIndex) in criteria.questions"
-            :key="questionIndex"
-            class="question mb-3"
-          >
-            <div
-              v-if="question.label"
-              class="d-flex justify-content-between title"
-            >
-              <label> {{ questionIndex + 1 }}. {{ question.label }} </label>
-            </div>
-            <div class="options d-flex justify-content-around my-3">
-              <div
-                v-for="(answer, answerIndex) in question.answer"
-                :key="answerIndex"
-                class="form-check"
-              >
-                <span class="answer-label me-2">{{ answer.label }}</span>
-                <div
-                  v-if="
-                    selectedPerson.isSubmitted &&
-                    this.perfValues &&
-                    isShowAvatar(criteriaIndex, questionIndex, answer.value)
-                  "
-                  class="avatar-group mt-2 d-flex justify-content-center"
-                >
-                  <div
-                    style="position: relative; margin-right: 10px"
-                    class="avatar-container"
-                  >
-                    <img
-                      :src="userInfo?.avatar"
-                      alt="Avatar"
-                      class="avatar-img"
-                      style="cursor: pointer"
-                    />
-                    <span
-                      v-if="
-                        perfValues[criteriaIndex][questionIndex].description
-                      "
-                      class="tooltiptext"
-                      style="
+          <div v-if="question.answers" class="options d-flex justify-content-around my-3">
+            <div v-for="(answer, answerIndex) in question.answers" :key="answer.id" class="form-check">
+              <label :for="'performanceOption' +
+                criteriaIndex +
+                questionIndex +
+                answerIndex
+                " class="form-check-label">
+                {{ answer.title }}
+              </label>
+              <div class="avatar-group mt-2 d-flex justify-content-center">
+                <div style="position: relative; margin-right: 10px" class="avatar-container"
+                  v-for="(user, userIndex) in isShowAvatar(criteria.id, question.id, answer.value)" :key="userIndex">
+                  <img :src="user.avt" alt="Avatar" class="avatar-img" style="cursor: pointer" />
+                  <span v-if="user.description" class="tooltiptext" style="
                         background-color: rgba(0, 0, 0, 0.7);
                         color: #fff;
                         padding: 5px;
                         border-radius: 5px;
-                      "
-                    >
-                      {{ perfValues[criteriaIndex][questionIndex].description }}
-                    </span>
-                  </div>
+                      ">
+                    {{ user.description }}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
-        <!-- <div v-else>
-          <div class="question mb-3">
-            <label class="d-flex title"
-              >{{ selectedPerson.evaluation[section.key]?.label
-              }}<span class="text-danger"> *</span></label
-            >
-            <div class="form-control text-start">
-              {{ selectedPerson.evaluation[section.key]?.answer }}
-            </div>
-          </div>
-        </div> -->
       </div>
     </div>
   </form>
@@ -108,8 +56,8 @@
 
 
 <script>
+import AssessService from "@/services/AssessService";
 import axios from "axios";
-
 export default {
   name: "TeamAssessDetailsForm",
   props: {
@@ -118,43 +66,173 @@ export default {
   },
   data() {
     return {
-      apiUrl: process.env.VUE_APP_DB_URL,
-      criterias: [],
+      apiUrl: process.env.VUE_APP_URL,
+      listCriteria: [],
       perfValues: null,
-    };
+      listAssess: [],
+      assessDetail: {},
+      result: {
+        toUserId: null,
+        criterias: [],
+      },
+    }
   },
   mounted() {
-    this.fetchCriterias();
-    this.loadData();
+    this.loadCriteria();
+    this.fetchAssessByUserId(this.selectedPerson.id)
   },
   methods: {
-    isShowAvatar(criteriaIndex, questionIndex, value) {
-      console.log(this.perfValues[criteriaIndex][questionIndex]?.value);
-      console.log(value);
-      return this.perfValues[criteriaIndex][questionIndex]?.value === value;
+    isShowAvatar(criteriaId, questionId, answerValue) {
+      console.log("Checking criteria list:", this.result.criterias);
+
+      const criteria = this.result.criterias.find(c => c.id === criteriaId);
+      if (!criteria) {
+        console.log(`Criteria with id ${criteriaId} not found`);
+        return [];
+      }
+
+      const question = criteria.questions.find(q => q.id === questionId);
+      if (!question) {
+        console.log(`Question with id ${questionId} not found in criteria ${criteriaId}`);
+        return []; // Nếu không tìm thấy câu hỏi, trả về mảng rỗng
+      }
+
+      const answer = question.answerUsers.find(a => a.value === answerValue);
+      if (!answer) {
+        console.log(`Answer with id ${answerValue} not found in question ${questionId}`);
+        return []; // Nếu không tìm thấy câu trả lời, trả về mảng rỗng
+      }
+
+      // Trả về danh sách fromUsers (hoặc trường `name` nếu tồn tại)
+      const users = answer.fromUsers.map(user => {
+        if (!user.avt)
+          user.avt = '/images/avatar.png'
+        return user
+      });
+      console.log("User avtatars found:", users);
+
+      return users;
+    },
+    async fetchAssessByUserId(userId) {
+      try {
+        const response = await axios.get(this.apiUrl + `/api/assess/list-assess-of-user/${userId}`);
+        this.listAssess = response.data.data;
+        console.log("DANH SACH CAC DANH GIA CHO NGUOI DA CHON::", this.listAssess);
+
+        // Convert data -> assessDetail
+        if (this.listAssess.length == 0) return
+        let users = []
+        try {
+          const response = await axios.get(this.apiUrl + "/api/users");
+          users = response.data.data;
+        } catch (error) {
+          console.error("Error fetching criterias:", error);
+        }
+
+        this.listAssess.forEach(assess => {
+          this.result.toUserId = assess.toUserId;
+
+          assess.assessDetails.forEach(assessDetail => {
+            // Kiểm tra `criteria` có tồn tại trước khi truy cập `id`
+            if (assessDetail.criteria && assessDetail.criteria.id != null) {
+              let resultCriteria = this.result.criterias.find(criteria => criteria.id === assessDetail.criteria.id);
+
+              // Nếu không tồn tại, thêm tiêu chí mới vào
+              if (!resultCriteria) {
+                resultCriteria = {
+                  id: assessDetail.criteria.id,
+                  title: assessDetail.criteria.title,
+                  questions: [],
+                  answerUser: null // Khởi tạo answerUser là null
+                };
+                this.result.criterias.push(resultCriteria);
+              }
+
+              // Tìm xem câu hỏi đã tồn tại trong bất kỳ tiêu chí nào của `criterias` không
+              const questionExists = this.result.criterias.some(criteria =>
+                criteria.questions.some(question => question.id === assessDetail.question?.id)
+              );
+
+              // Nếu câu hỏi chưa tồn tại và assessDetail.question hợp lệ, thêm vào
+              if (!questionExists && assessDetail.question && assessDetail.question.id != null) {
+                const resultQuestion = {
+                  id: assessDetail.question.id,
+                  title: assessDetail.question.title,
+                  answers: [...assessDetail.question.answers],
+                  answerUsers: [] // Khởi tạo answerUsers là mảng rỗng
+                };
+                resultCriteria.questions.push(resultQuestion);
+              }
+
+              // Tìm người dùng
+              const user = users.find(u => u.id === assess.userId);
+
+              if (assessDetail.question && assessDetail.value != null && user) {
+                const resultQuestion = resultCriteria.questions.find(question => question.id === assessDetail.question.id);
+
+                if (resultQuestion) {
+                  const answer = assessDetail.question.answers.find(ans => ans.value === assessDetail.value);
+
+                  if (answer) {
+                    const existingAnswerUser = resultQuestion.answerUsers.find(u => u.id === answer.id);
+
+                    if (existingAnswerUser) {
+                      // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
+                      existingAnswerUser.fromUsers.push({
+                        avt: user.file_info_id,
+                        description: assessDetail.description
+                      });
+                    } else {
+                      // Nếu chưa tồn tại, thêm user mới vào answerUsers
+                      resultQuestion.answerUsers.push({
+                        id: answer.id,
+                        label: answer.title,
+                        value: answer.value,
+                        fromUsers: [{
+                          avt: user.file_info_id,
+                          description: assessDetail.description
+                        }]
+                      });
+                    }
+                  }
+                }
+              } else if (user) {
+                // Nếu không có question, bổ sung answerUser là fromUser
+                resultCriteria.answerUser = {
+                  avt: user.file_info_id,
+                  description: assessDetail.description
+                };
+              }
+            }
+          });
+        });
+
+        console.log("RESULT::", this.result)
+      } catch (error) {
+        console.error("Error fetching assess by userid:", error);
+      }
+    },
+    async loadCriteria() {
+      try {
+        const res = await AssessService.fetchListData();
+        if (res.code === 1010) {
+          this.listCriteria = res.data;
+        }
+
+        // bỏ tiêu chí Đánh giá của quản lí ra khỏi list
+        this.listCriteria = this.listCriteria.filter(
+          (c) => c.title !== "Đánh giá của quản lý" && c.id !== 6 && c.id !== 7
+        );
+      } catch (error) {
+        console.error("Error fetching criteria list:", error);
+      }
     },
     async fetchCriterias() {
       try {
-        const response = await axios.get(this.apiUrl + "/criterias");
+        const response = await axios.get(this.apiUrl + "/api/criterias");
         this.criterias = response.data;
       } catch (error) {
         console.error("Error fetching criterias:", error);
-      }
-    },
-    loadData() {
-      try {
-        const key = this.userInfo.id + "assessTo" + this.selectedPerson.id;
-        const dataString = localStorage.getItem(key);
-        console.log(key);
-        console.log("Dữ liệu từ localStorage:", dataString); // Kiểm tra giá trị lấy từ localStorage
-
-        if (dataString) {
-          this.perfValues = JSON.parse(dataString); // Phân tích dữ liệu JSON
-        } else {
-          this.loadedData = "Không có dữ liệu nào trong localStorage.";
-        }
-      } catch (error) {
-        console.error("Lỗi khi lấy dữ liệu từ localStorage:", error);
       }
     },
   },
@@ -231,7 +309,7 @@ export default {
   -webkit-overflow-scrolling: touch;
 }
 
-.table > table {
+.table>table {
   width: 100%;
   margin-bottom: 1rem;
   border-collapse: collapse;
@@ -284,7 +362,7 @@ export default {
   padding-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 
@@ -354,7 +432,6 @@ export default {
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  margin-right: 5px;
 }
 
 .answer-label {
@@ -484,6 +561,7 @@ export default {
 
 /* Đối với màn hình trung bình (máy tính bảng) */
 @media (min-width: 576px) and (max-width: 768px) {
+
   .left-menu,
   .right-menu {
     height: auto;

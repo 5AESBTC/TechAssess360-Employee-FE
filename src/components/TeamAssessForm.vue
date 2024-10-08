@@ -195,7 +195,10 @@ export default {
   methods: {
     async loadCriteria() {
       try {
-        this.listCriteria = await AssessService.fetchListData();
+        const res = await AssessService.fetchListData();
+        if (res.code === 1010) {
+          this.listCriteria = res.data;
+        }
         if (
           this.userInfo.userRoles.some(
             (usRole) => usRole.role.name === "MANAGER"
@@ -291,12 +294,12 @@ export default {
           }
         }
         if (
-            !isCriteriaToCheck &&
-            (!detail.description || detail.description.trim() === "")
-          ) {
-            allDescriptionsFilled = false;
-            detail.hasError = true;
-          }
+          !isCriteriaToCheck &&
+          (!detail.description || detail.description.trim() === "")
+        ) {
+          allDescriptionsFilled = false;
+          detail.hasError = true;
+        }
       });
 
       if (!allValuesSelected) {

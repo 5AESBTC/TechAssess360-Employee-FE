@@ -43,11 +43,6 @@
                   ><span>{{ item.text }}</span></a
                 >
               </li>
-              <!-- <li v-if="userInfo?.position === 'Manager'">
-                <router-link to="/team-manage" class="user-info d-flex align-items-center">
-                  Quản lý thành viên
-                </router-link>
-              </li> -->
               <li v-if="userInfo">
                 <div class="user-info d-flex align-items-center">
                   <img :src="profileImage" alt="Avatar" class="avatar" />
@@ -122,9 +117,11 @@ export default {
     },
   },
   mounted() {
-    if (localStorage.getItem("accessToken")) {
-      this.userInfo = JSON.parse(localStorage.getItem("user"));
-    }
+    window.onload = () => {
+      if (localStorage.getItem("accessToken")) {
+        this.userInfo = JSON.parse(localStorage.getItem("user"));
+      }
+    };
     this.startCountdown();
     this.checkActivePath();
     window.addEventListener("resize", this.handleResize);

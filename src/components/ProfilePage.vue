@@ -1,156 +1,240 @@
 <template>
-<div class="background-container">
-  <div class="container">
-    <div class="profile">
-      <img :src="profileImage" alt="Profile Picture" />
-    </div>
-    <div class="info">
-      <div class="name">
-        <h1>{{ name }}</h1>
-        <span class="title">{{ title }}</span>
+  <div class="background-container">
+    <div class="container">
+      <div class="profile" v-if="profile">
+        <img
+          :src="avatarUrl"
+          alt="Profile Picture"
+        />
+        <i
+          class="fas fa-pencil-alt edit-icon edit-btn"
+          @click="editProfile"
+          title="EditProfile "
+        ></i>
       </div>
-      <div class="details">
-        <div class="detail">
-          <label>Day Of Birth:</label>
-          <span>{{ DOB }}</span>
+      <div class="info" v-if="profile">
+        <div class="name">
+          <h1>{{ profile.name }}</h1>
         </div>
-        <div class="detail">
-          <label>Department:</label>
-          <span>{{ department }}</span>
-        </div>
-        <div class="detail">
-          <label>Project:</label>
-          <span>{{ project }}</span>
-        </div>
-        <div class="detail">
-          <label>Manager:</label>
-          <span>{{ manager }}</span>
-        </div>
-        <div class="detail">
-          <label>Workday:</label>
-          <span>{{ workday }}</span>
-        </div>
-        <div class="detail">
-          <label>Rank:</label>
-          <span>{{ rank }}</span>
-        </div>
-      </div>
-    </div>
-    <div class="friends-list">
-      <div class="friends-header">
-        <h1>Members <span class="badge">{{ friends.length }}</span></h1>
-        <div class="search-bar">
-            <input type="text" placeholder="Search Friends" v-model="searchTerm" />
-        </div>
-        </div>
-      <div class="friends-row">
-        <div
-          class="friend-card"
-          v-for="friend in filteredFriends"
-          :key="friend.name"
-        >
-          <img :src="friend.avatar" alt="Avatar" />
-          <h2>{{ friend.name }}</h2>
-          <p>{{ friend.position }}</p>
+        <div class="details">
+          <div class="detail">
+            <label>Day Of Birth:</label>
+            <span>{{ profile.dob }}</span>
+          </div>
+          <div class="detail">
+            <label>Email:</label>
+            <span>{{ profile.email }}</span>
+          </div>
+          <div class="detail">
+            <label>Project:</label>
+            <span>{{ profile.project }}</span>
+          </div>
+          <div class="detail">
+            <label>Workday:</label>
+            <span>{{ calculateWorkTime() }}</span>
+          </div>
+          <div class="detail">
+            <label>Rank:</label>
+            <span>{{ profile.rank.position.name }}</span>
+          </div>
         </div>
       </div>
+      <div class="friends-list">
+        <div class="friends-header">
+          <div class="search-bar">
+            <input
+              type="text"
+              placeholder="Search Friends"
+              v-model="searchTerm"
+            />
+          </div>
+        </div>
+        <div class="friends-row">
+          <div
+            class="friend-card"
+            v-for="(mate, index) in filteredTeamMates"
+            :key="index"
+          >
+            <img :src="mate.avatar || defaultAvatar" alt="Avatar" />
+            <h2>{{ mate.name }}</h2>
+            <p>{{ mate.position }}</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Edit Profile -->
+      <div v-if="isEditing" class="modal">
+        <div class="modal-content">
+          <span class="close" @click="isEditing = false">&times;</span>
+          <h2>Edit Profile</h2>
+          <input type="file" @change="onFileChange" accept="image/*" />
+          <button @click="uploadAvatar">Save</button>
+        </div>
+      </div>
     </div>
-  </div>
   </div>
 </template>
 
 <script>
+import UserService from "@/services/UserService";
+import { toast } from "vue3-toastify";
+
 export default {
-  name: 'ProfilePage',
+  name: "ProfilePage",
   data() {
     return {
-      profileImage: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-      name: "Trịnh Thái Quân",
-      title: "DEV",
-      DOB: "29-09-2003",
-      gender:  "male",
-      department: "phát triễn",
-      project: "StudyArt",
-      manager:"Trịnh Thái Quân",
-      workday:"1002",
-      rank:" midle II",
+      userInfo: null,
+      profile: null,
+      teamMates: [],
       searchTerm: "",
-      friends: [
-        {
-          name: "Trịnh Thái Quân",
-          position: "Manager",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-        {
-          name: "Trịnh Thái Quân",
-          position: "Dev",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-        {
-         name: "Trịnh Thái Quân",
-          position: "Dev",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-        {
-          name: "Trịnh Thái Quân",
-          position: "Dev",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-        {
-          name: "Trịnh Thái Quân",
-          position: "Dev",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-        {
-          name: "Trịnh Thái Quân",
-          position: "Dev",
-          avatar: "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-        },
-      ],
+      isEditing: false,
+      defaultAvatar:
+        "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
+      avatarUpdate: null,
     };
   },
+  mounted() {
+    window.onload = () => {
+      if (localStorage.getItem("accessToken")) {
+        this.userInfo = JSON.parse(localStorage.getItem("user"));
+      } else {
+        this.$router.push({ path: "/login" });
+      }
+    };
+  },
+  watch: {
+    userInfo: {
+      handler() {
+        if (this.userInfo) {
+          this.profile = this.userInfo;
+          this.fetchTeamMates();
+        }
+      },
+      immediate: true,
+    },
+  },
   computed: {
-    filteredFriends() {
-      return this.friends.filter((friend) =>
-        friend.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+    avatarUrl() {
+      return this.avatarUpdate ? URL.createObjectURL(this.avatarUpdate) : this.defaultAvatar;
+    },
+    filteredTeamMates() {
+      return this.teamMates.filter(
+        (mate) =>
+          mate.project === this.userInfo.project &&
+          mate.name.toLowerCase().includes(this.searchTerm.toLowerCase())
       );
+    },
+  },
+  methods: {
+    editProfile() {
+      this.isEditing = true; // Mở modal
+    },
+    onFileChange(event) {
+      const file = event.target.files[0];
+      if (file && file.type.startsWith("image/")) {
+        this.avatarUpdate = file; // Gán file ảnh mới vào avatarUpdate
+      } else {
+        alert("Please select a valid image file.");
+      }
+    },
+    async uploadAvatar() {
+      if (!this.avatarUpdate) {
+        alert("No avatar selected!");
+        return;
+      }
+
+      // Tạo formData chỉ để cập nhật avatar
+      // eslint-disable-next-line no-debugger
+      debugger
+      const formData = new FormData();
+      formData.append("avatar", this.avatarUpdate);
+      
+      try {
+        // Gửi request API upload avatar
+        const response = await UserService.uploadAvatar(
+          this.userInfo.id,
+          formData
+        );
+        if (response.status === 200) {
+          toast.success("Cập nhật avatar thành công!");
+
+          // Cập nhật avatar trong userInfo để hiển thị mới nhất
+          this.userInfo.avatar = response.data.avatarUrl;
+
+          // Xóa file đã chọn sau khi upload
+          this.avatarUpdate = null;
+        }
+      } catch (error) {
+        console.error("Error uploading avatar:", error);
+        toast.error("Không thể cập nhật avatar. Vui lòng thử lai.");
+      }
+    },
+
+    async fetchTeamMates() {
+      if (!this.userInfo || !this.userInfo.id) {
+        console.error("User information is not available.");
+        return;
+      }
+
+      try {
+        const response = await UserService.fetchTeamsByUserId(this.userInfo.id);
+        if (response.data) {
+          this.teamMates = response.data;
+        } else {
+          console.error("No team mates data found.");
+        }
+      } catch (error) {
+        console.error("Error fetching team mates data:", error);
+      }
+    },
+    calculateWorkTime() {
+      const userInfo = localStorage.getItem("userInfo");
+      if (userInfo) {
+        const diffDate = UserService.calculateWorkingTime(userInfo.createdAt);
+        return `${diffDate.years} năm, ${diffDate.months} tháng, ${diffDate.days} ngày`;
+      }
+      return "Chưa xác định";
     },
   },
 };
 </script>
 
 <style scoped>
-
+.edit-btn:hover {
+  cursor: pointer;
+}
 .background-container {
   background-color: #4e7fcf;
-  min-height: 100vh; 
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  padding-top: 100px; 
-  
+  padding-top: 100px;
 }
 .container {
   display: flex;
   flex-direction: column;
+  justify-content: center;
   align-items: center;
-  padding: 20px;
-  gap: 30px;
-  max-width: 1200px; 
+  max-width: auto;
+  min-height: 80vh;
   margin: 0 auto;
-  background-color: #fff; 
-  border-radius: 15px; 
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
-  margin-top:80px;
-  margin-bottom:80px;
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .profile {
-  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 20px;
 }
 
 .profile img {
-  width: 100%;
+  border: 1px solid #ddd;
+  width: 150px;
+  height: 150px;
   border-radius: 50%;
 }
 
@@ -178,16 +262,30 @@ export default {
 }
 
 .details {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-top: 15px;
+  display: grid;
+  grid-template-columns: 150px 1fr; /* Cột đầu rộng 150px, cột sau tự động dãn */
+  gap: 10px 20px; /* Khoảng cách giữa các dòng và các cột */
+  align-items: center; /* Căn giữa các phần tử trong hàng */
 }
 
 .detail {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
+  display: contents; /* Để giữ các phần tử label và span nằm trên cùng một grid */
+}
+
+label {
+  font-weight: bold;
+  text-align: left; /* Căn chữ của label sát trái */
+  position: relative; /* Sử dụng relative để căn dấu : */
+  padding-right: 10px; /* Khoảng cách giữa chữ và dấu : */
+}
+
+label::after {
+  content: ":"; /* Thêm dấu : */
+  position: absolute;
+  right: 0; /* Căn dấu : sát phải */
+}
+span {
+  text-align: left; /* Căn trái cho giá trị */
 }
 
 .detail label {
@@ -204,7 +302,6 @@ export default {
   background-color: #f9f9f9;
   border-radius: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  margin-bottom:-20px;
 }
 
 .friends-header {
@@ -231,7 +328,7 @@ h1 {
 .search-bar {
   max-width: 350px;
   width: 100%;
-  margin-right:30px;
+  margin-right: 30px;
 }
 
 .search-bar input {
@@ -249,19 +346,24 @@ h1 {
 }
 
 .friend-card {
-  background-color: #fff;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
   width: 200px;
+  background-color: #f9f9f9;
+  border-radius: 15px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-bottom: 20px;
 }
 
 .friend-card img {
-  width: 90px;
-  height: 90px;
+  width: 50px;
+  height: 50px;
   border-radius: 50%;
   margin-bottom: 10px;
+  border: 1px solid #ccc;
 }
 
 .friend-card h2 {
@@ -272,5 +374,68 @@ h1 {
 .friend-card p {
   font-size: 16px;
   color: #666;
+}
+.modal {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(5px);
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  width: 400px;
+  max-width: 90%;
+  position: relative;
+}
+
+.close {
+  color: #f00;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #d00;
+}
+
+h2 {
+  margin-top: 0;
+  color: #333;
+}
+
+input[type="file"] {
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  background-color: #4e7fcf;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover {
+  background-color: #3c6abf;
 }
 </style>

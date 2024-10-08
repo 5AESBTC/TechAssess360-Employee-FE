@@ -1,13 +1,8 @@
 <template>
-  <div
-    class="container-fluid row justify-content-md-center align-items-center"
-    v-if="profile"
-  >
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div
-        class="profile mb-3 d-flex align-items-center justify-content-around"
-      >
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
           <img :src="profile.avatar" alt="avatar" />
         </div>
@@ -35,11 +30,7 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th
-                @click="sortBy('name')"
-                class="text-start"
-                style="cursor: pointer"
-              >
+              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">
                 Tên
               </th>
               <th>Vị Trí</th>
@@ -53,41 +44,21 @@
               <td>{{ mate.rank.position.name }}</td>
               <td class="d-flex justify-content-center">
                 <div class="d-flex">
-                  <button
-                    v-if="mate.isSubmitted"
-                    class="btn btn-sm btn-success btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2" :disabled="true">
                     Đã đánh giá
                   </button>
-                  <button
-                    v-else-if="mate.isProcessing"
-                    class="btn btn-sm btn-warning btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
                     Đang đánh giá
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-primary btn-custom me-2"
-                    @click="selectPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="checkRole('MANAGER')" class="ms-3">
-                  <button
-                    v-if="mate.isViewing"
-                    class="btn btn-sm btn-warning btn-custom"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
                     Đang xem
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-info btn-custom"
-                    @click="viewPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
                     Xem chi tiết
                   </button>
                 </div>
@@ -100,12 +71,8 @@
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component
-        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
-        :selectedPerson="selectedPerson"
-        :userInfo="userInfo"
-        @updateSelectedPerson="handleUpdateSelectedPerson"
-      />
+      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
+        :userInfo="userInfo" @updateSelectedPerson="handleUpdateSelectedPerson" />
     </div>
   </div>
 </template>
@@ -115,6 +82,8 @@ import TeamAssessDetailsForm from "./TeamAssessDetailsForm.vue";
 import TeamAssessForm from "./TeamAssessForm.vue";
 import UserService from "@/services/UserService.js";
 import { toast } from "vue3-toastify";
+import AssessService from "@/services/AssessService";
+
 export default {
   name: "TeamMatesAssess",
   components: {
@@ -131,10 +100,17 @@ export default {
       sortOrder: "asc",
       isViewing: false,
       listScore: [],
+      isAssess: false,
+      assessDetails: []
     };
   },
   mounted() {
-    this.initializeUserInfo();
+    const user = localStorage.getItem("user");
+    if (user) {
+      this.userInfo = JSON.parse(user);
+    }
+    this.fetchTeamMates();
+    this.isAssessed()
   },
   computed: {
     sortedTeamMates() {
@@ -159,9 +135,20 @@ export default {
       const user = localStorage.getItem("user");
       if (user) {
         this.userInfo = JSON.parse(user);
-        this.fetchTeamMates();
       }
     },
+    async isAssessed() {
+      try {
+        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
+        if (res && res.code === 1010) {
+          this.assessDetails = res.data;
+          console.log("ASSESS DETAILS:: ", this.assessDetails);
+        }
+      } catch (error) {
+        console.error("Error fetching assessments:: ", error);
+      }
+    },
+
     async fetchTeamMates() {
       try {
         const loggedInUserId = this.userInfo.id;
@@ -179,6 +166,10 @@ export default {
           person.isProcessing = false;
           person.isSubmitted = false;
         });
+
+        await this.isAssessed();
+        this.updateAssessmentStatus();
+
         // Set the first team member as selected (if any)
         if (this.teamMates.length > 0) {
           this.teamMates[0].isProcessing = true;
@@ -190,6 +181,18 @@ export default {
       } catch (error) {
         console.error("Error fetching team members:", error);
       }
+    },
+    updateAssessmentStatus() {
+      this.teamMates.forEach((mate) => {
+        const assessment = this.assessDetails.find(
+          (detail) => detail.toUserId === mate.id && detail.userId === this.userInfo.id
+
+        );
+
+        if (assessment) {
+          mate.isSubmitted = true; // Đánh giá đã được thực hiện
+        }
+      });
     },
     viewPerson(person) {
       if (this.selectedPerson && this.selectedPerson.isProcessing) {
@@ -306,7 +309,7 @@ export default {
   width: 130px;
 }
 
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -415,7 +418,7 @@ tbody > tr > td {
   margin-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 </style>

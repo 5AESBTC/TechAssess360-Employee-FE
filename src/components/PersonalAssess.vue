@@ -22,6 +22,9 @@
           </div>
         </div>
       </div>
+      <h4 v-if="isAssess" class="text-success">
+        Bạn đã đánh giá cho bản thân
+      </h4>
     </div>
 
     <!-- Right Menu -->
@@ -50,7 +53,7 @@
         <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteria.id" class="section mb-4">
           <div class="d-flex justify-content-between">
             <label class="d-flex gap-2">
-              <h5>{{ criteriaIndex + 1 }}. {{ criteria.title }}</h5>
+              <h5>{{ criteria.title }}</h5>
               <span class="text-danger fw-bold">*</span>
             </label>
             <div v-if="criteria.point" class="multi">
@@ -103,16 +106,30 @@
                   </label>
                 </div>
               </div>
+              <!-- <div
+                v-if="isAssess && personalAssessDetails?.find(detail => detail.criteria.id === criteria.id)?.description">
+                <div class="description">
+                  <textarea class="form-control" :class="{
+                    'error-textarea': perfValues.assessDetails?.find(
+                      (detail) => detail.criteriaId === criteria.id
+                    )?.hasError,
+                  }" rows="5" :value="personalAssessDetails.find(
+                    (detail) => detail.criteria.id === criteria.id
+                  )?.description || ''" readonly></textarea>
+                </div>
+              </div> -->
               <div v-if="isAssess" class="description">
                 <textarea class="form-control" :class="{
                   'error-textarea': perfValues.assessDetails?.find(
                     (detail) => detail.criteriaId === criteria.id
                   )?.hasError,
                 }" rows="5" :value="personalAssessDetails?.find(
-                    (detail) => detail.criteria.id === criteria.id
-                  )?.description || ''
-                    " readonly></textarea>
+                  (detail) => detail.criteria.id === criteria.id
+                )?.description || ''
+                  " readonly>
+                </textarea>
               </div>
+
               <div v-else class="description">
                 <textarea v-if="isShowDescription(criteria.id, question.id)" class="form-control" :class="{
                   'error-textarea': perfValues.assessDetails.find(
@@ -121,11 +138,11 @@
                       detail.questionId === question.id
                   ).hasError,
                 }" rows="3" placeholder="Nhận xét thêm" v-model="perfValues.assessDetails.find(
-                    (detail) =>
-                      detail.criteriaId === criteria.id &&
-                      detail.questionId === question.id
-                  ).description
-                    " :ref="'description_' + criteria.id + '_' + question.id"></textarea>
+                  (detail) =>
+                    detail.criteriaId === criteria.id &&
+                    detail.questionId === question.id
+                ).description
+                  " :ref="'description_' + criteria.id + '_' + question.id"></textarea>
               </div>
             </div>
           </div>
@@ -136,18 +153,18 @@
                   (detail) => detail.criteriaId === criteria.id
                 )?.hasError,
               }" rows="5" :value="perfValues.assessDetails?.find(
-                  (detail) => detail.criteriaId === criteria.id
-                )?.description || ''
-                  " @input="updateDescription(criteria.id, $event.target.value)"
+                (detail) => detail.criteriaId === criteria.id
+              )?.description || ''
+                " @input="updateDescription(criteria.id, $event.target.value)"
                 placeholder="Nhập nội dung..."></textarea>
               <textarea v-else class="form-control" :class="{
                 'error-textarea': perfValues.assessDetails?.find(
                   (detail) => detail.criteriaId === criteria.id
                 )?.hasError,
               }" rows="5" :value="personalAssessDetails?.find(
-                  (detail) => detail.criteria.id === criteria.id
-                )?.description || ''
-                  " readonly></textarea>
+                (detail) => detail.criteria.id === criteria.id
+              )?.description || ''
+                " readonly></textarea>
             </div>
           </div>
         </div>
@@ -225,7 +242,7 @@ export default {
       if (res && res.code === 1010) {
         this.isAssess = true;
         this.personalAssessDetails = res.data.assessDetails;
-        console.log(this.personalAssessDetails);
+        console.log("PERSONAL ASSESS DETAILS:: ", this.personalAssessDetails);
       }
       if (res && res.code === 404) {
         this.isAssess = false;

@@ -91,6 +91,7 @@
                   <span class="text-danger"> *</span>
                 </label>
               </div>
+
               <div
                 v-if="question.answers"
                 class="options d-flex justify-content-around my-3"
@@ -101,19 +102,7 @@
                   class="form-check"
                 >
                   <input
-                    v-if="isViewing == true"
-                    type="radio"
-                    class="form-check-input"
-                    :value="answer.value"
-                    :checked="
-                      personalAssess.assessDetails.find(
-                        (detail) => detail.questionId === question.id
-                      )?.value === answer.value
-                    "
-                    disabled
-                  />
-                  <input
-                    v-else
+                    v-if="!isAssess"
                     type="radio"
                     :id="
                       'performanceOption' +
@@ -134,6 +123,21 @@
                     "
                     :value="answer.value"
                   />
+
+                  <input
+                    v-else
+                    type="radio"
+                    :id="
+                      'performanceOption' +
+                      criteriaIndex +
+                      questionIndex +
+                      answerIndex
+                    "
+                    :name="'performance' + criteriaIndex + questionIndex"
+                    class="form-check-input"
+                    :checked="checkValue(question.id, answer.value)"
+                    :disabled="!checkValue(question.id, answer.value)"
+                  />
                   <label
                     :for="
                       'performanceOption' +
@@ -142,11 +146,29 @@
                       answerIndex
                     "
                     class="form-check-label"
-                    >{{ answer.title }}
+                  >
+                    {{ answer.title }}
                   </label>
                 </div>
               </div>
-              <div class="description">
+              <div v-if="isAssess" class="description">
+                <textarea
+                  class="form-control"
+                  :class="{
+                    'error-textarea': perfValues.assessDetails?.find(
+                      (detail) => detail.criteriaId === criteria.id
+                    )?.hasError,
+                  }"
+                  rows="5"
+                  :value="
+                    personalAssessDetails?.find(
+                      (detail) => detail.criteria.id === criteria.id
+                    )?.description || ''
+                  "
+                  readonly
+                ></textarea>
+              </div>
+              <div v-else class="description">
                 <textarea
                   v-if="isShowDescription(criteria.id, question.id)"
                   class="form-control"
@@ -174,6 +196,7 @@
           <div v-else>
             <div class="form-group">
               <textarea
+                v-if="!isAssess"
                 class="form-control"
                 :class="{
                   'error-textarea': perfValues.assessDetails?.find(
@@ -189,13 +212,31 @@
                 @input="updateDescription(criteria.id, $event.target.value)"
                 placeholder="Nhập nội dung..."
               ></textarea>
+              <textarea
+                v-else
+                class="form-control"
+                :class="{
+                  'error-textarea': perfValues.assessDetails?.find(
+                    (detail) => detail.criteriaId === criteria.id
+                  )?.hasError,
+                }"
+                rows="5"
+                :value="
+                  personalAssessDetails?.find(
+                    (detail) => detail.criteria.id === criteria.id
+                  )?.description || ''
+                "
+                readonly
+              ></textarea>
             </div>
           </div>
         </div>
 
         <!-- Submit Button -->
         <div class="d-flex justify-content-end">
-          <button class="btn btn-primary" type="submit">Gửi Đánh Giá</button>
+          <button class="btn btn-primary" type="submit" :disabled="isAssess">
+            Gửi Đánh Giá
+          </button>
         </div>
       </form>
     </div>
@@ -211,11 +252,11 @@ export default {
   data() {
     return {
       isViewing: false,
-      personalAssess: [],
-      listValue: [],
+      personalAssessDetails: [],
       isAssess: false,
       userInfo: null,
       listCriteria: [],
+      selectedAnswers: {},
       perfValues: {},
       listScore: [],
       sortKey: "name",
@@ -223,12 +264,13 @@ export default {
       totalPoint: 0,
     };
   },
-  mounted() {
+  created() {
     const user = localStorage.getItem("user");
     if (user) {
       this.userInfo = JSON.parse(user);
     }
     this.loadCriteria();
+    this.loadMyAssess();
   },
   watch: {
     // xem description của từng ô nếu thay đổi thì cập nhật lên localStorage
@@ -240,6 +282,36 @@ export default {
     },
   },
   methods: {
+    checkValue(questionId, answerValue) {
+      const detail = this.personalAssessDetails.find(
+        (detail) => detail.question.id === questionId
+      );
+      if (detail) {
+        return detail.value === answerValue;
+      }
+      return false;
+    },
+    checkDesctiption(questionId) {
+      const detail = this.personalAssessDetails.find(
+        (detail) => detail.question.id === questionId
+      );
+      if (detail) {
+        return detail.description;
+      }
+      return false;
+    },
+    async loadMyAssess() {
+      const res = await AssessService.fetchMyAssess(this.userInfo.id);
+      if (res && res.code === 1010) {
+        this.isAssess = true;
+        this.personalAssessDetails = res.data.assessDetails;
+        console.log(this.personalAssessDetails);
+      }
+      if (res && res.code === 404) {
+        this.isAssess = false;
+        console.error("Bạn chưa đánh giá cho bản thân");
+      }
+    },
     getAssessDetailValue(questionId) {
       const detail = this.personalAssess.assessDetails.find(
         (detail) => detail.questionId === questionId
@@ -254,7 +326,6 @@ export default {
         detail.value = value;
       }
     },
-
     initPerfValues() {
       this.perfValues.assessDetails = [];
 
@@ -302,7 +373,6 @@ export default {
         const res = await AssessService.fetchListData();
         if (res.code === 1010) {
           this.listCriteria = res.data;
-          console.log(this.listCriteria);
         }
 
         // bỏ tiêu chí Đánh giá của quản lí ra khỏi list
@@ -395,6 +465,7 @@ export default {
         toast.success("Đánh giá thành công!", {
           autoClose: 2000,
         });
+        localStorage.removeItem("assessDetails");
         setTimeout(() => {
           window.location.reload();
         }, 2000);

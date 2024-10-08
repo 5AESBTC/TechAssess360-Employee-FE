@@ -1,23 +1,20 @@
 import axios from "axios";
 import { InfoUrl } from "../until/InfoUrl";
 const AssessService = {
-    // isSubmitForm: async (userId, toUserId) => {
-    //     try {
-    //         const accessToken = localStorage.getItem("accessToken");
-    //         const response = await axios.get(`${InfoUrl}/api/assess/is-submit-form`, {
-    //             params: {
-    //                 userId: userId,
-    //                 toUserId: toUserId
-    //             },
-    //             headers: {
-    //                 Authorization: `Bearer ${accessToken}`,
-    //             },
-    //         });
-    //         return response.data;
-    //     } catch (error) {
-    //         console.error("Error fetching isSubmitForm:", error);
-    //     }
-    // },
+    fetchMyAssess: async (userId) => {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            const response = await axios.get(`${InfoUrl}/api/assess/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            localStorage.setItem("myAssess", JSON.stringify(response.data.data));
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching myAssess:", error);
+        }
+    },
     submitForm: async (userId, toUserId, totalPoint, data) => {
         try {
             const accessToken = localStorage.getItem("accessToken");

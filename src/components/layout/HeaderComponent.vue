@@ -116,12 +116,8 @@ export default {
       return items;
     },
   },
-  created() {
-   if (localStorage.getItem("accessToken")) {
-     this.userInfo = JSON.parse(localStorage.getItem("user"));
-   } 
-  },
   mounted() {
+    this.checkUserLoggedIn();
     this.startCountdown();
     this.checkActivePath();
     window.addEventListener("resize", this.handleResize);
@@ -131,15 +127,27 @@ export default {
     });
   },
   methods: {
+    checkUserLoggedIn() {
+      const accessToken = localStorage.getItem("accessToken");
+      if (accessToken) {
+        this.userInfo = JSON.parse(localStorage.getItem("user"));
+      }
+    },
     handleLogout() {
       console.log("handleLogout was called");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
+      localStorage.removeItem("myAssess");
+      localStorage.removeItem("assessDetails");
+      localStorage.removeItem("listData");
       this.userInfo = null;
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,
       });
-      this.$router.push("/");
+      this.$router.push("/login").then(() => {
+        // Reload để đảm bảo header cập nhật lại
+        window.location.reload();
+      });
     },
     checkActivePath(path = window.location.pathname) {
       const items = this.filteredMenuItems;

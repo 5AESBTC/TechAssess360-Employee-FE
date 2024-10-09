@@ -401,7 +401,7 @@ export default {
         await AssessService.submitForm(
           this.userInfo.id,
           this.userInfo.id,
-          this.totalPoints,
+          this.totalPoint,
           this.perfValues
         );
         toast.success("Đánh giá thành công!", {

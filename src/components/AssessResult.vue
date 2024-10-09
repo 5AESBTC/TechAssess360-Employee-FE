@@ -25,15 +25,12 @@
                 </div>
               </div>
             </div>
-            <div
-              class="total-score d-flex flex-column font-weight-bold justify-content-end gap-2"
-            >
-              <label class="form-label"
-                >Điểm đánh giá: <span class="score">{{ totalPoint ? totalPoint + "điểm" : "?" }}</span></label
-              >
-              <label class="form-label"
-                >Đề xuất nâng bậc: <span class="score">{{ levelUp ? levelUp : "?" }}</span></label
-              >
+            <div class="total-score d-flex flex-column font-weight-bold justify-content-end gap-2">
+              <label class="form-label">Điểm đánh giá: <span class="score">{{ totalPoint ? totalPoint + "điểm" : "?"
+                  }}</span></label>
+              <label class="form-label">Đề xuất nâng bậc: <span class="score">{{ levelUp ? levelUp : "?"
+                  }}</span></label>
+
             </div>
           </div>
 
@@ -48,11 +45,35 @@
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="(row, index) in tableData" :key="index">
-                  <!-- <td>{{ row.factor }}</td>
-                  <td class="text-start">{{ row.criteria }}</td>
-                  <td>{{ row.selfAssessment }}</td>
-                  <td>{{ row.totalScore.toFixed(2) }}</td> -->
+                <tr>
+                  <td>30</td>
+                  <td class="text-start">Hiệu suất công việc</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>20</td>
+                  <td class="text-start">Kỹ năng và kiến thức</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>20</td>
+                  <td class="text-start">Tinh thần làm việc và thái độ</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>15</td>
+                  <td class="text-start">Đóng góp và sáng kiến</td>
+                  <td></td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>15</td>
+                  <td class="text-start">Quy định và chính sách</td>
+                  <td></td>
+                  <td>{{ averageTeamScore }}</td>
                 </tr>
               </tbody>
             </table>
@@ -92,6 +113,11 @@ export default {
       tableData: [],
       userInfo: null,
       totalPoint: 0,
+      levelUp: "",
+      note: "",
+      selfAssessment: [],
+      teamsAssessment: [],
+      managerAssessment: [],
       levelUp : "",
       note: "",
       averageTeamPoint: 0,
@@ -108,10 +134,41 @@ export default {
   },
   mounted() {
     this.fetchListAssessOfUser();
+
+  },
+  computed: {
+    averageTeamScore() {
+      if (!this.tableData.data) return 0;
+
+      const teamAssessments = this.teamsAssessment.filter(assess => assess.assessmentType === "TEAM");
+      console.log(teamAssessments);
+
+      if (teamAssessments.length === 0) return 0;
+
+      let totalScore = 0;
+      let totalWeight = 0;
+
+
+      return totalWeight ? (totalScore / totalWeight).toFixed(2) : 0;
+    }
   },
   methods: {
     async fetchListAssessOfUser() {
       try {
+        const res = await AssessService.fetchAssessOfUser(this.userInfo.id);
+        if (res.code === 1010) {
+          this.tableData = res;
+          console.log(this.tableData);
+        }
+        this.selfAssessment = this.tableData.data.filter(assess => assess.assessmentType === "SELF")
+        console.log("SELF ASSESSMENT::", this.selfAssessment);
+
+        this.managerAssessment = this.tableData.data.filter(assess => assess.assessmentType === "MANAGER")
+        console.log("MANAGER ASSESSMENT::", this.managerAssessment);
+
+        this.teamsAssessment = this.tableData.data.filter(assess => assess.assessmentType === "TEAM")
+        console.log("TEAM ASSESSMENT::", this.teamsAssessment);
+
         const res = await AssessService.fetchAssessSelf(this.userInfo.id);
         if(res.code === 1010) {
           this.tableData = res;
@@ -190,10 +247,12 @@ export default {
 
   max-width: 800px;
 }
+
 .left-content {
   display: flex;
   flex-direction: column;
 }
+
 .profile-score-container {
   display: flex;
   flex-direction: column;
@@ -207,7 +266,7 @@ export default {
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
+  width: 80%;
   max-width: auto;
   margin: 0 auto;
   display: flex;
@@ -223,7 +282,6 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 20px;
 }
 
 .avatar img {
@@ -323,10 +381,12 @@ export default {
     text-align: center;
   }
 }
+
 .right-content canvas {
   width: 100% !important;
   max-width: 400px;
 }
+
 .note-display {
   color: white;
   font-weight: bold;
@@ -338,6 +398,7 @@ export default {
   text-decoration: underline;
   font-size: 19px;
 }
+
 .note-section {
   height: 100px;
   background-color: #4e7fcf;

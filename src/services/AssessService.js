@@ -47,7 +47,7 @@ const AssessService = {
             console.error("Error fetching listData:", error);
         }
     },
-    fetchAssessSelf: async (userId) => {
+    fetchAssessOfUser: async (userId) => {
         try {
             const accessToken = localStorage.getItem("accessToken");
             const response = await axios.get(`${InfoUrl}/api/assess/list-assess-of-user/${userId}`, {
@@ -55,10 +55,24 @@ const AssessService = {
                     Authorization: `Bearer ${accessToken}`,
                 },
             });
-            localStorage.setItem("my-assess", JSON.stringify(response.data.data));
+            localStorage.setItem("assess-of-user" + userId, JSON.stringify(response.data.data));
             return response.data;
         } catch (error) {
             console.error("Error fetching assessSelf:", error);
+        }
+    },
+    fetchAssessByUser: async (userId) => {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            const response = await axios.get(`${InfoUrl}/api/assess/list-assess-by-user/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            localStorage.setItem("assess-by-user" + userId, JSON.stringify(response.data.data));
+            return response.data;
+        } catch (error) {
+            console.error("Error fetching assessByUser:", error);
         }
     }
 }

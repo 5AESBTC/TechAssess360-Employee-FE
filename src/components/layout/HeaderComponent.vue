@@ -11,9 +11,7 @@
   <header class="site-navbar">
     <div class="container-fluid">
       <div class="row align-items-center">
-        <div
-          class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar"
-        >
+        <div class="col-6 d-flex align-items-center flex-wrap justify-content-between left-navbar">
           <h1 class="mb-0 site-logo">
             <img src="../../assets/Techzenlogo.png" alt="logo" />
           </h1>
@@ -27,21 +25,10 @@
           </div>
         </div>
         <div class="col-6 d-none d-xl-block right-navbar">
-          <nav
-            class="site-navigation position-relative text-right"
-            role="navigation"
-          >
-            <ul
-              class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto"
-            >
-              <li
-                v-for="(item, index) in filteredMenuItems"
-                :key="index"
-                :class="{ active: activeIndex === index }"
-              >
-                <a :href="item.link"
-                  ><span>{{ item.text }}</span></a
-                >
+          <nav class="site-navigation position-relative text-right" role="navigation">
+            <ul class="site-menu js-clone-nav d-flex gap-2 justify-content-end mr-auto">
+              <li v-for="(item, index) in filteredMenuItems" :key="index" :class="{ active: activeIndex === index }">
+                <a :href="item.link"><span>{{ item.text }}</span></a>
               </li>
               <li v-if="userInfo">
                 <div class="user-info d-flex align-items-center">
@@ -65,10 +52,7 @@
                 </div>
               </li>
               <li v-else>
-                <router-link
-                  to="/login"
-                  class="user-info d-flex align-items-center"
-                >
+                <router-link to="/login" class="user-info d-flex align-items-center">
                   <button type="button" class="btn btn-primary ml-2">
                     Đăng nhập
                   </button>
@@ -79,9 +63,7 @@
         </div>
       </div>
       <div class="d-xl-none ml-md-0 mr-auto py-3">
-        <a href="#" class="site-menu-toggle js-menu-toggle text-white"
-          ><span class="icon-menu h3"></span
-        ></a>
+        <a href="#" class="site-menu-toggle js-menu-toggle text-white"><span class="icon-menu h3"></span></a>
       </div>
     </div>
   </header>
@@ -137,9 +119,9 @@ export default {
       console.log("handleLogout was called");
       localStorage.removeItem("accessToken");
       localStorage.removeItem("user");
-      localStorage.removeItem("myAssess");
       localStorage.removeItem("assessDetails");
       localStorage.removeItem("listData");
+      localStorage.removeItem("assess-by-user" + this.userInfo.id);
       this.userInfo = null;
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,

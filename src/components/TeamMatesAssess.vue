@@ -1,13 +1,8 @@
 <template>
-  <div
-    class="container-fluid row justify-content-md-center align-items-center"
-    v-if="profile"
-  >
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div
-        class="profile mb-3 d-flex align-items-center justify-content-around"
-      >
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
           <img :src="profile.avatar" alt="avatar" />
         </div>
@@ -35,11 +30,7 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th
-                @click="sortBy('name')"
-                class="text-start"
-                style="cursor: pointer"
-              >
+              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">
                 Tên
               </th>
               <th>Vị Trí</th>
@@ -53,41 +44,21 @@
               <td>{{ mate.rank.position.name }}</td>
               <td class="d-flex justify-content-center">
                 <div class="d-flex">
-                  <button
-                    v-if="mate.isSubmitted"
-                    class="btn btn-sm btn-success btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2" :disabled="true">
                     Đã đánh giá
                   </button>
-                  <button
-                    v-else-if="mate.isProcessing"
-                    class="btn btn-sm btn-warning btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
                     Đang đánh giá
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-primary btn-custom me-2"
-                    @click="selectPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="checkRole('MANAGER')" class="ms-3">
-                  <button
-                    v-if="mate.isViewing"
-                    class="btn btn-sm btn-warning btn-custom"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
                     Đang xem
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-info btn-custom"
-                    @click="viewPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
                     Xem chi tiết
                   </button>
                 </div>
@@ -100,12 +71,8 @@
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component
-        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
-        :selectedPerson="selectedPerson"
-        :userInfo="userInfo"
-        @updateSelectedPerson="handleUpdateSelectedPerson"
-      />
+      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
+        :userInfo="userInfo" @updateSelectedPerson="handleUpdateSelectedPerson" />
     </div>
   </div>
 </template>
@@ -115,6 +82,8 @@ import TeamAssessDetailsForm from "./TeamAssessDetailsForm.vue";
 import TeamAssessForm from "./TeamAssessForm.vue";
 import UserService from "@/services/UserService.js";
 import { toast } from "vue3-toastify";
+import AssessService from "@/services/AssessService";
+
 export default {
   name: "TeamMatesAssess",
   components: {
@@ -131,10 +100,17 @@ export default {
       sortOrder: "asc",
       isViewing: false,
       listScore: [],
+      isAssess: false,
+      assessDetails: []
     };
   },
   mounted() {
-    this.initializeUserInfo();
+    const user = localStorage.getItem("user");
+    if (user) {
+      this.userInfo = JSON.parse(user);
+    }
+    this.fetchTeamMates();
+    this.fetchAssessByUser();
   },
   computed: {
     sortedTeamMates() {
@@ -159,13 +135,22 @@ export default {
       const user = localStorage.getItem("user");
       if (user) {
         this.userInfo = JSON.parse(user);
-        this.fetchTeamMates();
       }
     },
+    async fetchAssessByUser() {
+      try {
+        const res = await AssessService.fetchAssessByUser(this.userInfo.id);
+        if (res && res.code === 1010) {
+          this.updateAssessmentStatus();
+        }
+      } catch (error) {
+        console.error("Error fetching assessments:: ", error);
+      }
+    },
+
     async fetchTeamMates() {
       try {
         const loggedInUserId = this.userInfo.id;
-
         const res = await UserService.fetchTeamsByUserId(loggedInUserId);
 
         if (!res) {
@@ -173,22 +158,42 @@ export default {
           return;
         }
 
-        this.teamMates = res.data;
-        this.teamMates.forEach((person) => {
-          person.isViewing = false;
-          person.isProcessing = false;
-          person.isSubmitted = false;
-        });
-        // Set the first team member as selected (if any)
-        if (this.teamMates.length > 0) {
-          this.teamMates[0].isProcessing = true;
-          this.selectedPerson = this.teamMates[0];
-          this.profile = this.teamMates[0];
-        }
+        // Bảo toàn các trạng thái cũ
+        this.teamMates = res.data.map((person) => {
+          const existingMember = this.teamMates.find(mate => mate.id === person.id);
 
-        console.log(this.teamMates);
+          return {
+            ...person,
+            isViewing: existingMember ? existingMember.isViewing : false,
+            isProcessing: existingMember ? existingMember.isProcessing : false,
+            isSubmitted: existingMember ? existingMember.isSubmitted : false,
+          };
+        });
+
+        // Gọi hàm fetchAssessByUser
+        await this.fetchAssessByUser();
+
+        // Chọn thành viên đầu tiên chưa nộp
+        const firstUnsubmitted = this.teamMates.find(person => !person.isSubmitted);
+
+        if (firstUnsubmitted) {
+          firstUnsubmitted.isProcessing = true;
+          this.selectedPerson = firstUnsubmitted;
+          this.profile = firstUnsubmitted;
+        }
       } catch (error) {
         console.error("Error fetching team members:", error);
+      }
+    },
+    updateAssessmentStatus() {
+      this.assessBy = JSON.parse(localStorage.getItem("assess-by-user" + this.userInfo.id));
+      if (this.assessBy) {
+        this.teamMates.forEach((person) => {
+          const assess = this.assessBy.find((assess) => assess.toUserId === person.id);
+          if (assess) {
+            person.isSubmitted = true;
+          }
+        });
       }
     },
     viewPerson(person) {
@@ -306,7 +311,7 @@ export default {
   width: 130px;
 }
 
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -415,7 +420,7 @@ tbody > tr > td {
   margin-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 </style>

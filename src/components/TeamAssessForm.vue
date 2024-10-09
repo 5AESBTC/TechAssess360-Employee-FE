@@ -214,7 +214,7 @@ export default {
         assessDetail.description = value;
       }
     },
-    submitForm() {
+    async submitForm() {
       let allDescriptionsFilled = true;
       let allValuesSelected = true;
       let firstErrorRef = null;
@@ -273,16 +273,19 @@ export default {
       console.log(this.perfValues);
       // Thử gửi dữ liệu
       try {
-        AssessService.submitForm(
+        const res = await AssessService.submitForm(
           this.userInfo.id,
           this.selectedPerson.id,
           this.totalPoints,
           this.perfValues
         );
-        localStorage.removeItem("assessDetails");
-        toast.success("Đánh giá thành công!", {
-          autoClose: 2000,
-        });
+        if (res.code === 201) {
+          toast.success("Đánh giá thành công!", {
+            autoClose: 2000,
+          });
+        } else {
+          toast.error("Đánh giá thất bại. Vui lòng quay lại sau!");
+        }
         setTimeout(() => {
           window.location.reload();
         }, 2000);

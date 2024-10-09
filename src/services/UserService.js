@@ -36,6 +36,14 @@ const UserService = {
       console.log(error);
     }
   },
+  fetchUserById: async (userId) => {
+    try {
+      const response = await axios.get(`${InfoUrl}/api/users/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.log(error);
+    }
+  }
 };
 
 export default UserService;

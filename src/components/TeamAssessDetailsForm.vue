@@ -36,13 +36,16 @@
                 <div style="position: relative; margin-right: 10px" class="avatar-container"
                   v-for="(user, userIndex) in isShowAvatar(criteria.id, question.id, answer.value)" :key="userIndex">
                   <img :src="user.avt" alt="Avatar" class="avatar-img" style="cursor: pointer" />
-                  <span v-if="user.description" class="tooltiptext" style="
+                  <span class="tooltiptext" style="
                         background-color: rgba(0, 0, 0, 0.7);
                         color: #fff;
                         padding: 5px;
                         border-radius: 5px;
                       ">
-                    {{ user.description }}
+                    <div class="d-flex flex-column text-start">
+                      {{ user.name }} :
+                      <span>{{ user.description ? user.description : "" }}</span>
+                    </div>
                   </span>
                 </div>
               </div>
@@ -57,6 +60,7 @@
 
 <script>
 import AssessService from "@/services/AssessService";
+import UserService from "@/services/UserService";
 import axios from "axios";
 export default {
   name: "TeamAssessDetailsForm",
@@ -121,91 +125,96 @@ export default {
 
         // Convert data -> assessDetail
         if (this.listAssess.length == 0) return
-        let users = []
-        try {
-          const response = await axios.get(this.apiUrl + "/api/users");
-          users = response.data.data;
-        } catch (error) {
-          console.error("Error fetching criterias:", error);
-        }
+        // let users = []
+        // try {
+        //   const response = await axios.get(this.apiUrl + "/api/users");
+        //   users = response.data.data;
+        // } catch (error) {
+        //   console.error("Error fetching criterias:", error);
+        // }
 
-        this.listAssess.forEach(assess => {
+        this.listAssess.forEach(async assess => {
           this.result.toUserId = assess.toUserId;
+          const res = await UserService.fetchUserById(assess.userId);
+          if (res.code === 1010) {
+            const user = res.data;
+            assess.assessDetails.forEach(assessDetail => {
+              // Kiểm tra `criteria` có tồn tại trước khi truy cập `id`
+              if (assessDetail.criteria && assessDetail.criteria.id != null) {
+                let resultCriteria = this.result.criterias.find(criteria => criteria.id === assessDetail.criteria.id);
 
-          assess.assessDetails.forEach(assessDetail => {
-            // Kiểm tra `criteria` có tồn tại trước khi truy cập `id`
-            if (assessDetail.criteria && assessDetail.criteria.id != null) {
-              let resultCriteria = this.result.criterias.find(criteria => criteria.id === assessDetail.criteria.id);
+                // Nếu không tồn tại, thêm tiêu chí mới vào
+                if (!resultCriteria) {
+                  resultCriteria = {
+                    id: assessDetail.criteria.id,
+                    title: assessDetail.criteria.title,
+                    questions: [],
+                    answerUser: null // Khởi tạo answerUser là null
+                  };
+                  this.result.criterias.push(resultCriteria);
+                }
 
-              // Nếu không tồn tại, thêm tiêu chí mới vào
-              if (!resultCriteria) {
-                resultCriteria = {
-                  id: assessDetail.criteria.id,
-                  title: assessDetail.criteria.title,
-                  questions: [],
-                  answerUser: null // Khởi tạo answerUser là null
-                };
-                this.result.criterias.push(resultCriteria);
-              }
+                // Tìm xem câu hỏi đã tồn tại trong bất kỳ tiêu chí nào của `criterias` không
+                const questionExists = this.result.criterias.some(criteria =>
+                  criteria.questions.some(question => question.id === assessDetail.question?.id)
+                );
 
-              // Tìm xem câu hỏi đã tồn tại trong bất kỳ tiêu chí nào của `criterias` không
-              const questionExists = this.result.criterias.some(criteria =>
-                criteria.questions.some(question => question.id === assessDetail.question?.id)
-              );
+                // Nếu câu hỏi chưa tồn tại và assessDetail.question hợp lệ, thêm vào
+                if (!questionExists && assessDetail.question && assessDetail.question.id != null) {
+                  const resultQuestion = {
+                    id: assessDetail.question.id,
+                    title: assessDetail.question.title,
+                    answers: [...assessDetail.question.answers],
+                    answerUsers: [] // Khởi tạo answerUsers là mảng rỗng
+                  };
+                  resultCriteria.questions.push(resultQuestion);
+                }
 
-              // Nếu câu hỏi chưa tồn tại và assessDetail.question hợp lệ, thêm vào
-              if (!questionExists && assessDetail.question && assessDetail.question.id != null) {
-                const resultQuestion = {
-                  id: assessDetail.question.id,
-                  title: assessDetail.question.title,
-                  answers: [...assessDetail.question.answers],
-                  answerUsers: [] // Khởi tạo answerUsers là mảng rỗng
-                };
-                resultCriteria.questions.push(resultQuestion);
-              }
+                // Tìm người dùng
 
-              // Tìm người dùng
-              const user = users.find(u => u.id === assess.userId);
 
-              if (assessDetail.question && assessDetail.value != null && user) {
-                const resultQuestion = resultCriteria.questions.find(question => question.id === assessDetail.question.id);
+                if (assessDetail.question && assessDetail.value != null && user) {
+                  const resultQuestion = resultCriteria.questions.find(question => question.id === assessDetail.question.id);
 
-                if (resultQuestion) {
-                  const answer = assessDetail.question.answers.find(ans => ans.value === assessDetail.value);
+                  if (resultQuestion) {
+                    const answer = assessDetail.question.answers.find(ans => ans.value === assessDetail.value);
 
-                  if (answer) {
-                    const existingAnswerUser = resultQuestion.answerUsers.find(u => u.id === answer.id);
+                    if (answer) {
+                      const existingAnswerUser = resultQuestion.answerUsers.find(u => u.id === answer.id);
 
-                    if (existingAnswerUser) {
-                      // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
-                      existingAnswerUser.fromUsers.push({
-                        avt: user.file_info_id,
-                        description: assessDetail.description
-                      });
-                    } else {
-                      // Nếu chưa tồn tại, thêm user mới vào answerUsers
-                      resultQuestion.answerUsers.push({
-                        id: answer.id,
-                        label: answer.title,
-                        value: answer.value,
-                        fromUsers: [{
-                          avt: user.file_info_id,
+                      if (existingAnswerUser) {
+                        // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
+                        existingAnswerUser.fromUsers.push({
+                          avt: user.fileInfoResDto?.url ? user.fileInfoResDTO.url : '/images/avatar.png',
                           description: assessDetail.description
-                        }]
-                      });
+                        });
+                      } else {
+                        // Nếu chưa tồn tại, thêm user mới vào answerUsers
+                        resultQuestion.answerUsers.push({
+                          id: answer.id,
+                          label: answer.title,
+                          value: answer.value,
+                          fromUsers: [{
+                            avt: user.fileInfoResDto?.url ? user.fileInfoResDTO.url : '/images/avatar.png',
+                            name: user.name,
+                            description: assessDetail.description
+                          }]
+                        });
+                      }
                     }
                   }
+                } else if (user) {
+                  // Nếu không có question, bổ sung answerUser là fromUser
+                  resultCriteria.answerUser = {
+                    avt: user.fileInfoResDto?.url ? user.fileInfoResDTO.url : '/images/avatar.png',
+                    description: assessDetail.description
+                  };
                 }
-              } else if (user) {
-                // Nếu không có question, bổ sung answerUser là fromUser
-                resultCriteria.answerUser = {
-                  avt: user.file_info_id,
-                  description: assessDetail.description
-                };
               }
-            }
-          });
+            })
+          }
         });
+
 
         console.log("RESULT::", this.result)
       } catch (error) {

@@ -110,7 +110,7 @@ export default {
       this.userInfo = JSON.parse(user);
     }
     this.fetchTeamMates();
-    this.isAssessed()
+    this.fetchAssessByUser();
   },
   computed: {
     sortedTeamMates() {
@@ -137,12 +137,11 @@ export default {
         this.userInfo = JSON.parse(user);
       }
     },
-    async isAssessed() {
+    async fetchAssessByUser() {
       try {
-        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
+        const res = await AssessService.fetchAssessByUser(this.userInfo.id);
         if (res && res.code === 1010) {
-          this.assessDetails = res.data;
-          console.log("ASSESS DETAILS:: ", this.assessDetails);
+          this.updateAssessmentStatus();
         }
       } catch (error) {
         console.error("Error fetching assessments:: ", error);
@@ -152,7 +151,6 @@ export default {
     async fetchTeamMates() {
       try {
         const loggedInUserId = this.userInfo.id;
-
         const res = await UserService.fetchTeamsByUserId(loggedInUserId);
 
         if (!res) {
@@ -160,39 +158,43 @@ export default {
           return;
         }
 
-        this.teamMates = res.data;
-        this.teamMates.forEach((person) => {
-          person.isViewing = false;
-          person.isProcessing = false;
-          person.isSubmitted = false;
+        // Bảo toàn các trạng thái cũ
+        this.teamMates = res.data.map((person) => {
+          const existingMember = this.teamMates.find(mate => mate.id === person.id);
+
+          return {
+            ...person,
+            isViewing: existingMember ? existingMember.isViewing : false,
+            isProcessing: existingMember ? existingMember.isProcessing : false,
+            isSubmitted: existingMember ? existingMember.isSubmitted : false,
+          };
         });
 
-        await this.isAssessed();
-        this.updateAssessmentStatus();
+        // Gọi hàm fetchAssessByUser
+        await this.fetchAssessByUser();
 
-        // Set the first team member as selected (if any)
-        if (this.teamMates.length > 0) {
-          this.teamMates[0].isProcessing = true;
-          this.selectedPerson = this.teamMates[0];
-          this.profile = this.teamMates[0];
+        // Chọn thành viên đầu tiên chưa nộp
+        const firstUnsubmitted = this.teamMates.find(person => !person.isSubmitted);
+
+        if (firstUnsubmitted) {
+          firstUnsubmitted.isProcessing = true;
+          this.selectedPerson = firstUnsubmitted;
+          this.profile = firstUnsubmitted;
         }
-
-        console.log(this.teamMates);
       } catch (error) {
         console.error("Error fetching team members:", error);
       }
     },
     updateAssessmentStatus() {
-      this.teamMates.forEach((mate) => {
-        const assessment = this.assessDetails.find(
-          (detail) => detail.toUserId === mate.id && detail.userId === this.userInfo.id
-
-        );
-
-        if (assessment) {
-          mate.isSubmitted = true; // Đánh giá đã được thực hiện
-        }
-      });
+      this.assessBy = JSON.parse(localStorage.getItem("assess-by-user" + this.userInfo.id));
+      if (this.assessBy) {
+        this.teamMates.forEach((person) => {
+          const assess = this.assessBy.find((assess) => assess.toUserId === person.id);
+          if (assess) {
+            person.isSubmitted = true;
+          }
+        });
+      }
     },
     viewPerson(person) {
       if (this.selectedPerson && this.selectedPerson.isProcessing) {

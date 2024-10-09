@@ -218,6 +218,11 @@ export default {
       deep: true,
     },
   },
+  mounted() {
+    window.onload = () => {
+      localStorage.removeItem("assessDetails");
+    };
+  },
   methods: {
     checkValue(questionId, answerValue) {
       const detail = this.personalAssessDetails.find(
@@ -320,7 +325,7 @@ export default {
         console.error("Error fetching criteria list:", error);
       }
     },
-    submitForm() {
+    async submitForm() {
       if (!localStorage.getItem("assessDetails")) {
         toast.error("Vui lòng điền đánh giá của bạn!", { autoClose: 3000 });
         return;
@@ -393,7 +398,7 @@ export default {
       console.log(this.perfValues);
       // Thử gửi dữ liệu
       try {
-        AssessService.submitForm(
+        await AssessService.submitForm(
           this.userInfo.id,
           this.userInfo.id,
           this.totalPoints,
@@ -402,7 +407,6 @@ export default {
         toast.success("Đánh giá thành công!", {
           autoClose: 2000,
         });
-        localStorage.removeItem("assessDetails");
         setTimeout(() => {
           window.location.reload();
         }, 2000);

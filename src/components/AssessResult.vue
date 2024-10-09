@@ -149,7 +149,7 @@ export default {
   methods: {
     async fetchListAssessOfUser() {
       try {
-        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
+        const res = await AssessService.fetchAssessOfUser(this.userInfo.id);
         if (res.code === 1010) {
           this.tableData = res;
           console.log(this.tableData);

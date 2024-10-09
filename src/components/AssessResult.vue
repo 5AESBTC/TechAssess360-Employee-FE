@@ -1,13 +1,9 @@
 <template>
   <div class="background-container">
     <div class="container-fluid p-5">
-      <div
-        class="rows content justify-content-md-center align-items-center gap-3"
-      >
+      <div class="rows content justify-content-md-center align-items-center gap-3">
         <div class="col-md-5 left-content">
-          <div
-            class="profile-score-container d-flex justify-content-between align-items-start mb-5"
-          >
+          <div class="profile-score-container d-flex justify-content-between align-items-start mb-5">
             <div class="profile d-flex align-items-center">
               <div class="avatar">
                 <img :src="this.defaultAvatar" alt="avatar" />
@@ -118,8 +114,6 @@ export default {
       selfAssessment: [],
       teamsAssessment: [],
       managerAssessment: [],
-      levelUp : "",
-      note: "",
       averageTeamPoint: 0,
       managerPoint: 0,
       defaultAvatar:
@@ -155,22 +149,22 @@ export default {
   methods: {
     async fetchListAssessOfUser() {
       try {
-        const res = await AssessService.fetchAssessOfUser(this.userInfo.id);
-        if (res.code === 1010) {
-          this.tableData = res;
-          console.log(this.tableData);
-        }
-        this.selfAssessment = this.tableData.data.filter(assess => assess.assessmentType === "SELF")
-        console.log("SELF ASSESSMENT::", this.selfAssessment);
+        // const res = await AssessService.fetchAssessOfUser(this.userInfo.id);
+        // if (res.code === 1010) {
+        //   this.tableData = res;
+        //   console.log(this.tableData);
+        // }
+        // this.selfAssessment = this.tableData.data.filter(assess => assess.assessmentType === "SELF")
+        // console.log("SELF ASSESSMENT::", this.selfAssessment);
 
-        this.managerAssessment = this.tableData.data.filter(assess => assess.assessmentType === "MANAGER")
-        console.log("MANAGER ASSESSMENT::", this.managerAssessment);
+        // this.managerAssessment = this.tableData.data.filter(assess => assess.assessmentType === "MANAGER")
+        // console.log("MANAGER ASSESSMENT::", this.managerAssessment);
 
-        this.teamsAssessment = this.tableData.data.filter(assess => assess.assessmentType === "TEAM")
-        console.log("TEAM ASSESSMENT::", this.teamsAssessment);
+        // this.teamsAssessment = this.tableData.data.filter(assess => assess.assessmentType === "TEAM")
+        // console.log("TEAM ASSESSMENT::", this.teamsAssessment);
 
         const res = await AssessService.fetchAssessSelf(this.userInfo.id);
-        if(res.code === 1010) {
+        if (res.code === 1010) {
           this.tableData = res;
           console.log(this.tableData);
         }
@@ -226,6 +220,7 @@ export default {
   border-radius: 10px;
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
 }
+
 .right-content {
   flex: 1;
 
@@ -391,9 +386,11 @@ export default {
   color: white;
   font-weight: bold;
 }
+
 .note-container {
   width: 100%;
 }
+
 .note-container label {
   text-decoration: underline;
   font-size: 19px;

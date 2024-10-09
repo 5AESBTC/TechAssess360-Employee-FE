@@ -123,7 +123,7 @@
                   'error-textarea': perfValues.assessDetails?.find(
                     (detail) => detail.criteriaId === criteria.id
                   )?.hasError,
-                }" rows="5" :value="personalAssessDetails?.find(
+                }" rows="2" :value="personalAssessDetails?.find(
                   (detail) => detail.criteria.id === criteria.id
                 )?.description || ''
                   " readonly>

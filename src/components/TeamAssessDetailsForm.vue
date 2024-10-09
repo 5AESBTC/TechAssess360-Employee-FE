@@ -36,14 +36,9 @@
                 <div style="position: relative; margin-right: 10px" class="avatar-container"
                   v-for="(user, userIndex) in isShowAvatar(criteria.id, question.id, answer.value)" :key="userIndex">
                   <img :src="user.avt" alt="Avatar" class="avatar-img" style="cursor: pointer" />
-                  <span class="tooltiptext" style="
-                        background-color: rgba(0, 0, 0, 0.7);
-                        color: #fff;
-                        padding: 5px;
-                        border-radius: 5px;
-                      ">
+                  <span class="tooltiptext">
                     <div class="d-flex flex-column text-start">
-                      {{ user.name }} :
+                      <span class="fw-bold text-center">{{ user.name }}</span>
                       <span>{{ user.description ? user.description : "" }}</span>
                     </div>
                   </span>
@@ -125,13 +120,6 @@ export default {
 
         // Convert data -> assessDetail
         if (this.listAssess.length == 0) return
-        // let users = []
-        // try {
-        //   const response = await axios.get(this.apiUrl + "/api/users");
-        //   users = response.data.data;
-        // } catch (error) {
-        //   console.error("Error fetching criterias:", error);
-        // }
 
         this.listAssess.forEach(async assess => {
           this.result.toUserId = assess.toUserId;
@@ -186,6 +174,7 @@ export default {
                         // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
                         existingAnswerUser.fromUsers.push({
                           avt: user.fileInfoResDto?.url ? user.fileInfoResDTO.url : '/images/avatar.png',
+                          name: user.name,
                           description: assessDetail.description
                         });
                       } else {
@@ -416,20 +405,21 @@ export default {
 /* Tooltip text */
 .tooltiptext {
   visibility: hidden;
-  width: 120px;
-  background-color: #e2e2e2;
+  width: 180px;
+  background-color: #ffffff;
   color: black;
   text-align: center;
   border-radius: 5px;
-  padding: 5px 0;
+  padding: 10px;
   position: absolute;
   z-index: 1;
   top: 125%;
   /* Vị trí tooltip */
   left: 50%;
-  margin-left: -60px;
+  margin-left: -85px;
   opacity: 0;
   transition: opacity 0.3s;
+  border: 1px solid dodgerblue;
 }
 
 .avatar-container:hover .tooltiptext {

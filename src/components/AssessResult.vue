@@ -1,9 +1,13 @@
 <template>
   <div class="background-container">
     <div class="container-fluid p-5">
-      <div class="rows content justify-content-md-center align-items-center gap-3">
+      <div
+        class="rows content justify-content-md-center align-items-center gap-3"
+      >
         <div class="col-md-5 left-content">
-          <div class="profile-score-container d-flex justify-content-between align-items-start mb-5">
+          <div
+            class="profile-score-container d-flex justify-content-between align-items-start mb-5"
+          >
             <div class="profile d-flex align-items-center">
               <div class="avatar">
                 <img :src="this.defaultAvatar" alt="avatar" />
@@ -26,6 +30,7 @@
                   }}</span></label>
               <label class="form-label">Đề xuất nâng bậc: <span class="score">{{ levelUp ? levelUp : "?"
                   }}</span></label>
+
             </div>
           </div>
 
@@ -113,11 +118,12 @@ export default {
       selfAssessment: [],
       teamsAssessment: [],
       managerAssessment: [],
+      levelUp : "",
+      note: "",
       averageTeamPoint: 0,
       managerPoint: 0,
       defaultAvatar:
         "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
-
     };
   },
   created() {
@@ -163,6 +169,11 @@ export default {
         this.teamsAssessment = this.tableData.data.filter(assess => assess.assessmentType === "TEAM")
         console.log("TEAM ASSESSMENT::", this.teamsAssessment);
 
+        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
+        if(res.code === 1010) {
+          this.tableData = res;
+          console.log(this.tableData);
+        }
       } catch (error) {
         console.error("Error fetching assess list:", error);
       }
@@ -215,7 +226,6 @@ export default {
   border-radius: 10px;
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
 }
-
 .right-content {
   flex: 1;
 
@@ -381,11 +391,9 @@ export default {
   color: white;
   font-weight: bold;
 }
-
 .note-container {
   width: 100%;
 }
-
 .note-container label {
   text-decoration: underline;
   font-size: 19px;

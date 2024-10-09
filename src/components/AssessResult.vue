@@ -1,34 +1,41 @@
 <template>
   <div class="background-container">
     <div class="container-fluid p-5">
-      <div class="rows content justify-content-md-center align-items-center gap-3">
+      <div
+        class="rows content justify-content-md-center align-items-center gap-3"
+      >
         <div class="col-md-5 left-content">
-          <div class="profile-score-container d-flex justify-content-between align-items-start mb-5">
-  <div class="profile d-flex align-items-center">
-    <div class="avatar">
-      <img :src="profile.avatarUrl" alt="avatar" />
-    </div>
-    <div class="info ms-3 text-start">
-      <h3 class="mb-2">{{ profile.name }}</h3>
-      <div class="line">
-        <strong>Bộ Phận:</strong> {{ profile.department }}
-      </div>
-      <div class="line">
-        <strong>Vị trí:</strong> {{ profile.position }}
-      </div>
-      <div class="line">
-        <strong>Bậc hiện tại:</strong> {{ profile.level }}
-      </div>
-      <div class="line">
-        <strong>Dự án hiện tại:</strong> {{ profile.project }}
-      </div>
-    </div>
-  </div>
-  <div class="total-score d-flex flex-column font-weight-bold justify-content-end gap-2">
-    <label class="form-label">Điểm đánh giá: <span class="score">58 điểm</span></label>
-    <label class="form-label">Xếp hạng: <span class="score">B</span></label>
-  </div>
-</div>
+          <div
+            class="profile-score-container d-flex justify-content-between align-items-start mb-5"
+          >
+            <div class="profile d-flex align-items-center">
+              <div class="avatar">
+                <img :src="this.defaultAvatar" alt="avatar" />
+              </div>
+              <div class="info ms-3 text-start">
+                <h3 class="mb-2">{{ userInfo.name }}</h3>
+                <div class="line">
+                  <strong>Vị trí:</strong> {{ userInfo.rank.position.name }}
+                </div>
+                <div class="line">
+                  <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
+                </div>
+                <div class="line">
+                  <strong>Dự án hiện tại:</strong> {{ userInfo.project }}
+                </div>
+              </div>
+            </div>
+            <div
+              class="total-score d-flex flex-column font-weight-bold justify-content-end gap-2"
+            >
+              <label class="form-label"
+                >Điểm đánh giá: <span class="score">{{ totalPoint ? totalPoint + "điểm" : "?" }}</span></label
+              >
+              <label class="form-label"
+                >Đề xuất nâng bậc: <span class="score">{{ levelUp ? levelUp : "?" }}</span></label
+              >
+            </div>
+          </div>
 
           <div class="table-wrapper">
             <table class="styled-table">
@@ -42,24 +49,23 @@
               </thead>
               <tbody>
                 <tr v-for="(row, index) in tableData" :key="index">
-                  <td>{{ row.factor }}</td>
+                  <!-- <td>{{ row.factor }}</td>
                   <td class="text-start">{{ row.criteria }}</td>
                   <td>{{ row.selfAssessment }}</td>
-                  <td>{{ row.totalScore.toFixed(2) }}</td>
+                  <td>{{ row.totalScore.toFixed(2) }}</td> -->
                 </tr>
               </tbody>
             </table>
-           
           </div>
         </div>
         <div class="col-md-7 right-content">
           <RadarChart :data="radarData" />
           <div class="note-container text-start">
-          <label for="note" ><strong>Đánh giá của quản lý:</strong></label >
-          <div v-if="showNote" class="note-section d-flex gap-3">
-            <p id="note" class="note-display">{{ note }}</p>
+            <label for="note"><strong>Đánh giá của quản lý:</strong></label>
+            <div v-if="showNote" class="note-section d-flex gap-3">
+              <p id="note" class="note-display">{{ note ? note : "Không có nhận xét thêm" }}</p>
+            </div>
           </div>
-        </div>
         </div>
       </div>
     </div>
@@ -68,8 +74,7 @@
 
 <script>
 import RadarChart from "./RadarChart.vue";
-import axios from 'axios'; 
-
+import AssessService from "@/services/AssessService";
 export default {
   name: "AssessResult",
   components: {
@@ -77,62 +82,46 @@ export default {
   },
   data() {
     return {
-      
       showNote: true,
-      profile: {},
       radarData: {
         labels: [],
         selfAssessment: [],
         manager: [],
         team: [],
       },
-      note: "",
       tableData: [],
       userInfo: null,
+      totalPoint: 0,
+      levelUp : "",
+      note: "",
+      averageTeamPoint: 0,
+      managerPoint: 0,
+      defaultAvatar:
+        "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
     };
   },
+  created() {
+    const user = localStorage.getItem("user");
+    if (user) {
+      this.userInfo = JSON.parse(user);
+    }
+  },
   mounted() {
-    this.fetchData();
+    this.fetchListAssessOfUser();
   },
   methods: {
-    
-    async fetchData() {
+    async fetchListAssessOfUser() {
       try {
-        const response = await axios.get('/api/assessment', {
-          params: {
-            userId: this.userInfo.id,
-            year: this.selectedYear,
-            quarter: this.selectedQuarter
-          }
-        });
-        
-        const data = response.data;
-        
-        // Cập nhật dữ liệu từ API
-        this.profile = data.profile;
-        this.radarData = data.radarData;
-        this.note = data.note;
-        this.tableData = data.tableData;
-        this.years = data.availableYears;
-        
+        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
+        if(res.code === 1010) {
+          this.tableData = res;
+          console.log(this.tableData);
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
-        // Xử lý lỗi ở đây (ví dụ: hiển thị thông báo lỗi)
+        console.error("Error fetching assess list:", error);
       }
     },
-    async updateAssessment() {
-      // Gọi khi người dùng thay đổi năm hoặc quý
-      await this.fetchData();
-    }
   },
-  watch: {
-    selectedYear() {
-      this.updateAssessment();
-    },
-    selectedQuarter() {
-      this.updateAssessment();
-    }
-  }
 };
 </script>
 
@@ -181,27 +170,25 @@ export default {
   box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
 }
 .right-content {
+  flex: 1;
 
-flex: 1;
+  display: flex;
 
-display: flex;
+  flex-direction: column;
 
-flex-direction: column;
+  justify-content: center;
 
-justify-content: center;
+  align-items: center;
 
-align-items: center;
+  background-color: #fff;
 
-background-color: #fff;
+  border-radius: 10px;
 
-border-radius: 10px;
+  box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
 
-box-shadow: 0 10px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
 
-width: 100%;
-
-max-width: 800px;
-
+  max-width: 800px;
 }
 .left-content {
   display: flex;
@@ -216,16 +203,15 @@ max-width: 800px;
 }
 
 .profile {
-
   background-color: #f9f9f9;
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 100%; 
-  max-width: 300px;  
-  margin: 0 auto;  
+  width: 100%;
+  max-width: auto;
+  margin: 0 auto;
   display: flex;
-  align-items: center;  
+  align-items: center;
 }
 
 .avatar {
@@ -265,7 +251,7 @@ max-width: 800px;
 
 .total-score {
   padding: 10px;
-  background-color: #f9f9f9; 
+  background-color: #f9f9f9;
   border-radius: 8px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   width: 100%;
@@ -273,15 +259,15 @@ max-width: 800px;
 }
 
 .form-label {
-  display: flex; 
-  justify-content: flex-start; 
-  font-weight: bold; 
+  display: flex;
+  justify-content: flex-start;
+  font-weight: bold;
   color: #007bff;
   font-size: 19px;
 }
 
 .score {
-  font-size: 18px; 
+  font-size: 18px;
   color: red;
   margin-left: 10px;
 }
@@ -324,7 +310,8 @@ max-width: 800px;
     flex-direction: column;
   }
 
-  .profile, .total-score {
+  .profile,
+  .total-score {
     width: 100%;
   }
 
@@ -340,14 +327,14 @@ max-width: 800px;
   width: 100% !important;
   max-width: 400px;
 }
-.note-display{
+.note-display {
   color: white;
-  font-weight:bold;
+  font-weight: bold;
 }
-.note-container{
+.note-container {
   width: 100%;
 }
-.note-container label{
+.note-container label {
   text-decoration: underline;
   font-size: 19px;
 }

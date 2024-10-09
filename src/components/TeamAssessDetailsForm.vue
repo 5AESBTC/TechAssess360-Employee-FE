@@ -48,6 +48,11 @@
           </div>
         </div>
       </div>
+      <div v-else class="spandes text-start">
+        <span>
+          {{ result.criterias.find(rc => rc.id == criteria.id)?.answerUser.description }}
+        </span>
+      </div>
     </div>
   </form>
 </template>
@@ -74,6 +79,7 @@ export default {
         toUserId: null,
         criterias: [],
       },
+      selfAssessDetails: [],
     }
   },
   mounted() {
@@ -82,23 +88,19 @@ export default {
   },
   methods: {
     isShowAvatar(criteriaId, questionId, answerValue) {
-      console.log("Checking criteria list:", this.result.criterias);
 
       const criteria = this.result.criterias.find(c => c.id === criteriaId);
       if (!criteria) {
-        console.log(`Criteria with id ${criteriaId} not found`);
         return [];
       }
 
       const question = criteria.questions.find(q => q.id === questionId);
       if (!question) {
-        console.log(`Question with id ${questionId} not found in criteria ${criteriaId}`);
         return []; // Nếu không tìm thấy câu hỏi, trả về mảng rỗng
       }
 
       const answer = question.answerUsers.find(a => a.value === answerValue);
       if (!answer) {
-        console.log(`Answer with id ${answerValue} not found in question ${questionId}`);
         return []; // Nếu không tìm thấy câu trả lời, trả về mảng rỗng
       }
 
@@ -108,7 +110,6 @@ export default {
           user.avt = '/images/avatar.png'
         return user
       });
-      console.log("User avtatars found:", users);
 
       return users;
     },
@@ -117,6 +118,9 @@ export default {
         const response = await axios.get(this.apiUrl + `/api/assess/list-assess-of-user/${userId}`);
         this.listAssess = response.data.data;
         console.log("DANH SACH CAC DANH GIA CHO NGUOI DA CHON::", this.listAssess);
+
+        this.selfAssessDetails = response.data.data.filter(assess => assess.assessmentType === "SELF");
+        console.log("CHI TIET DANH GIA BAN THAN CHO NGUOI DA CHON::", this.selfAssessDetails);
 
         // Convert data -> assessDetail
         if (this.listAssess.length == 0) return
@@ -157,9 +161,6 @@ export default {
                   };
                   resultCriteria.questions.push(resultQuestion);
                 }
-
-                // Tìm người dùng
-
 
                 if (assessDetail.question && assessDetail.value != null && user) {
                   const resultQuestion = resultCriteria.questions.find(question => question.id === assessDetail.question.id);
@@ -219,7 +220,7 @@ export default {
 
         // bỏ tiêu chí Đánh giá của quản lí ra khỏi list
         this.listCriteria = this.listCriteria.filter(
-          (c) => c.title !== "Đánh giá của quản lý" && c.id !== 6 && c.id !== 7
+          (c) => c.title !== "Đánh giá của quản lý"
         );
       } catch (error) {
         console.error("Error fetching criteria list:", error);
@@ -615,5 +616,11 @@ export default {
 .score-display {
   color: red;
   text-align: right;
+}
+
+.spandes {
+  background-color: #d8d8d8;
+  border-radius: 5px;
+  padding: 10px;
 }
 </style>

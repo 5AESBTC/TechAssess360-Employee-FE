@@ -271,12 +271,14 @@ export default {
         }
       });
       console.log(this.perfValues);
+      console.log("Total point submit form response:: ", this.totalPoint);
+
       // Thử gửi dữ liệu
       try {
         const res = await AssessService.submitForm(
           this.userInfo.id,
           this.selectedPerson.id,
-          this.totalPoints,
+          this.totalPoint,
           this.perfValues
         );
         if (res.code === 201) {

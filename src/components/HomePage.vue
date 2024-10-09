@@ -38,13 +38,13 @@ export default {
     return {
       steps: [
         {
-          title: "Bộ phận Tổng vụ đánh giá",
-          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
+          title: "Đánh giá cá nhân",
+          text: "Các nhân viên sẽ tự đánh giá cho bản thân.",
           color: "#90EE90",
         },
         {
-          title: "Bộ phận Phát triển đánh giá",
-          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
+          title: "Đánh giá chéo",
+          text: "Các nhân viên sẽ  đánh giá chéo cho các thành viên chung dự án.",
           color: "#87CEEB",
         },
         {
@@ -59,22 +59,22 @@ export default {
         },
       ],
       titles: [
-        { text: "15/09 - 20/09", class: "before" },
-        { text: "21/09 - 30/09", class: "now" },
-        { text: "01/10 - 10/10", class: "new" },
-        { text: "11/10 - 20/10", class: "after" },
+        { text: "01/10 - 10/10", class: "before" },
+        { text: "11/10 - 20/10", class: "now" },
+        { text: "21/10 - 30/10", class: "new" },
+        { text: "31/10 - 40/10", class: "after" },
       ],
-      currentDate: new Date(), // Cập nhật giá trị này tùy thuộc vào nhu cầu
+      currentDate: new Date(), 
     };
   },
   methods: {
     isActiveTitle(index) {
       // Logic để xác định tiêu đề nào là hiện tại
       const titleDates = [
-        { start: new Date("2024-09-09"), end: new Date("2024-09-20") },
-        { start: new Date("2024-09-21"), end: new Date("2024-09-30") },
         { start: new Date("2024-10-01"), end: new Date("2024-10-10") },
         { start: new Date("2024-10-11"), end: new Date("2024-10-20") },
+        { start: new Date("2024-10-21"), end: new Date("2024-10-30") },
+        { start: new Date("2024-10-31"), end: new Date("2024-10-40") },
       ];
 
       // Chuyển đổi ngày hiện tại thành chỉ phần ngày (00:00:00)
@@ -110,7 +110,7 @@ export default {
   border-radius: 12px;
   box-shadow: 6px 6px 8px 8px rgba(0, 0, 0, 0.2);
   background-color: #fff;
-  margin-top: -17px;
+  margin-top: 70px;
 }
 
 .step-container {

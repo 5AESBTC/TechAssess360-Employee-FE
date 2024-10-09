@@ -83,10 +83,10 @@ export default {
       activeIndex: 0,
       userInfo: null,
       menuItems: [
-        { text: "Trang chủ", link: "/" },
-        { text: "Đánh giá cá nhân", link: "/personal-assess" },
-        { text: "Đánh giá chéo", link: "/teammates-assess" },
-        { text: "Kết quả đánh giá", link: "/assess-result" },
+        { text: "Trang chủ", link: "/", startDate: null, endDate: null }, // Trang chủ không giới hạn
+        { text: "Đánh giá cá nhân", link: "/personal-assess", startDate: new Date("2024-10-01"), endDate: new Date("2024-10-10") },
+        { text: "Đánh giá chéo", link: "/teammates-assess", startDate: new Date("2024-10-11"), endDate: new Date("2024-10-20") },
+        { text: "Kết quả đánh giá", link: "/assess-result", startDate: new Date("2024-10-21"), endDate: new Date("2024-10-30") },
       ],
       profileImage:
         "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
@@ -94,8 +94,14 @@ export default {
   },
   computed: {
     filteredMenuItems() {
-      const items = [...this.menuItems];
-      return items;
+      const currentTime = new Date();
+      return this.menuItems.map((item) => {
+        if (item.startDate && item.endDate) {
+          const isActive = currentTime >= item.startDate && currentTime <= item.endDate;
+          return { ...item, isActive };
+        }
+        return { ...item, isActive: true }; // Trang chủ luôn hoạt động
+      });
     },
   },
   mounted() {
@@ -104,8 +110,12 @@ export default {
     this.checkActivePath();
     window.addEventListener("resize", this.handleResize);
     this.$router.beforeEach((to, from, next) => {
-      this.checkActivePath(to.path);
-      next();
+      const item = this.filteredMenuItems.find((menuItem) => menuItem.link === to.path);
+      if (item && !item.isActive) {
+        next("/404"); // Chuyển hướng đến trang lỗi 404 nếu không thể truy cập
+      } else {
+        next();
+      }
     });
   },
   methods: {
@@ -127,7 +137,6 @@ export default {
         autoClose: 2000,
       });
       this.$router.push("/login").then(() => {
-        // Reload để đảm bảo header cập nhật lại
         window.location.reload();
       });
     },
@@ -140,16 +149,12 @@ export default {
       });
     },
     startCountdown() {
-      // Kiểm tra nếu đã có giá trị lưu trong localStorage
       const storedCountDownDate = localStorage.getItem("countDownDate");
-
-      // Nếu chưa có, lưu thời gian kết thúc hiện tại vào localStorage
       if (!storedCountDownDate) {
         localStorage.setItem("countDownDate", this.countDownDate);
       } else {
-        this.countDownDate = parseInt(storedCountDownDate); // Gán giá trị từ localStorage
+        this.countDownDate = parseInt(storedCountDownDate);
       }
-
       const x = setInterval(() => {
         const now = new Date().getTime();
         const distance = this.countDownDate - now;
@@ -165,25 +170,21 @@ export default {
         if (distance < 0) {
           clearInterval(x);
           this.countdown = "EXPIRED";
-          localStorage.removeItem("countDownDate"); // Xóa khi hết hạn
+          localStorage.removeItem("countDownDate");
         }
-
-        // Tắt màn hình loading sau khi bộ đếm bắt đầu
         this.loading = false;
       }, 1000);
     },
     handleResize() {
-      const element = document.querySelector(".left-navbar"); // Thay '.element-class' bằng lớp bạn muốn theo dõi
+      const element = document.querySelector(".left-navbar");
 
       if (window.innerWidth < 1200) {
-        // Khi cửa sổ nhỏ hơn 768px, xóa class
         if (element) {
-          element.classList.remove("col-6"); // Thay 'some-class' bằng lớp cần xóa
+          element.classList.remove("col-6");
         }
       } else {
-        // Nếu bạn muốn thêm lại class khi kích thước lớn hơn 768px
         if (element) {
-          element.classList.add("col-6"); // Thay 'some-class' bằng lớp cần thêm lại
+          element.classList.add("col-6");
         }
       }
     },
@@ -192,6 +193,7 @@ export default {
     window.removeEventListener("resize", this.handleResize);
   },
 };
+
 </script>
 
 <style scoped>

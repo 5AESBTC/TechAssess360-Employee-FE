@@ -6,6 +6,7 @@ import AssessResult from "@/components/AssessResult.vue";
 import Personal from "@/components/PersonalAssess.vue";
 import Login from "@/components/Login.vue";
 import AuthService from "@/services/AuthService";
+import NotFound from "@/components/NotFound.vue";
 const routes = [
   { path: "/", component: HomePage },
   {
@@ -33,6 +34,15 @@ const routes = [
     meta: { requiresAuth: true },
   },
   { path: "/login", component: Login, meta: { hideHeader: true } },
+  {
+    path: "/404",
+    name: "NotFound",
+    component: NotFound,
+  },
+  {
+    path: "/:catchAll(.*)", // Bất cứ đường dẫn nào không hợp lệ
+    redirect: "/404",
+  },
 ];
 
 const router = createRouter({

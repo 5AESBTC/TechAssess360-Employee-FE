@@ -74,6 +74,22 @@ const AssessService = {
         } catch (error) {
             console.error("Error fetching assessByUser:", error);
         }
+    },
+    fetchTypeAssessByUserId: async (userId) => {
+        try {
+            const accessToken = localStorage.getItem("accessToken");
+            const response = await axios.get(`${InfoUrl}/api/assess/list-assess-of-user/${userId}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
+            console.log(response.data.data);
+            localStorage.setItem("manager-assessment", JSON.stringify(response.data.data.filter(assess => assess.assessmentType === "MANAGER")));
+            localStorage.setItem("self-assessment", JSON.stringify(response.data.data.filter(assess => assess.assessmentType === "SELF")));
+            localStorage.setItem("team-assessment", JSON.stringify(response.data.data.filter(assess => assess.assessmentType === "TEAM")));
+        } catch (error) {
+            console.error("Error fetching typeAssessByUser:", error);
+        }
     }
 }
 

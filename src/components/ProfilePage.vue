@@ -18,7 +18,7 @@
         </div>
         <div class="details">
           <div class="detail">
-            <label>Day Of Birth:</label>
+            <label>Ngày sinh:</label>
             <span>{{ profile.dob }}</span>
           </div>
           <div class="detail">
@@ -26,15 +26,15 @@
             <span>{{ profile.email }}</span>
           </div>
           <div class="detail">
-            <label>Project:</label>
-            <span>{{ profile.project }}</span>
+            <label>Dự án hiện tại:</label>
+            <span>{{ profile.userProjects[0].name }}</span>
           </div>
-          <div class="detail">
+          <!-- <div class="detail">
             <label>Workday:</label>
             <span>{{ calculateWorkTime() }}</span>
-          </div>
+          </div> -->
           <div class="detail">
-            <label>Rank:</label>
+            <label>Vị trí:</label>
             <span>{{ profile.rank.position.name }}</span>
           </div>
         </div>

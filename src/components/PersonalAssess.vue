@@ -14,10 +14,10 @@
           <div class="line">
             <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
           </div>
-          <!-- <div class="line">
-            <strong>Dự án hiện tại:</strong> {{ userInfo.project }}
-          </div>
           <div class="line">
+            <strong>Dự án hiện tại:</strong> {{ userInfo.userProjects[0].name }}
+          </div>
+          <!-- <div class="line">
             <strong>Thời gian làm việc:</strong> {{ calculateWorkTime() }}
           </div> -->
         </div>

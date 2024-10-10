@@ -17,7 +17,7 @@
                   <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
                 </div>
                 <div class="line">
-                  <strong>Dự án hiện tại:</strong> {{ userInfo.userProjects[0].project.name }}
+                  <strong>Dự án hiện tại:</strong> {{ userInfo.userProjects[0].name }}
                 </div>
               </div>
             </div>

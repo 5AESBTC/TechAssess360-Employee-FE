@@ -23,11 +23,11 @@
             <strong>Bậc hiện tại:</strong> {{ profile.rank.level }}
           </div>
           <div class="line">
-            <strong>Dự án hiện tại:</strong> {{ profile.project }}
+            <strong>Dự án hiện tại:</strong> {{ profile.userProjects[0].name }}
           </div>
-          <div class="line">
+          <!-- <div class="line">
             <strong>Thời gian làm việc:</strong> {{ calculateWorkTime() }}
-          </div>
+          </div> -->
         </div>
       </div>
       <div class="team-mate">
@@ -119,6 +119,7 @@ import TeamAssessForm from "./TeamAssessForm.vue";
 import UserService from "@/services/UserService.js";
 import { toast } from "vue3-toastify";
 import AssessService from "@/services/AssessService";
+import ProjectService from "@/services/ProjectService";
 
 export default {
   name: "TeamMatesAssess",
@@ -209,6 +210,24 @@ export default {
             isSubmitted: existingMember ? existingMember.isSubmitted : false,
           };
         });
+        const fetchProjectPromises = this.teamMates.map(async (mate) => {
+          const projectPromises = mate.userProjects.map(async (record) => {
+            const res = await ProjectService.fetchProjectById(record.projectId);
+            if (res.code === 1010) {
+              // Thay vì push vào userProjects, nên thay thế hoặc thêm vào một danh sách riêng
+              return res.data; // Trả về dữ liệu dự án
+            }
+          });
+
+          // Chờ tất cả các dự án được fetch xong
+          const projects = await Promise.all(projectPromises);
+          // Lọc ra các dự án hợp lệ và thêm vào userProjects
+          mate.userProjects = projects.filter(
+            (project) => project !== undefined
+          );
+        });
+
+        await Promise.all(fetchProjectPromises);
 
         // Gọi hàm fetchAssessByUser
         await this.fetchAssessByUser();

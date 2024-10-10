@@ -86,12 +86,14 @@ import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import AuthService from "../services/AuthService";
 import UserService from "@/services/UserService";
+import ProjectService from "@/services/ProjectService";
 export default {
   name: "LoginPage",
   data() {
     return {
       username: "",
       password: "",
+      userInfo: null,
     };
   },
   methods: {
@@ -107,7 +109,27 @@ export default {
           const customUser = res.data;
           const res2 = await UserService.fetchUserById(customUser.id);
           if (res2.code === 1010) {
-            localStorage.setItem("user", JSON.stringify(res2.data));
+            this.userInfo = res2.data;
+            const projectPromises = this.userInfo.userProjects.map(
+              async (record) => {
+                const res = await ProjectService.fetchProjectById(
+                  record.projectId
+                );
+                if (res.code === 1010) {
+                  // Thay vì push vào userProjects, nên thay thế hoặc thêm vào một danh sách riêng
+                  return res.data; // Trả về dữ liệu dự án
+                }
+              }
+            );
+
+            // Chờ tất cả các dự án được fetch xong
+            const projects = await Promise.all(projectPromises);
+            // Lọc ra các dự án hợp lệ và thêm vào userProjects
+            this.userInfo.userProjects = projects.filter(
+              (project) => project !== undefined
+            );
+
+            localStorage.setItem("user", JSON.stringify(this.userInfo));
           }
         }
         toast.success("Đăng nhận thành công!");

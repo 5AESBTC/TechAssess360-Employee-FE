@@ -22,11 +22,15 @@
               </div>
             </div>
             <div class="total-score d-flex flex-column font-weight-bold justify-content-end gap-2">
-              <label class="form-label">Điểm đánh giá: <span class="score">{{ totalPoint ? totalPoint + "điểm" : "?"
+              <label class="form-label">Tổng điểm đánh giá quý này: <span class="score">{{ totalPoint ? totalPoint : "?"
                   }}</span></label>
-              <label class="form-label">Đề xuất nâng bậc: <span class="score">{{ levelUp ? levelUp : "?"
-                  }}</span></label>
-
+              <label class="form-label">Xếp hạng:
+                <span class="score">{{ rank ? rank : "?" }}</span>
+              </label>
+              <label class="form-label align-items-center">Đề xuất nâng:
+                <span class="score me-2 fw-bold fs-2 "> {{ levelUp !== null ? levelUp : "?" }}</span>
+                bậc
+              </label>
             </div>
           </div>
 
@@ -40,43 +44,23 @@
                   <th>Tổng Điểm</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody v-for="(criteria, criteriaIndex) in selfCriteriaScores" :key="criteriaIndex">
                 <tr>
-                  <td>30</td>
-                  <td class="text-start">Hiệu suất công việc</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>20</td>
-                  <td class="text-start">Kỹ năng và kiến thức</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>20</td>
-                  <td class="text-start">Tinh thần làm việc và thái độ</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>15</td>
-                  <td class="text-start">Đóng góp và sáng kiến</td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td>15</td>
-                  <td class="text-start">Quy định và chính sách</td>
-                  <td></td>
-                  <td>{{ averageTeamScore }}</td>
+                  <td>{{ criteria.totalPoint }}</td>
+                  <td class="text-start">{{ criteria.title }}</td>
+                  <td>{{ criteria.averageScore }}</td>
+                  <td>{{
+                    finalScores[criteriaIndex]?.averageScore
+                      ? Math.round(finalScores[criteriaIndex].averageScore / 5 * criteria.totalPoint)
+                      : '?'
+                  }}</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
         <div class="col-md-7 right-content">
-          <RadarChart :data="radarData" />
+          <!-- <RadarChart :data="radarData" /> -->
           <div class="note-container text-start">
             <label for="note"><strong>Đánh giá của quản lý:</strong></label>
             <div v-if="showNote" class="note-section d-flex gap-3">
@@ -90,12 +74,12 @@
 </template>
 
 <script>
-import RadarChart from "./RadarChart.vue";
+// import RadarChart from "./RadarChart.vue";
 import AssessService from "@/services/AssessService";
 export default {
   name: "AssessResult",
   components: {
-    RadarChart,
+    // RadarChart,
   },
   data() {
     return {
@@ -106,18 +90,23 @@ export default {
         manager: [],
         team: [],
       },
-      tableData: [],
+      assessData: [],
       userInfo: null,
       totalPoint: 0,
-      levelUp: "",
+      levelUp: null,
+      rank: "",
       note: "",
       selfAssessment: [],
+      selfCriteriaScores: [],
       teamsAssessment: [],
       managerAssessment: [],
+      managerCriteriaScores: [],
       averageTeamPoint: 0,
       managerPoint: 0,
       defaultAvatar:
         "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
+      selfCriterias: [],
+      finalScores: [],
     };
   },
   created() {
@@ -127,52 +116,161 @@ export default {
     }
   },
   mounted() {
-    this.fetchListAssessOfUser();
-
-  },
-  computed: {
-    averageTeamScore() {
-      if (!this.tableData.data) return 0;
-
-      const teamAssessments = this.teamsAssessment.filter(assess => assess.assessmentType === "TEAM");
-      console.log(teamAssessments);
-
-      if (teamAssessments.length === 0) return 0;
-
-      let totalScore = 0;
-      let totalWeight = 0;
-
-
-      return totalWeight ? (totalScore / totalWeight).toFixed(2) : 0;
-    }
+    this.getTypeAssess();
   },
   methods: {
-    async fetchListAssessOfUser() {
-      try {
-        // const res = await AssessService.fetchAssessOfUser(this.userInfo.id);
-        // if (res.code === 1010) {
-        //   this.tableData = res;
-        //   console.log(this.tableData);
-        // }
-        // this.selfAssessment = this.tableData.data.filter(assess => assess.assessmentType === "SELF")
-        // console.log("SELF ASSESSMENT::", this.selfAssessment);
+    async getTypeAssess() {
+      await AssessService.fetchTypeAssessByUserId(this.userInfo.id)
 
-        // this.managerAssessment = this.tableData.data.filter(assess => assess.assessmentType === "MANAGER")
-        // console.log("MANAGER ASSESSMENT::", this.managerAssessment);
+      this.selfAssessment = JSON.parse(localStorage.getItem("self-assessment")) || {};
+      this.teamsAssessment = JSON.parse(localStorage.getItem("team-assessment")) || {};
+      this.managerAssessment = JSON.parse(localStorage.getItem("manager-assessment")) || {};
 
-        // this.teamsAssessment = this.tableData.data.filter(assess => assess.assessmentType === "TEAM")
-        // console.log("TEAM ASSESSMENT::", this.teamsAssessment);
+      console.log("Self Assessment:", this.selfAssessment);
+      console.log("Team Assessment:", this.teamsAssessment);
+      console.log("Manager Assessment:", this.managerAssessment);
 
-        const res = await AssessService.fetchAssessSelf(this.userInfo.id);
-        if (res.code === 1010) {
-          this.tableData = res;
-          console.log(this.tableData);
-        }
-      } catch (error) {
-        console.error("Error fetching assess list:", error);
-      }
+      this.calculateAllAverageScores();
+      this.finalScores = this.calColumnTotalScore();
+      this.calculateTotalPoint();
+      this.calculateRankAndLevelUp();
+      this.setManagerAssessmentNote();
     },
-  },
+
+    calculateAverageScores(assessmentData) {
+      if (!assessmentData) {
+        console.error("Invalid assessment data:", assessmentData);
+        return {};
+      }
+      const criteriaScores = {};
+
+      // Duyệt qua từng chi tiết trong dữ liệu đánh giá
+      assessmentData.forEach(assess => {
+        assess.assessDetails.forEach((detail) => {
+          if (detail.question) {
+            const criteriaId = detail.criteria.id;
+            const questionPoint = detail.question.point;
+            const questionValue = detail.value;
+
+            // Nếu tiêu chí chưa tồn tại trong criteriaScores, khởi tạo nó
+            if (!criteriaScores[criteriaId]) {
+              criteriaScores[criteriaId] = {
+                totalValue: 0,
+                totalPoint: 0,
+                title: detail.criteria.title,
+              };
+            }
+
+            // Cộng tổng điểm (value * point) và tổng hệ số của tiêu chí
+            criteriaScores[criteriaId].totalValue += questionValue * questionPoint;
+            criteriaScores[criteriaId].totalPoint += questionPoint;
+          }
+        });
+      })
+
+      // Tính điểm trung bình cho từng tiêu chí và lưu lại kết quả
+      Object.keys(criteriaScores).forEach((criteriaId) => {
+        const criteria = criteriaScores[criteriaId];
+        criteria.averageScore = criteria.totalPoint > 0
+          ? (criteria.totalValue / criteria.totalPoint).toFixed(2)
+          : 0;
+
+        console.log(`Average score for criteria ${criteria.title}: ${criteria.averageScore}`);
+      });
+      console.log('========================================');
+      return criteriaScores;
+    },
+    calculateAllAverageScores() {
+      this.selfCriteriaScores = this.calculateAverageScores(this.selfAssessment);
+      this.managerCriteriaScores = this.calculateAverageScores(this.managerAssessment);
+
+      // Xử lý teamAssessment có thể có nhiều phần tử
+      const allTeamScores = this.teamsAssessment.map(team => this.calculateAverageScores([team])); // Tính toán điểm cho từng đội
+      this.teamCriteriaScores = allTeamScores.reduce((acc, curr) => {
+        Object.keys(curr).forEach(criteriaId => {
+          if (!acc[criteriaId]) {
+            acc[criteriaId] = curr[criteriaId];
+          } else {
+            acc[criteriaId].totalValue += curr[criteriaId].totalValue;
+            acc[criteriaId].totalPoint += curr[criteriaId].totalPoint;
+            acc[criteriaId].averageScore = acc[criteriaId].totalPoint > 0
+              ? (acc[criteriaId].totalValue / acc[criteriaId].totalPoint).toFixed(2)
+              : 0;
+          }
+        });
+        return acc;
+      }, {});
+
+      console.log("Self Assessment Average Scores:", this.selfCriteriaScores);
+      console.log("Manager Assessment Average Scores:", this.managerCriteriaScores);
+      console.log("Team Assessment Average Scores:", this.teamCriteriaScores);
+
+    },
+    calColumnTotalScore() {
+      // Khởi tạo object lưu điểm tổng kết
+      const finalScores = {};
+
+      // Duyệt qua từng tiêu chí trong selfCriteriaScores
+      Object.keys(this.selfCriteriaScores).forEach((criteriaId) => {
+        const selfScore = parseFloat(this.selfCriteriaScores[criteriaId]?.averageScore || 0);
+        const managerScore = parseFloat(this.managerCriteriaScores[criteriaId]?.averageScore || 0);
+        const teamScore = parseFloat(this.teamCriteriaScores[criteriaId]?.averageScore || 0);
+
+        // Tính điểm tổng kết với hệ số cho mỗi loại đánh giá
+        const totalScore = ((selfScore * 1) + (managerScore * 2) + (teamScore * 1)) / 4;
+
+        // Lưu điểm tổng kết vào finalScores
+        finalScores[criteriaId] = {
+          title: this.selfCriteriaScores[criteriaId]?.title || "",
+          totalPoint: this.selfCriteriaScores[criteriaId]?.totalPoint || "",
+          averageScore: totalScore.toFixed(2),
+        };
+      });
+      return finalScores;
+    },
+    calculateTotalPoint() {
+      this.totalPoint = Object.keys(this.finalScores).reduce((sum, criteriaId) => {
+        const criteria = this.finalScores[criteriaId];
+        const score = Math.round(criteria.averageScore / 5 * criteria.totalPoint);
+        return sum + score;
+      }, 0);
+    },
+    calculateRankAndLevelUp() {
+      if (this.totalPoint >= 90 && this.totalPoint <= 100) {
+        this.rank = "A+";
+        this.levelUp = 3;
+      } else if (this.totalPoint >= 80 && this.totalPoint < 90) {
+        this.rank = "A";
+        this.levelUp = 2;
+      } else if (this.totalPoint >= 70 && this.totalPoint < 80) {
+        this.rank = "B+";
+        this.levelUp = 1;
+      } else if (this.totalPoint >= 50 && this.totalPoint < 70) {
+        this.rank = "B";
+        this.levelUp = 0;
+      } else if (this.totalPoint >= 30 && this.totalPoint < 50) {
+        this.rank = "C+";
+        this.levelUp = 0;
+      } else if (this.totalPoint < 30) {
+        this.rank = "C";
+        this.levelUp = 0;
+      }
+      console.log("Rank:", this.rank, "Level Up:", this.levelUp);
+    },
+    setManagerAssessmentNote() {
+      console.log(this.managerAssessment[0].assessDetails);
+
+      if (this.managerAssessment[0].assessDetails) {
+        const lastIndex = this.managerAssessment[0].assessDetails.length - 1;
+        this.note = this.managerAssessment[0].assessDetails[lastIndex].description;
+        console.log("NOTE:: ", this.note);
+      } else {
+        this.note = "Quản lý không có nhận xét thêm";
+      }
+    }
+
+  }
+
 };
 </script>
 
@@ -228,7 +326,6 @@ export default {
 
   flex-direction: column;
 
-  justify-content: center;
 
   align-items: center;
 

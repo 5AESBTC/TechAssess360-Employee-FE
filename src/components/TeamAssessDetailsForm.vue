@@ -1,8 +1,5 @@
 <template>
-  <div
-    class="evaluation-header mb-2"
-    style="display: flex; justify-content: space-between; align-items: center"
-  >
+  <div class="evaluation-header mb-2" style="display: flex; justify-content: space-between; align-items: center">
     <label class="fw-bold fs-4">
       Chi tiết đánh giá quý III năm 2024 của:
       {{ selectedPerson ? selectedPerson.name : "" }}
@@ -12,66 +9,37 @@
 
   <form class="evaluation-form">
     <!-- Performance Evaluation -->
-    <div
-      v-for="(criteria, criteriaIndex) in listCriteria"
-      :key="criteria.id"
-      class="section mb-4"
-    >
+    <div v-for="(criteria, criteriaIndex) in listCriteria" :key="criteria.id" class="section mb-4">
       <div class="d-flex justify-content-between">
         <label class="d-flex gap-2">
           <h5>{{ criteria.title }}</h5>
         </label>
       </div>
       <div v-if="criteria.questions && criteria.questions.length > 0">
-        <div
-          v-for="(question, questionIndex) in criteria.questions"
-          :key="question.id"
-          class="question mb-3"
-        >
-          <div
-            class="d-flex justify-content-between title"
-            v-if="question.title"
-          >
+        <div v-for="(question, questionIndex) in criteria.questions" :key="question.id" class="question mb-3">
+          <div class="d-flex justify-content-between title" v-if="question.title">
             <label> {{ questionIndex + 1 }}. {{ question.title }} </label>
           </div>
 
-          <div
-            v-if="question.answers"
-            class="options d-flex justify-content-around my-3"
-          >
-            <div
-              v-for="(answer, answerIndex) in question.answers"
-              :key="answer.id"
-              class="form-check"
-            >
-              <label
-                :for="
-                  'performanceOption' +
-                  criteriaIndex +
-                  questionIndex +
-                  answerIndex
-                "
-                class="form-check-label"
-              >
+          <div v-if="question.answers" class="options d-flex justify-content-around my-3">
+            <div v-for="(answer, answerIndex) in question.answers" :key="answer.id" class="form-check">
+              <label :for="'performanceOption' +
+                criteriaIndex +
+                questionIndex +
+                answerIndex
+                " class="form-check-label">
                 {{ answer.title }}
               </label>
               <div class="avatar-group mt-2 d-flex justify-content-center">
-                <div
-                  style="position: relative; margin-right: 10px"
-                  class="avatar-container"
-                  v-for="(user, userIndex) in isShowAvatar(
-                    criteria.id,
-                    question.id,
-                    answer.value
-                  )"
-                  :key="userIndex"
-                >
-                  <img
-                    :src="user.avt"
-                    alt="Avatar"
-                    class="avatar-img"
-                    style="cursor: pointer"
-                  />
+                <div style="position: relative; margin-right: 10px" class="avatar-container" v-for="(user, userIndex) in isShowAvatar(
+                  criteria.id,
+                  question.id,
+                  answer.value
+                )" :key="userIndex">
+                  <img :src="user.avt" alt="Avatar" class="avatar-img" :class="{
+                    'highlight-blue': user.id === userInfo.id,
+                    'highlight-yellow': user.id === selectedPerson.id
+                  }" style="cursor: pointer; border-radius: 50%;" />
                   <span class="tooltiptext">
                     <div class="d-flex flex-column text-start">
                       <span class="fw-bold text-center">{{ user.name }}</span>
@@ -250,6 +218,7 @@ export default {
                       if (existingAnswerUser) {
                         // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
                         existingAnswerUser.fromUsers.push({
+                          id: user.id,
                           avt: user.fileInfo
                             ? user.fileInfo.fileUrl
                             : "/images/avatar.png",
@@ -264,6 +233,7 @@ export default {
                           value: answer.value,
                           fromUsers: [
                             {
+                              id: user.id,
                               avt: user.fileInfo
                                 ? user.fileInfo.fileUrl
                                 : "/images/avatar.png",
@@ -278,6 +248,7 @@ export default {
                 } else if (user) {
                   // Nếu không có question, bổ sung answerUser là fromUser
                   resultCriteria.answerUser = {
+                    id: user.id,
                     avt: user.fileInfoResDto?.url
                       ? user.fileInfoResDTO.url
                       : "/images/avatar.png",
@@ -324,6 +295,16 @@ export default {
 </script>
 
 <style scoped>
+.highlight-blue {
+  border: 2px solid blue;
+  border-radius: 50%;
+}
+
+.highlight-yellow {
+  border: 2px solid rgb(43, 255, 0);
+  border-radius: 50%;
+}
+
 .section h5 {
   font-weight: bold;
   text-transform: uppercase;
@@ -393,7 +374,7 @@ export default {
   -webkit-overflow-scrolling: touch;
 }
 
-.table > table {
+.table>table {
   width: 100%;
   margin-bottom: 1rem;
   border-collapse: collapse;
@@ -446,7 +427,7 @@ export default {
   padding-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 
@@ -646,6 +627,7 @@ export default {
 
 /* Đối với màn hình trung bình (máy tính bảng) */
 @media (min-width: 576px) and (max-width: 768px) {
+
   .left-menu,
   .right-menu {
     height: auto;
@@ -686,8 +668,8 @@ export default {
   }
 
   .avatar-img {
-    width: 24px;
-    height: 24px;
+    width: 30px;
+    height: 30px;
   }
 }
 

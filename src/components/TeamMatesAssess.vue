@@ -1,18 +1,10 @@
 <template>
-  <div
-    class="container-fluid row justify-content-md-center align-items-center"
-    v-if="profile"
-  >
+  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
     <!-- Left Menu -->
-    <div class="col-md-4 left-menu p-3">
-      <div
-        class="profile mb-3 d-flex align-items-center justify-content-around"
-      >
+    <div class="col-md-4 left-menu p-3 d-flex flex-column">
+      <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
-          <img
-            :src="profile.fileInfo ? profile.fileInfo.fileUrl : defaultImage"
-            alt="avatar"
-          />
+          <img :src="profile.fileInfo ? profile.fileInfo.fileUrl : defaultImage" alt="avatar" />
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ profile.name }}</h3>
@@ -38,11 +30,7 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th
-                @click="sortBy('name')"
-                class="text-start"
-                style="cursor: pointer"
-              >
+              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">
                 Tên
               </th>
               <th>Vị Trí</th>
@@ -56,41 +44,21 @@
               <td>{{ mate.rank.position.name }}</td>
               <td class="d-flex justify-content-center">
                 <div class="d-flex">
-                  <button
-                    v-if="mate.isSubmitted"
-                    class="btn btn-sm btn-success btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2" :disabled="true">
                     Đã đánh giá
                   </button>
-                  <button
-                    v-else-if="mate.isProcessing"
-                    class="btn btn-sm btn-warning btn-custom me-2"
-                    :disabled="true"
-                  >
+                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
                     Đang đánh giá
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-primary btn-custom me-2"
-                    @click="selectPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="checkRole('MANAGER')" class="ms-3">
-                  <button
-                    v-if="mate.isViewing"
-                    class="btn btn-sm btn-warning btn-custom"
-                    :disabled="true"
-                  >
+                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
                     Đang xem
                   </button>
-                  <button
-                    v-else
-                    class="btn btn-sm btn-info btn-custom"
-                    @click="viewPerson(mate)"
-                  >
+                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
                     Xem chi tiết
                   </button>
                 </div>
@@ -99,16 +67,23 @@
           </tbody>
         </table>
       </div>
+      <div class="footer d-flex align-items-center" v-if="isViewing">
+        <div class="circle-container me-3">
+          <span class="circle circle-blue"></span>
+          <span>Người quản lý</span>
+        </div>
+        <div class="circle-container">
+          <span class="circle circle-green"></span>
+          <span>Nhân viên đang được xem</span>
+        </div>
+      </div>
+
     </div>
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component
-        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
-        :selectedPerson="selectedPerson"
-        :userInfo="userInfo"
-        @updateSelectedPerson="handleUpdateSelectedPerson"
-      />
+      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
+        :userInfo="userInfo" @updateSelectedPerson="handleUpdateSelectedPerson" />
     </div>
   </div>
 </template>
@@ -371,12 +346,58 @@ export default {
 </script>
 
 <style scoped>
+.footer {
+  display: flex;
+  justify-content: center;
+  /* Tách đều các phần tử ra */
+}
+
+.circle-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* Khoảng cách giữa hình tròn và chữ */
+}
+
+.circle {
+  width: 20px;
+  /* Kích thước hình tròn */
+  height: 20px;
+  border-radius: 50%;
+  /* Tạo hình tròn */
+  border: 3px solid blue;
+  /* Đặt viền với màu theo ý muốn */
+  background-color: white;
+  /* Màu nền của hình tròn */
+}
+
+.circle-blue {
+  border-color: blue;
+  /* Màu viền xanh dương */
+}
+
+.circle-green {
+  border-color: rgb(43, 255, 0);
+  /* Màu viền xanh lá */
+}
+
+.left-menu {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  /* Chỉnh chiều cao phù hợp */
+}
+
+.footer {
+  margin-top: auto;
+}
+
 /* Left menu */
 .btn-custom {
   width: 130px;
 }
 
-tbody > tr > td {
+tbody>tr>td {
   vertical-align: middle;
 }
 
@@ -485,7 +506,7 @@ tbody > tr > td {
   margin-left: 20px;
 }
 
-.content > p {
+.content>p {
   color: black;
 }
 </style>

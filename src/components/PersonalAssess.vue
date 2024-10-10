@@ -119,7 +119,11 @@
                 </div>
               </div> -->
               <div v-if="isAssess" class="description">
-                <textarea class="form-control" :class="{
+                <textarea v-if="personalAssessDetails?.find(
+                  detail => detail.criteria.id === criteria.id &&
+                    detail.question.id === question.id &&
+                    detail.description !== null
+                )" class="form-control" :class="{
                   'error-textarea': perfValues.assessDetails?.find(
                     (detail) => detail.criteriaId === criteria.id
                   )?.hasError,
@@ -137,7 +141,7 @@
                       detail.criteriaId === criteria.id &&
                       detail.questionId === question.id
                   ).hasError,
-                }" rows="3" placeholder="Nhận xét thêm" v-model="perfValues.assessDetails.find(
+                }" rows="2" placeholder="Nhận xét thêm" v-model="perfValues.assessDetails.find(
                   (detail) =>
                     detail.criteriaId === criteria.id &&
                     detail.questionId === question.id
@@ -152,7 +156,7 @@
                 'error-textarea': perfValues.assessDetails?.find(
                   (detail) => detail.criteriaId === criteria.id
                 )?.hasError,
-              }" rows="5" :value="perfValues.assessDetails?.find(
+              }" rows="2" :value="perfValues.assessDetails?.find(
                 (detail) => detail.criteriaId === criteria.id
               )?.description || ''
                 " @input="updateDescription(criteria.id, $event.target.value)"
@@ -161,7 +165,7 @@
                 'error-textarea': perfValues.assessDetails?.find(
                   (detail) => detail.criteriaId === criteria.id
                 )?.hasError,
-              }" rows="5" :value="personalAssessDetails?.find(
+              }" rows="2" :value="personalAssessDetails?.find(
                 (detail) => detail.criteria.id === criteria.id
               )?.description || ''
                 " readonly></textarea>

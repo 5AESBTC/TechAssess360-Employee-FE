@@ -124,7 +124,7 @@
                     (detail) => detail.criteriaId === criteria.id
                   )?.hasError,
                 }" rows="2" :value="personalAssessDetails?.find(
-                  (detail) => detail.criteria.id === criteria.id
+                  (detail) => detail.criteria.id === criteria.id && detail.question.id === question.id
                 )?.description || ''
                   " readonly>
                 </textarea>

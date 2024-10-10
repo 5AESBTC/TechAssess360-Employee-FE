@@ -1,10 +1,18 @@
 <template>
-  <div class="container-fluid row justify-content-md-center align-items-center" v-if="profile">
+  <div
+    class="container-fluid row justify-content-md-center align-items-center"
+    v-if="profile"
+  >
     <!-- Left Menu -->
     <div class="col-md-4 left-menu p-3">
-      <div class="profile mb-3 d-flex align-items-center justify-content-around">
+      <div
+        class="profile mb-3 d-flex align-items-center justify-content-around"
+      >
         <div class="avatar">
-          <img :src="profile.avatar" alt="avatar" />
+          <img
+            :src="profile.fileInfo ? profile.fileInfo.fileUrl : defaultImage"
+            alt="avatar"
+          />
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ profile.name }}</h3>
@@ -30,7 +38,11 @@
           <thead class="thead-light">
             <tr>
               <th>#</th>
-              <th @click="sortBy('name')" class="text-start" style="cursor: pointer">
+              <th
+                @click="sortBy('name')"
+                class="text-start"
+                style="cursor: pointer"
+              >
                 Tên
               </th>
               <th>Vị Trí</th>
@@ -44,21 +56,41 @@
               <td>{{ mate.rank.position.name }}</td>
               <td class="d-flex justify-content-center">
                 <div class="d-flex">
-                  <button v-if="mate.isSubmitted" class="btn btn-sm btn-success btn-custom me-2" :disabled="true">
+                  <button
+                    v-if="mate.isSubmitted"
+                    class="btn btn-sm btn-success btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đã đánh giá
                   </button>
-                  <button v-else-if="mate.isProcessing" class="btn btn-sm btn-warning btn-custom me-2" :disabled="true">
+                  <button
+                    v-else-if="mate.isProcessing"
+                    class="btn btn-sm btn-warning btn-custom me-2"
+                    :disabled="true"
+                  >
                     Đang đánh giá
                   </button>
-                  <button v-else class="btn btn-sm btn-primary btn-custom me-2" @click="selectPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-primary btn-custom me-2"
+                    @click="selectPerson(mate)"
+                  >
                     Đánh giá
                   </button>
                 </div>
                 <div v-if="checkRole('MANAGER')" class="ms-3">
-                  <button v-if="mate.isViewing" class="btn btn-sm btn-warning btn-custom" :disabled="true">
+                  <button
+                    v-if="mate.isViewing"
+                    class="btn btn-sm btn-warning btn-custom"
+                    :disabled="true"
+                  >
                     Đang xem
                   </button>
-                  <button v-else class="btn btn-sm btn-info btn-custom" @click="viewPerson(mate)">
+                  <button
+                    v-else
+                    class="btn btn-sm btn-info btn-custom"
+                    @click="viewPerson(mate)"
+                  >
                     Xem chi tiết
                   </button>
                 </div>
@@ -71,8 +103,12 @@
 
     <!-- Right Menu -->
     <div class="col-md-8 right-menu p-4">
-      <component :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'" :selectedPerson="selectedPerson"
-        :userInfo="userInfo" @updateSelectedPerson="handleUpdateSelectedPerson" />
+      <component
+        :is="isViewing ? 'TeamAssessDetailsForm' : 'TeamAssessForm'"
+        :selectedPerson="selectedPerson"
+        :userInfo="userInfo"
+        @updateSelectedPerson="handleUpdateSelectedPerson"
+      />
     </div>
   </div>
 </template>
@@ -101,7 +137,9 @@ export default {
       isViewing: false,
       listScore: [],
       isAssess: false,
-      assessDetails: []
+      assessDetails: [],
+      defaultImage:
+        "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
     };
   },
   mounted() {
@@ -160,7 +198,9 @@ export default {
 
         // Bảo toàn các trạng thái cũ
         this.teamMates = res.data.map((person) => {
-          const existingMember = this.teamMates.find(mate => mate.id === person.id);
+          const existingMember = this.teamMates.find(
+            (mate) => mate.id === person.id
+          );
 
           return {
             ...person,
@@ -174,7 +214,9 @@ export default {
         await this.fetchAssessByUser();
 
         // Chọn thành viên đầu tiên chưa nộp
-        const firstUnsubmitted = this.teamMates.find(person => !person.isSubmitted);
+        const firstUnsubmitted = this.teamMates.find(
+          (person) => !person.isSubmitted
+        );
 
         if (firstUnsubmitted) {
           firstUnsubmitted.isProcessing = true;
@@ -186,10 +228,14 @@ export default {
       }
     },
     updateAssessmentStatus() {
-      this.assessBy = JSON.parse(localStorage.getItem("assess-by-user" + this.userInfo.id));
+      this.assessBy = JSON.parse(
+        localStorage.getItem("assess-by-user" + this.userInfo.id)
+      );
       if (this.assessBy) {
         this.teamMates.forEach((person) => {
-          const assess = this.assessBy.find((assess) => assess.toUserId === person.id);
+          const assess = this.assessBy.find(
+            (assess) => assess.toUserId === person.id
+          );
           if (assess) {
             person.isSubmitted = true;
           }
@@ -311,7 +357,7 @@ export default {
   width: 130px;
 }
 
-tbody>tr>td {
+tbody > tr > td {
   vertical-align: middle;
 }
 
@@ -420,7 +466,7 @@ tbody>tr>td {
   margin-left: 20px;
 }
 
-.content>p {
+.content > p {
   color: black;
 }
 </style>

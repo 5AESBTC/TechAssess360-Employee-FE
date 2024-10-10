@@ -18,11 +18,13 @@ const UserService = {
     console.log(diffDays);
     return diffDays;
   },
-  uploadAvatar: async (userId, formData) => {
+  uploadAvatar: async (user, formData) => {
     try {
       const jwt = localStorage.getItem("accessToken");
+      formData.append("user", JSON.stringify(user)); 
+
       const response = await axios.put(
-        `${InfoUrl}/api/users/${userId}`,
+        `${InfoUrl}/api/users/${user.id}`,
         formData,
         {
           headers: {

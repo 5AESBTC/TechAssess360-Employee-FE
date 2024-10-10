@@ -6,7 +6,7 @@
           <div class="profile-score-container d-flex justify-content-between align-items-start mb-5">
             <div class="profile d-flex align-items-center">
               <div class="avatar">
-                <img :src="this.defaultAvatar" alt="avatar" />
+                <img :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage" alt="avatar" />
               </div>
               <div class="info ms-3 text-start">
                 <h3 class="mb-2">{{ userInfo.name }}</h3>

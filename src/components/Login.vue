@@ -85,6 +85,7 @@
 import { toast } from "vue3-toastify";
 import "vue3-toastify/dist/index.css";
 import AuthService from "../services/AuthService";
+import UserService from "@/services/UserService";
 export default {
   name: "LoginPage",
   data() {
@@ -99,11 +100,18 @@ export default {
         toast.error("Vui lòng nhập tài khoản và mật khẩu!");
         return;
       }
-      const res = await AuthService.login(this.username, this.password);  // Đợi Promise hoàn tất
+      const res = await AuthService.login(this.username, this.password); // Đợi Promise hoàn tất
       if (res.code === 1011) {
-        await AuthService.fetchUserByUserName(this.username);
+        const res = await AuthService.fetchUserByUserName(this.username);
+        if (res.code === 1010) {
+          const customUser = res.data;
+          const res2 = await UserService.fetchUserById(customUser.id);
+          if (res2.code === 1010) {
+            localStorage.setItem("user", JSON.stringify(res2.data));
+          }
+        }
         toast.success("Đăng nhận thành công!");
-        this.$router.push('/');
+        this.$router.push("/");
       } else {
         toast.error("Tài khoản hoặc mật khẩu sai");
       }

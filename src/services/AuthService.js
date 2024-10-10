@@ -40,7 +40,6 @@ const AuthService = {
     fetchUserByUserName: async (username) => {
         try {
             const response = await axios.get(`${InfoUrl}/api/users/current-user/${username}`);
-            localStorage.setItem("user", JSON.stringify(response.data.data)); // Lưu thông tin người dùng vào localStorage
             return response.data;
         } catch (error) {
             if (error.response) {

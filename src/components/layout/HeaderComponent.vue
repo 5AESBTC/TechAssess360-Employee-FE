@@ -32,7 +32,7 @@
               </li>
               <li v-if="userInfo">
                 <div class="user-info d-flex align-items-center">
-                  <img :src="profileImage" alt="Avatar" class="avatar" />
+                  <img :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage" alt="Avatar" class="avatar" />
                   <span class="ml-2" data-bs-toggle="dropdown">
                     {{ userInfo.name }}
                     <i class="ms-2 bi bi-caret-down-square-fill dropdown"></i>
@@ -78,7 +78,7 @@ export default {
   data() {
     return {
       countdown: "",
-      countDownDate: new Date().getTime() + 60 * 60 * 1000, // Đặt thời gian đếm ngược (ví dụ: 1 giờ)
+      countDownDate: new Date().getTime() + 5 * 24 * 60 * 60 * 1000, //đặt thời gian đếm ngược 5 ngày
       loading: true,
       activeIndex: 0,
       userInfo: null,
@@ -157,13 +157,15 @@ export default {
         const now = new Date().getTime();
         const distance = this.countDownDate - now;
 
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+
         const hours = Math.floor(
           (distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
         );
         const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-        this.countdown = `${hours}h ${minutes}m ${seconds}s`;
+        this.countdown = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
         if (distance < 0) {
           clearInterval(x);

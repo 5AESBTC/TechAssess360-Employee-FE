@@ -4,7 +4,7 @@
     <div class="col-md-4 left-menu p-3">
       <div class="profile mb-3 d-flex align-items-center justify-content-around">
         <div class="avatar">
-          <img :src="userInfo.avatar" alt="avatar" />
+          <img :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage" alt="avatar" />
         </div>
         <div class="info ms-3 text-start">
           <h3 class="mb-2">{{ userInfo.name }}</h3>

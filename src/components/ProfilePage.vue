@@ -2,10 +2,7 @@
   <div class="background-container">
     <div class="container">
       <div class="profile" v-if="profile">
-        <img
-          :src="avatarUrl"
-          alt="Profile Picture"
-        />
+        <img :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage" alt="Profile Picture" />
         <i
           class="fas fa-pencil-alt edit-icon edit-btn"
           @click="editProfile"
@@ -55,7 +52,7 @@
             v-for="(mate, index) in filteredTeamMates"
             :key="index"
           >
-            <img :src="mate.avatar || defaultAvatar" alt="Avatar" />
+            <img :src="mate.fileInfo?.fileUrl || defaultAvatar" alt="Avatar" />
             <h2>{{ mate.name }}</h2>
             <p>{{ mate.position }}</p>
           </div>
@@ -114,9 +111,6 @@ export default {
     },
   },
   computed: {
-    avatarUrl() {
-      return this.avatarUpdate ? URL.createObjectURL(this.avatarUpdate) : this.defaultAvatar;
-    },
     filteredTeamMates() {
       return this.teamMates.filter(
         (mate) =>
@@ -131,11 +125,7 @@ export default {
     },
     onFileChange(event) {
       const file = event.target.files[0];
-      if (file && file.type.startsWith("image/")) {
-        this.avatarUpdate = file; // Gán file ảnh mới vào avatarUpdate
-      } else {
-        alert("Please select a valid image file.");
-      }
+      this.avatarUpdate = file;
     },
     async uploadAvatar() {
       if (!this.avatarUpdate) {
@@ -144,25 +134,24 @@ export default {
       }
 
       // Tạo formData chỉ để cập nhật avatar
-      // eslint-disable-next-line no-debugger
-      debugger
+
       const formData = new FormData();
       formData.append("avatar", this.avatarUpdate);
-      
+
       try {
         // Gửi request API upload avatar
         const response = await UserService.uploadAvatar(
-          this.userInfo.id,
+          this.userInfo,
           formData
         );
         if (response.status === 200) {
           toast.success("Cập nhật avatar thành công!");
 
-          // Cập nhật avatar trong userInfo để hiển thị mới nhất
-          this.userInfo.avatar = response.data.avatarUrl;
+          // // Cập nhật avatar trong userInfo để hiển thị mới nhất
+          // this.userInfo.avatar = response.data.avatarUrl;
 
-          // Xóa file đã chọn sau khi upload
-          this.avatarUpdate = null;
+          // // Xóa file đã chọn sau khi upload
+          // this.avatarUpdate = null;
         }
       } catch (error) {
         console.error("Error uploading avatar:", error);

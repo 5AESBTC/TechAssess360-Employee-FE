@@ -14,12 +14,12 @@
           <div class="line">
             <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
           </div>
-          <div class="line">
+          <!-- <div class="line">
             <strong>Dự án hiện tại:</strong> {{ userInfo.project }}
           </div>
           <div class="line">
             <strong>Thời gian làm việc:</strong> {{ calculateWorkTime() }}
-          </div>
+          </div> -->
         </div>
       </div>
       <h4 v-if="isAssess" class="text-success">
@@ -161,7 +161,7 @@
                 'error-textarea': perfValues.assessDetails?.find(
                   (detail) => detail.criteriaId === criteria.id
                 )?.hasError,
-              }" rows="2" :value="personalAssessDetails?.find(
+              }" rows="5" :value="personalAssessDetails?.find(
                 (detail) => detail.criteria.id === criteria.id
               )?.description || ''
                 " readonly></textarea>

@@ -258,9 +258,9 @@ export default {
       console.log("Rank:", this.rank, "Level Up:", this.levelUp);
     },
     setManagerAssessmentNote() {
-      console.log(this.managerAssessment[0].assessDetails);
+      console.log(this.managerAssessment[0]?.assessDetails);
 
-      if (this.managerAssessment[0].assessDetails) {
+      if (this.managerAssessment[0]?.assessDetails.length > 0) {
         const lastIndex = this.managerAssessment[0].assessDetails.length - 1;
         this.note = this.managerAssessment[0].assessDetails[lastIndex].description;
         console.log("NOTE:: ", this.note);

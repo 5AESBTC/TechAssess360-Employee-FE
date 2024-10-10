@@ -250,8 +250,8 @@ export default {
                       if (existingAnswerUser) {
                         // Nếu user đã tồn tại trong câu trả lời, thêm vào mảng fromUsers
                         existingAnswerUser.fromUsers.push({
-                          avt: user.fileInfoResDto?.url
-                            ? user.fileInfoResDTO.url
+                          avt: user.fileInfo
+                            ? user.fileInfo.fileUrl
                             : "/images/avatar.png",
                           name: user.name,
                           description: assessDetail.description,
@@ -264,8 +264,8 @@ export default {
                           value: answer.value,
                           fromUsers: [
                             {
-                              avt: user.fileInfoResDto?.url
-                                ? user.fileInfoResDTO.url
+                              avt: user.fileInfo
+                                ? user.fileInfo.fileUrl
                                 : "/images/avatar.png",
                               name: user.name,
                               description: assessDetail.description,

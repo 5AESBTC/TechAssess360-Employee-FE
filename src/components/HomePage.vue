@@ -38,31 +38,25 @@ export default {
     return {
       steps: [
         {
-          title: "Bộ phận Tổng vụ đánh giá",
-          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
-          color: "#90EE90",
-        },
-        {
-          title: "Bộ phận Phát triển đánh giá",
-          text: "Các nhân viên sẽ tự đánh giá và đánh giá chéo cho các thành viên chung dự án.",
+          title: "Training đánh giá",
+          text: "Các nhân viên sẽ được training về cách đánh giá và đánh giá chéo cho các thành viên chung dự án.",
           color: "#87CEEB",
         },
         {
-          title: "Quản lý đánh giá",
-          text: "Quản lý sẽ đánh giá các thành viên trong team dự án",
+          title: "Đánh giá",
+          text: "Các nhân viên sẽ đánh giá các thành viên trong team dự án",
           color: "#FFD700",
         },
         {
           title: "Xem kết quả",
-          text: "Xem những đánh giá từ quản lý, team, cá nhân",
+          text: "Xem tổng điểm, số bậc đề xuất tăng của đánh giá quý này",
           color: "#FF6347",
         },
       ],
       titles: [
-        { text: "15/09 - 20/09", class: "before" },
         { text: "21/09 - 30/09", class: "now" },
-        { text: "01/10 - 10/10", class: "new" },
-        { text: "11/10 - 20/10", class: "after" },
+        { text: "01/10 - 15/10", class: "new" },
+        { text: "16/10 - 20/10", class: "after" },
       ],
       currentDate: new Date(), // Cập nhật giá trị này tùy thuộc vào nhu cầu
     };
@@ -71,7 +65,6 @@ export default {
     isActiveTitle(index) {
       // Logic để xác định tiêu đề nào là hiện tại
       const titleDates = [
-        { start: new Date("2024-09-09"), end: new Date("2024-09-20") },
         { start: new Date("2024-09-21"), end: new Date("2024-09-30") },
         { start: new Date("2024-10-01"), end: new Date("2024-10-10") },
         { start: new Date("2024-10-11"), end: new Date("2024-10-20") },

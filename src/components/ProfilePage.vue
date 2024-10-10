@@ -2,7 +2,10 @@
   <div class="background-container">
     <div class="container">
       <div class="profile" v-if="profile">
-        <img :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage" alt="Profile Picture" />
+        <img
+          :src="userInfo.fileInfo ? userInfo.fileInfo.fileUrl : profileImage"
+          alt="Profile Picture"
+        />
         <i
           class="fas fa-pencil-alt edit-icon edit-btn"
           @click="editProfile"
@@ -65,7 +68,8 @@
           <span class="close" @click="isEditing = false">&times;</span>
           <h2>Edit Profile</h2>
           <input type="file" @change="onFileChange" accept="image/*" />
-          <button @click="uploadAvatar">Save</button>
+          <button v-if="!isUpdating" class="btn btn-primary" @click="uploadAvatar">Save</button>
+          <button v-else disabled class="btn btn-danger">Updating</button>
         </div>
       </div>
     </div>
@@ -88,6 +92,7 @@ export default {
       defaultAvatar:
         "https://png.pngtree.com/png-clipart/20231216/original/pngtree-vector-office-worker-staff-avatar-employee-icon-png-image_13863941.png",
       avatarUpdate: null,
+      isUpdating: false,
     };
   },
   mounted() {
@@ -132,8 +137,7 @@ export default {
         alert("No avatar selected!");
         return;
       }
-
-      // Tạo formData chỉ để cập nhật avatar
+      this.isUpdating = true;
 
       const formData = new FormData();
       formData.append("avatar", this.avatarUpdate);
@@ -144,14 +148,20 @@ export default {
           this.userInfo,
           formData
         );
-        if (response.status === 200) {
+        if (response.code === 1013) {
           toast.success("Cập nhật avatar thành công!");
 
-          // // Cập nhật avatar trong userInfo để hiển thị mới nhất
-          // this.userInfo.avatar = response.data.avatarUrl;
+          //fetch user
+          const res = await UserService.fetchUserById(this.userInfo.id);
 
-          // // Xóa file đã chọn sau khi upload
-          // this.avatarUpdate = null;
+          if (res.code === 1010) {
+            localStorage.setItem("user", JSON.stringify(res.data));
+          }
+          this.userInfo = JSON.parse(localStorage.getItem("user"));
+          this.isUpdating = false;
+          setTimeout(() => {
+            window.location.reload();
+          });
         }
       } catch (error) {
         console.error("Error uploading avatar:", error);

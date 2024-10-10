@@ -21,7 +21,6 @@ const UserService = {
   uploadAvatar: async (user, formData) => {
     try {
       const jwt = localStorage.getItem("accessToken");
-      formData.append("user", JSON.stringify(user)); 
 
       const response = await axios.put(
         `${InfoUrl}/api/users/${user.id}`,

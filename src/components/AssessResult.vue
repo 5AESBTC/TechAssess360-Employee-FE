@@ -17,7 +17,7 @@
                   <strong>Bậc hiện tại:</strong> {{ userInfo.rank.level }}
                 </div>
                 <div class="line">
-                  <strong>Dự án hiện tại:</strong> {{ userInfo.project }}
+                  <strong>Dự án hiện tại:</strong> {{ userInfo.userProjects[0].project.name }}
                 </div>
               </div>
             </div>
@@ -25,16 +25,22 @@
               <label class="form-label">Tổng điểm đánh giá quý này: <span class="score">{{ totalPoint ? totalPoint : "?"
                   }}</span></label>
               <label class="form-label">Xếp hạng:
-                <span class="score">{{ rank ? rank : "?" }}</span>
+                <span class="score" v-if="this.totalPoint == 0">?</span>
+                <span class="score" v-else>{{ rank }}</span>
               </label>
               <label class="form-label align-items-center">Đề xuất nâng:
-                <span class="score me-2 fw-bold fs-2 "> {{ levelUp !== null ? levelUp : "?" }}</span>
+                <span class="score me-2 fw-bold fs-2 " v-if="this.totalPoint == 0"> ? </span>
+                <span class="score me-2 fw-bold fs-2 " v-else> {{ levelUp }} </span>
                 bậc
               </label>
             </div>
           </div>
 
-          <div class="table-wrapper">
+          <div v-if="selfAssessment.length == 0 || teamsAssessment.length == 0 || managerAssessment.length == 0">
+            <span class="fs-4 text-danger">Chưa có kết quả đánh giá, vui lòng đợi đến ngày có kết quả.</span>
+          </div>
+
+          <div v-else class="table-wrapper">
             <table class="styled-table">
               <thead>
                 <tr>
@@ -62,9 +68,10 @@
         <div class="col-md-7 right-content">
           <!-- <RadarChart :data="radarData" /> -->
           <div class="note-container text-start">
-            <label for="note"><strong>Đánh giá của quản lý:</strong></label>
+            <label for="note"><strong>Đánh giá từ phía quản lý:</strong></label>
             <div v-if="showNote" class="note-section d-flex gap-3">
-              <p id="note" class="note-display">{{ note ? note : "Không có nhận xét thêm" }}</p>
+              <p id="note" class="note-display">{{ note ? note : "Chưa có đánh giá từ phía quản lý, vui lòng đợi." }}
+              </p>
             </div>
           </div>
         </div>
@@ -255,7 +262,7 @@ export default {
         this.rank = "C";
         this.levelUp = 0;
       }
-      console.log("Rank:", this.rank, "Level Up:", this.levelUp);
+      console.log("Rank:", this.rank, "Level Up:", this.levelUp, this.totalPoint);
     },
     setManagerAssessmentNote() {
       console.log(this.managerAssessment[0]?.assessDetails);
@@ -265,7 +272,7 @@ export default {
         this.note = this.managerAssessment[0].assessDetails[lastIndex].description;
         console.log("NOTE:: ", this.note);
       } else {
-        this.note = "Quản lý không có nhận xét thêm";
+        this.note = "Chưa có kết quả đánh giá từ phía quản lý, vui lòng đợi...";
       }
     }
 
@@ -358,7 +365,7 @@ export default {
   border-radius: 10px;
   padding: 15px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  width: 80%;
+  width: 90%;
   max-width: auto;
   margin: 0 auto;
   display: flex;

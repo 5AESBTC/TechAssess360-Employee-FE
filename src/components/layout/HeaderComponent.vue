@@ -122,6 +122,9 @@ export default {
       localStorage.removeItem("assessDetails");
       localStorage.removeItem("listData");
       localStorage.removeItem("assess-by-user" + this.userInfo.id);
+      localStorage.removeItem("self-assessment");
+      localStorage.removeItem("team-assessment");
+      localStorage.removeItem("manager-assessment");
       this.userInfo = null;
       toast.success("Đăng xuất thành công", {
         autoClose: 2000,
